@@ -1,0 +1,10 @@
+package com.don.bookish.data.repositories
+
+import com.don.bookish.data.model.BookResponse
+import okhttp3.ResponseBody
+import retrofit2.Response
+
+interface BooksRepository {
+    suspend fun searchBooks(query: String): Response<BookResponse>
+}
+
