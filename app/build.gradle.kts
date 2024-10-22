@@ -64,9 +64,9 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
 
     //Dagger Hilt
-    implementation("com.google.dagger:hilt-android:2.48")
+    implementation("com.google.dagger:hilt-android:2.51")
     implementation(libs.androidx.runtime.livedata)
-    kapt("com.google.dagger:hilt-android-compiler:2.48")
+    kapt("com.google.dagger:hilt-android-compiler:2.51")
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0") // Replace with the latest versionimplementation("androidx.hilt:hilt-lifecycle-viewmodel:1.1.0") // Replace with the latest version
     kapt("androidx.hilt:hilt-compiler:1.1.0") // Or use ksp
 
