@@ -36,4 +36,5 @@ object NetworkModule {
     fun provideBooksRepository(googleBooksApi: GoogleBooksApi): BooksRepository {
         return BooksRepositoryImpl(googleBooksApi)
     }
+
 }

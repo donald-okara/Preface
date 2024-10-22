@@ -1,8 +1,10 @@
 package com.don.bookish
 
 import com.don.bookish.data.model.BookResponse
+import com.don.bookish.data.model.VolumeData
 import com.don.bookish.network.GoogleBooksApi
 import com.don.bookish.data.repositoryImpl.BooksRepositoryImpl
+import com.don.bookish.fake.createFakeVolumeData
 import kotlinx.coroutines.runBlocking
 import okhttp3.ResponseBody
 import org.junit.Assert.*
@@ -52,6 +54,34 @@ class BooksRepositoryTest {
         val result = repository.searchBooks("Unknown Book")
 
         // Assert result
+        assertFalse(result.isSuccessful)
+        assertEquals(result.code(), 404)
+    }
+
+    @Test
+    fun `getBookDetails returns success`() = runBlocking {
+        // Mock response
+        val mockResponse = createFakeVolumeData()
+        Mockito.`when`(googleBooksApi.getBookDetails("5cu7sER89nwC"))
+            .thenReturn(Response.success(mockResponse))
+
+        // Call repository
+        val result = repository.getBookDetails("5cu7sER89nwC")
+
+        // Assert result
+        assertTrue(result.isSuccessful)
+        assertEquals(result.body()?.id, "5cu7sER89nwC")
+
+    }
+
+    @Test
+    fun `getBookDetails returns error`() = runBlocking {
+        val errorResponse = Response.error<VolumeData>(404, ResponseBody.create(null, ""))
+        Mockito.`when`(googleBooksApi.getBookDetails("Unknown Book"))
+            .thenReturn(errorResponse)
+
+        val result = repository.getBookDetails("Unknown Book")
+
         assertFalse(result.isSuccessful)
         assertEquals(result.code(), 404)
     }

@@ -47,6 +47,41 @@ class SearchViewModelTest {
     }
 
     @Test
+    fun `clearSearch resets searchQuery and searchUiState`() {
+        // Use public function to change searchQuery and modify searchUiState indirectly
+        viewModel.onSearchQueryChange("Some query")
+        // Here we assume something changed the state, so we can't assign it directly.
+        // Instead, simulate a state change by invoking a function that affects the state.
+        // In your case, it's enough to invoke clearSearch().
+        viewModel.clearSearch()
+
+        // Verify that both searchQuery and searchUiState are reset
+        assertEquals("", viewModel.searchQuery)
+        assertEquals(SearchState.Empty, viewModel.searchUiState)
+    }
+
+    @Test
+    fun `onSearchQueryChange updates searchQuery`() {
+        val newQuery = "New Query"
+        viewModel.onSearchQueryChange(newQuery)
+        assertEquals(newQuery, viewModel.searchQuery)
+
+    }
+
+    @Test
+    fun `suggestRandomBook updates suggestedBook`() {
+        viewModel.suggestRandomBook()
+        assertTrue(viewModel.suggestedBook.isNotEmpty())
+        assertEquals(viewModel.suggestedBook, viewModel.searchQuery)
+    }
+
+    @Test
+    fun `onLoading returns a random search message`() {
+        viewModel.onLoading()
+        assertTrue(viewModel.searchMessage.isNotEmpty())
+    }
+
+    @Test
     fun `searchBooks returns success`() = runTest {
 
         // Mock BookItem and VolumeInfo
@@ -116,6 +151,8 @@ class SearchViewModelTest {
         assertTrue(viewModel.searchUiState is SearchState.Error)
         assertEquals("An error occurred.", (viewModel.searchUiState as SearchState.Error).message)
     }
+
+
 
     @After
     fun tearDown() {

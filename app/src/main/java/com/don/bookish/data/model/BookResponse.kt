@@ -21,6 +21,12 @@ data class VolumeInfo(
     val previewLink: String?
 )
 
+
 data class ImageLinks(
-    val thumbnail: String?
+    val smallThumbnail: String?,
+    val thumbnail: String?,
+    val small: String?,
+    val medium: String?,
+    val large: String?,
+    val extraLarge: String?
 )

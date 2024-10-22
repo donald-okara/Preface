@@ -36,4 +36,12 @@ val suggestedBookTitles = listOf(
     "How to Win Friends and Influence People by Dale Carnegie"
 )
 
-
+val searchMessages = listOf(
+    "Hold on, just checking the dusty shelves for that one!",
+    "One sec, I’m squeezing between the shelves to find it.",
+    "Flipping through endless pages... I’ll find it!",
+    "Sending the librarians on a top-secret mission!",
+    "Sweeping through the fantasy section... just in case.",
+    "Checking under every book pile for this one!",
+    "Dodging bookworms as I search the archives!"
+)

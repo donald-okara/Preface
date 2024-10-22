@@ -1,5 +1,6 @@
 package com.don.bookish.presentation.search
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -27,11 +28,16 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -55,8 +61,13 @@ fun BookSearchScreen(
     searchState: SearchState,
     viewModel: SearchViewModel
 ) {
+
+    LaunchedEffect(searchState) {
+        Log.d("SearchState", "searchState: $searchState")
+    }
+
     Column(
-        modifier = Modifier
+        modifier = modifier
             .padding(8.dp)
             .fillMaxSize(),
         verticalArrangement = Arrangement.Center,
@@ -73,7 +84,7 @@ fun BookSearchScreen(
             shape = RoundedCornerShapeMedium
         )
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = modifier.height(16.dp))
 
         when (searchState) {
             is SearchState.Success -> {
@@ -83,10 +94,10 @@ fun BookSearchScreen(
                 Text(text = searchState.message)
             }
             is SearchState.Loading -> {
-                Text(text = "Loading")
+                Text(text = viewModel.searchMessage)
             }
             is SearchState.Empty -> {
-                Text(text = "Empty")
+                Text(text = "Hit the shuffle button for a new suggestion")
             }
         }
     }
@@ -106,6 +117,9 @@ fun BookSearchBar(
     maxCharacters: Int = 50 // Add a maxCharacters parameter
 
 ){
+    val focusRequester = remember { FocusRequester() } // For controlling focus
+    val focusManager = LocalFocusManager.current // To clear focus and dismiss keyboard
+
     OutlinedTextField(
         value = bookSearch,
         singleLine = true,
@@ -135,7 +149,10 @@ fun BookSearchBar(
                     )
                 }
                 IconButton(
-                    onClick = { onSearch() }
+                    onClick = {
+                        onSearch()
+                        focusManager.clearFocus() // Clear focus when search is pressed
+                    }
                 ) {
                     Icon(
                         imageVector = Icons.Default.Search,
@@ -160,7 +177,8 @@ fun BookSearchBar(
         },
         modifier = modifier
             .fillMaxWidth()
-        //.padding(8.dp)
+            .focusRequester(focusRequester) // Attach the focusRequester to the text field
+
     )
 }
 
@@ -195,6 +213,7 @@ fun BookItem(
             .padding(4.dp)
             .aspectRatio(0.7f)
             .fillMaxWidth(),
+        shape = RoundedCornerShapeMedium,
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ){
         Box {

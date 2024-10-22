@@ -17,7 +17,6 @@ class SearchViewModel @Inject constructor(
     private val repository: BooksRepository
 ) : ViewModel() {
 
-
     var searchUiState: SearchState by mutableStateOf(SearchState.Empty)
         private set
 
@@ -25,6 +24,9 @@ class SearchViewModel @Inject constructor(
         private set
 
     var suggestedBook by mutableStateOf("")
+        private set
+
+    var searchMessage by mutableStateOf("")
         private set
 
     init {
@@ -43,12 +45,18 @@ class SearchViewModel @Inject constructor(
     // New function to get a random book suggestion
     fun suggestRandomBook() {
         suggestedBook = suggestedBookTitles[Random.nextInt(suggestedBookTitles.size)]
+        searchQuery = suggestedBook
+    }
+
+    fun onLoading(){
+        searchMessage = searchMessages[Random.nextInt(searchMessages.size)]
     }
 
     fun onSearch() {
         if (searchQuery.isEmpty() && suggestedBook.isNotEmpty()) {
             searchQuery = suggestedBook
         }
+        onLoading()
         searchBooks(searchQuery)
     }
 
