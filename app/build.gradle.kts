@@ -79,7 +79,16 @@ dependencies {
 
     //Coil
     implementation("io.coil-kt:coil-compose:2.4.0")
+    implementation("io.coil-kt:coil:2.0.0-rc02")
+    implementation("io.coil-kt:coil-gif:2.0.0-rc02")
+    implementation("io.coil-kt:coil-compose:2.0.0-rc02")
 
+    //Html parser
+    implementation("androidx.core:core-ktx:1.9.0") // Check for the latest version
+
+
+    implementation("com.github.bumptech.glide:glide:4.15.1") // Latest version
+    kapt("com.github.bumptech.glide:compiler:4.15.1")
 
     testImplementation(libs.junit)
     testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")

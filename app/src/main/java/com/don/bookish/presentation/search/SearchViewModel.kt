@@ -42,10 +42,14 @@ class SearchViewModel @Inject constructor(
         searchQuery = query
     }
 
+    fun shuffleBook(){
+        suggestRandomBook()
+        searchQuery = suggestedBook
+    }
+
     // New function to get a random book suggestion
     fun suggestRandomBook() {
         suggestedBook = suggestedBookTitles[Random.nextInt(suggestedBookTitles.size)]
-        searchQuery = suggestedBook
     }
 
     fun onLoading(){
@@ -71,7 +75,7 @@ class SearchViewModel @Inject constructor(
                     searchUiState = SearchState.Error("Failed with status: ${response.code()}")
                 }
             } catch (e: Exception) {
-                searchUiState = SearchState.Error("An error occurred.")
+                searchUiState = SearchState.Error("An error occurred. Check your internet and try again")
             }
         }
     }

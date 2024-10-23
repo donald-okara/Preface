@@ -2,6 +2,7 @@ package com.don.bookish.presentation.search
 
 import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,9 +24,12 @@ import androidx.compose.material.icons.filled.Shuffle
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -55,52 +59,72 @@ import com.don.bookish.ui.theme.RoundedCornerShapeMedium
 import com.don.bookish.ui.theme.RoundedCornerShapeSmall
 import dagger.Provides
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookSearchScreen(
     modifier: Modifier = Modifier,
     searchState: SearchState,
-    viewModel: SearchViewModel
+    viewModel: SearchViewModel,
+    onNavigateToBookItem: (String) -> Unit
 ) {
 
     LaunchedEffect(searchState) {
         Log.d("SearchState", "searchState: $searchState")
     }
 
-    Column(
-        modifier = modifier
-            .padding(8.dp)
-            .fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        BookSearchBar(
-            bookSearch = viewModel.searchQuery,
-            onBookSearchChange = viewModel::onSearchQueryChange,
-            suggestedBook = viewModel.suggestedBook,
-            isSearchPopulated = viewModel.searchQuery.isNotEmpty(),
-            onShuffle = viewModel::suggestRandomBook,
-            onClear = viewModel::clearSearch,
-            onSearch = viewModel::onSearch,
-            shape = RoundedCornerShapeMedium
-        )
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = "Search",
+                        modifier = Modifier.padding(8.dp),
+                        maxLines = 1
+                    )
+                }
+            )
+        }
+    ) { innerPadding->
+        Column(
+            modifier = modifier
+                .padding(innerPadding)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            BookSearchBar(
+                bookSearch = viewModel.searchQuery,
+                onBookSearchChange = viewModel::onSearchQueryChange,
+                suggestedBook = viewModel.suggestedBook,
+                isSearchPopulated = viewModel.searchQuery.isNotEmpty(),
+                onShuffle = viewModel::shuffleBook,
+                onClear = viewModel::clearSearch,
+                onSearch = viewModel::onSearch,
+                shape = RoundedCornerShapeMedium
+            )
 
-        Spacer(modifier = modifier.height(16.dp))
+            Spacer(modifier = modifier.height(16.dp))
 
-        when (searchState) {
-            is SearchState.Success -> {
-                BooksGridScreen(books = searchState.data)
-            }
-            is SearchState.Error -> {
-                Text(text = searchState.message)
-            }
-            is SearchState.Loading -> {
-                Text(text = viewModel.searchMessage)
-            }
-            is SearchState.Empty -> {
-                Text(text = "Hit the shuffle button for a new suggestion")
+            when (searchState) {
+                is SearchState.Success -> {
+                    BooksGridScreen(
+                        books = searchState.data,
+                        onNavigateToBookItem = onNavigateToBookItem
+                    )
+                }
+                is SearchState.Error -> {
+                    Text(text = searchState.message)
+                }
+                is SearchState.Loading -> {
+                    Text(text = viewModel.searchMessage)
+                }
+                is SearchState.Empty -> {
+                    Text(text = "Hit the shuffle button for a new suggestion")
+                }
             }
         }
     }
+
 }
 
 @Composable
@@ -185,7 +209,9 @@ fun BookSearchBar(
 @Composable
 fun BooksGridScreen(
     books: List<BookItem>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onNavigateToBookItem: (String) -> Unit
+
 ){
     LazyVerticalGrid(
         columns = GridCells.Adaptive(150.dp),
@@ -196,7 +222,8 @@ fun BooksGridScreen(
         items(items = books, key = { book -> book.id }){book ->
             BookItem(
                 book = book,
-                modifier = Modifier.padding(4.dp)
+                modifier = Modifier.padding(4.dp),
+                onNavigateToBookItem = onNavigateToBookItem
             )
 
         }
@@ -205,14 +232,18 @@ fun BooksGridScreen(
 
 @Composable
 fun BookItem(
+    modifier: Modifier = Modifier,
     book : BookItem,
-    modifier: Modifier = Modifier
+    onNavigateToBookItem: (String) -> Unit
 ){
     Card(
         modifier = modifier
             .padding(4.dp)
             .aspectRatio(0.7f)
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .clickable {
+                onNavigateToBookItem(book.id)
+            },
         shape = RoundedCornerShapeMedium,
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ){

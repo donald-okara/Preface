@@ -149,7 +149,7 @@ class SearchViewModelTest {
 
         // Then
         assertTrue(viewModel.searchUiState is SearchState.Error)
-        assertEquals("An error occurred.", (viewModel.searchUiState as SearchState.Error).message)
+        assertEquals("An error occurred. Check your internet and try again", (viewModel.searchUiState as SearchState.Error).message)
     }
 
 
