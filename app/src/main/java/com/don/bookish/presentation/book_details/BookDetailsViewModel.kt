@@ -29,6 +29,10 @@ class BookDetailsViewModel @Inject constructor(
         onLoading()
     }
 
+    fun clearState(){
+        bookState = BookState.Loading
+    }
+
     private fun onLoading(){
         loadingJoke = loadingBookJokes[Random.nextInt(loadingBookJokes.size)]
         Log.d("BookDetailsViewModel", "Loading joke: $loadingJoke")

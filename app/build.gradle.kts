@@ -66,6 +66,7 @@ dependencies {
     //Dagger Hilt
     implementation("com.google.dagger:hilt-android:2.51")
     implementation(libs.androidx.runtime.livedata)
+    implementation(libs.androidx.palette.ktx)
     kapt("com.google.dagger:hilt-android-compiler:2.51")
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0") // Replace with the latest versionimplementation("androidx.hilt:hilt-lifecycle-viewmodel:1.1.0") // Replace with the latest version
     kapt("androidx.hilt:hilt-compiler:1.1.0") // Or use ksp
@@ -77,11 +78,16 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
     implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
 
+    implementation("androidx.palette:palette:1.0.0")
+
+
     //Coil
     implementation("io.coil-kt:coil-compose:2.4.0")
     implementation("io.coil-kt:coil:2.0.0-rc02")
     implementation("io.coil-kt:coil-gif:2.0.0-rc02")
     implementation("io.coil-kt:coil-compose:2.0.0-rc02")
+    implementation("androidx.core:core-splashscreen:1.0.0")
+
 
     //Html parser
     implementation("androidx.core:core-ktx:1.9.0") // Check for the latest version

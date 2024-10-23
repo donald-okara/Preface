@@ -1,8 +1,11 @@
 package com.don.bookish.presentation.book_details
 
 import android.util.Log
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,7 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
@@ -27,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -41,21 +44,40 @@ import coil.request.ImageRequest
 import com.don.bookish.R
 import com.don.bookish.data.model.ImageLinks
 import com.don.bookish.data.model.VolumeData
+import com.don.bookish.data.model.ui.ColorPallet
+import com.don.bookish.presentation.shared_components.downloadImage
+import com.don.bookish.presentation.shared_components.extractColorPalette
+import com.don.bookish.presentation.shared_components.extractPaletteFromImage
 import com.don.bookish.presentation.shared_components.formatHtmlToAnnotatedString
 import com.don.bookish.ui.theme.RoundedCornerShapeMedium
+import com.don.bookish.ui.theme.backgroundDark
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun BookDetailsScreen(
     modifier: Modifier = Modifier,
     bookId: String,
     onSearchAuthor: (String) -> Unit,
-    viewModel: BookDetailsViewModel
+    bookState: BookState,
+    viewModel: BookDetailsViewModel,
+    onBackPressed: () -> Unit
 ){
-    val bookState = viewModel.bookState
+    //val bookState = viewModel.bookState
+    val colorPalette = remember { mutableStateOf(ColorPallet()) } // Initialize ColorPalette
+
+
     LaunchedEffect(bookId) {
-        viewModel.getBookDetails(bookId)
-        Log.d("BookDetailsScreen", "Book details: $bookState")
+        if (viewModel.bookState !is BookState.Success) {
+            viewModel.getBookDetails(bookId)
+        }
     }
+
+    BackHandler {
+        viewModel.clearState()  // Add a function in the ViewModel to clear data
+        onBackPressed()
+    }
+
 
     Box(
         modifier = modifier
@@ -65,9 +87,23 @@ fun BookDetailsScreen(
     ) {
         when (bookState) {
             is BookState.Success -> {
+                var lowestUrl = getLowestAvailableImageUrl(bookState.data.volumeInfo.imageLinks)
+                lowestUrl = lowestUrl?.replace("http://", "https://")
+
+                LaunchedEffect(lowestUrl) { // Assuming imageUrl is the URL for the book's image
+                    val imageUrl = lowestUrl
+                    // Extract the color palette based on the image URL
+                    // Ensure to implement the function that extracts the color palette
+                    colorPalette.value = extractColorPalette(imageUrl)
+
+                    Log.d("BookDetailsScreen", "Color palette: ${colorPalette.value}")
+                }
+
                 BookDetailsContent(
                     book = bookState.data,
-                    onSearchAuthor = onSearchAuthor
+                    onSearchAuthor = onSearchAuthor,
+                    colorPalette = colorPalette.value
+
                 )
             }
 
@@ -97,7 +133,8 @@ fun BookDetailsScreen(
 @Composable
 fun BookDetailsContent(
     book: VolumeData,
-    onSearchAuthor: (String) -> Unit
+    onSearchAuthor: (String) -> Unit,
+    colorPalette: ColorPallet
 ) {
     val scrollState = rememberScrollState()
 
@@ -107,32 +144,38 @@ fun BookDetailsContent(
     ){
         TitleHeader(
             book = book,
-            onSearchAuthor = onSearchAuthor
+            onSearchAuthor = onSearchAuthor,
+            colorPallet = colorPalette
         )
 
         OverviewTab(
-            book = book
+            book = book,
+            colorPallet = colorPalette
         )
     }
 }
 
 @Composable
 fun OverviewTab(
-    book: VolumeData
+    book: VolumeData,
+    colorPallet: ColorPallet
 ){
     AboutVolume(
-        book = book
+        book = book,
+        colorPallet = colorPallet
     )
 
 }
 
 @Composable
 fun AboutVolume(
-    book: VolumeData
+    book: VolumeData,
+    colorPallet: ColorPallet
 ){
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.padding(8.dp)
+        modifier = Modifier
+            .padding(8.dp)
     ) {
         Text(
             text = "About this edition",
@@ -249,10 +292,46 @@ fun DescriptionColumn(
 @Composable
 fun TitleHeader(
     book: VolumeData,
-    onSearchAuthor: (String) -> Unit // Callback to handle author clicks
+    onSearchAuthor: (String) -> Unit, // Callback to handle author clicks
+    colorPallet: ColorPallet
 ) {
+
+    val backgroundColor = if (isSystemInDarkTheme()) {
+        colorPallet.darkMutedColor
+    } else {
+        colorPallet.lightMutedColor
+
+    }
+
+    val textColor = when {
+        isSystemInDarkTheme() -> {
+            if (colorPallet.lightVibrantColor == Color.Transparent) {
+                if (colorPallet.dominantColor == Color.Transparent) {
+                    MaterialTheme.colorScheme.onTertiaryContainer
+                } else {
+                    colorPallet.dominantColor
+                }
+            } else {
+                colorPallet.lightVibrantColor
+            }
+        }
+        else -> {
+            if (colorPallet.darkVibrantColor == Color.Transparent) {
+                if (colorPallet.dominantColor == Color.Transparent) {
+                    MaterialTheme.colorScheme.onTertiaryContainer
+                } else {
+                    colorPallet.dominantColor
+                }
+            } else {
+                colorPallet.darkVibrantColor
+            }
+        }
+    }
+
+
     Row(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize(),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -283,7 +362,7 @@ fun TitleHeader(
                             modifier = Modifier.clickable {
                                 onSearchAuthor(author)
                             },
-                            style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onTertiaryContainer),
+                            style = MaterialTheme.typography.bodyLarge.copy(color = textColor),
                         )
                         // Add a separator if it's not the last author
                         if (index < authors.size - 1) {
@@ -322,7 +401,23 @@ fun BookImage(
 
     // Display the book cover image
     if (book.volumeInfo.imageLinks != null) {
-        val highestImageUrl = getHighestAvailableImageUrl(book.volumeInfo.imageLinks)
+        var highestImageUrl = getHighestAvailableImageUrl(book.volumeInfo.imageLinks)
+        highestImageUrl = highestImageUrl?.replace("http://", "https://")
+
+
+        var dominantColor by remember { mutableStateOf(Color.Transparent) }
+
+        LaunchedEffect(highestImageUrl) {
+            withContext(Dispatchers.IO) {
+                val inputStream = highestImageUrl?.let { downloadImage(it) }
+                inputStream?.let {
+                    val palette = extractPaletteFromImage(it)
+                    dominantColor = Color(palette.getDominantColor(Color.Transparent.value.toInt()))
+
+                    Log.d("BookImage", "Dominant color: $dominantColor")
+                }
+            }
+        }
 
         AsyncImage(
             model = ImageRequest.Builder(context = LocalContext.current)
@@ -451,10 +546,19 @@ fun getHighestAvailableImageUrl(imageLinks: ImageLinks?): String? {
         ?: imageLinks?.smallThumbnail
 }
 
+fun getLowestAvailableImageUrl(imageLinks: ImageLinks?): String? {
+    return imageLinks?.smallThumbnail
+        ?: imageLinks?.thumbnail
+        ?: imageLinks?.medium
+        ?: imageLinks?.small
+        ?: imageLinks?.large
+}
+
 
 @Preview(showBackground = true)
 @Composable
 fun PreviewDescriptionColumn() {
     DescriptionColumn(description = "<b>This is bold text</b>, <i>this is italic text</i>, and <u>this is underlined</u>.")
 }
+
 
