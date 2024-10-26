@@ -3,6 +3,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.10"
 }
 
 android {
@@ -62,11 +63,14 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icons.extended)
+    implementation("androidx.compose.foundation:foundation:1.6.0")
 
+    
     //Dagger Hilt
     implementation("com.google.dagger:hilt-android:2.51")
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.androidx.palette.ktx)
+    implementation(libs.androidx.lifecycle.process)
     kapt("com.google.dagger:hilt-android-compiler:2.51")
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0") // Replace with the latest versionimplementation("androidx.hilt:hilt-lifecycle-viewmodel:1.1.0") // Replace with the latest version
     kapt("androidx.hilt:hilt-compiler:1.1.0") // Or use ksp

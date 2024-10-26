@@ -33,8 +33,43 @@ val suggestedBookTitles = listOf(
     "The Help by Kathryn Stockett",
     "The Power of Habit by Charles Duhigg",
     "Atomic Habits by James Clear",
-    "How to Win Friends and Influence People by Dale Carnegie"
+
+    // African Books
+    "Things Fall Apart by Chinua Achebe",
+    "Half of a Yellow Sun by Chimamanda Ngozi Adichie",
+    "The No. 1 Ladies' Detective Agency by Alexander McCall Smith",
+    "Americanah by Chimamanda Ngozi Adichie",
+    "Homegoing by Yaa Gyasi",
+    "The Bone Season by Samantha Shannon (Series)",
+    "Disgrace by J.M. Coetzee",
+    "The Fishermen by Chigozie Obioma",
+    "We Need New Names by NoViolet Bulawayo",
+    "The Secret Lives of Baba Segi's Wives by Lola Shoneyin",
+    "Stay with Me by Ayobami Adebayo",
+    "A Man of the People by Chinua Achebe",
+    "The Grass Is Singing by Doris Lessing",
+    "Born a Crime: Stories from a South African Childhood by Trevor Noah",
+    "The Girl Who Smiled Beads by Clemantine Wamariya",
+    "The Old Drift by Namwali Serpell",
+
+    // Additional African Titles
+    "The Joys of Womanhood by Buchi Emecheta",
+    "So Long a Letter by Mariama Bâ",
+    "The Shadow of the Sun by Ryszard Kapuściński",
+    "The Book of Chameleons by José Eduardo Agualusa",
+    "The Black Prism by Brent Weeks (Series)",//- Set in a fictional African-inspired world
+    "My Name Is Not Friday by Jon Walter",
+    "The Secret History of Las Vegas by Chris Abani",
+    "Kintu by Jennifer Nansubuga Makumbi",
+    "Black Mamba Boy by Nadifa Mohamed",
+    "The Death of the Messenger by A. Igoni Barrett",
+    "Children of Blood and Bone by Tomi Adeyemi",
+    "The Girl with the Louding Voice by Abi Daré",
+    "The Mango Bride by Marivi Soliven",
+    "The Return by Sonia Dada",
+    "A Spool of Blue Thread by Anne Tyler" //- Though not exclusively African, includes African narratives
 )
+
 
 val searchMessages = listOf(
     "Hold on, just checking the dusty shelves for that one!",

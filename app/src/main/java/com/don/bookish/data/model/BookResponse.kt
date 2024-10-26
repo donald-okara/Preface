@@ -1,16 +1,21 @@
 package com.don.bookish.data.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class BookResponse(
     val kind: String,
     val totalItems: Int,
     val items: List<BookItem>?
 )
 
+@Serializable
 data class BookItem(
     val id: String,
     val volumeInfo: VolumeInfo
 )
 
+@Serializable
 data class VolumeInfo(
     val title: String,
     val authors: List<String>?,
@@ -21,7 +26,7 @@ data class VolumeInfo(
     val previewLink: String?
 )
 
-
+@Serializable
 data class ImageLinks(
     val smallThumbnail: String?,
     val thumbnail: String?,

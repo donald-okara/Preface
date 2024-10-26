@@ -13,18 +13,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.core.splashscreen.SplashScreen
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -78,15 +76,17 @@ class MainActivity : ComponentActivity() {
                         }
                         // Example of a future screen (e.g., book details)
                         composable(BookishScreen.Details.name+"/{bookId}") {backStackEntry ->
-                            val bookId = backStackEntry.arguments?.getString("bookId")
+                            val initialBookId = backStackEntry.arguments?.getString("bookId")
 
+                            // Use rememberSaveable to persist the bookId across configuration changes
+                            val bookId = rememberSaveable { mutableStateOf(initialBookId) }
                             LaunchedEffect(bookId) {
                                 Log.d("MainActivity", "Attempting to navigate to: $bookId")
                             }
-                            if (bookId != null) {
+                            bookId.value?.let {
                                 BookDetailsScreen(
-                                    bookId = bookId ,
-                                    viewModel = bookDetailsViewModel,
+                                    bookId = it,
+                                    bookDetailsViewModel = bookDetailsViewModel,
                                     onSearchAuthor = { author ->
                                         searchViewModel.onSearch()
                                         searchViewModel.onSearchQueryChange(author)
@@ -152,4 +152,3 @@ fun BookishSplashScreen(
         )
     }
 }
-

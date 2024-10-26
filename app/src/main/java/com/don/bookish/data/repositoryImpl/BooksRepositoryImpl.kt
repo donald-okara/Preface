@@ -4,7 +4,6 @@ import com.don.bookish.data.model.BookResponse
 import com.don.bookish.data.model.VolumeData
 import com.don.bookish.data.repositories.BooksRepository
 import com.don.bookish.network.GoogleBooksApi
-import okhttp3.ResponseBody
 import retrofit2.Response
 
 class BooksRepositoryImpl(
@@ -16,7 +15,7 @@ class BooksRepositoryImpl(
         return googleBooksApi.searchBooks(query)
     }
 
-    override suspend fun getBookDetails(bookId: String): Response<VolumeData> {
+    override suspend fun getBookDetails(bookId: String): VolumeData {
         return googleBooksApi.getBookDetails(bookId)
     }
 

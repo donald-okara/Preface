@@ -17,5 +17,5 @@ interface GoogleBooksApi {
     @GET("volumes/{bookId}")
     suspend fun getBookDetails(
         @Path("bookId") bookId: String
-    ): Response<VolumeData>
+    ): VolumeData
 }

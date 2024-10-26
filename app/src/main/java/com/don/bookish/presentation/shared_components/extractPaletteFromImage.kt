@@ -38,18 +38,19 @@ fun getColorHashCode(color: Color): Int {
 suspend fun extractColorPalette(lowestImageUrl: String?): ColorPallet {
     return withContext(Dispatchers.IO) {
         val inputStream = lowestImageUrl?.let { downloadImage(it) }
-        inputStream?.let {
-            val palette = extractPaletteFromImage(it)
-            ColorPallet(
-                dominantColor = Color(palette.getDominantColor(Color.Transparent.value.toInt())),
-                darkMutedColor = Color(palette.getDarkMutedColor(Color.Transparent.value.toInt())),
-                darkVibrantColor = Color(palette.getDarkVibrantColor(Color.Transparent.value.toInt())),
-                lightMutedColor = Color(palette.getLightMutedColor(Color.Transparent.value.toInt())),
-                lightVibrantColor = Color(palette.getLightVibrantColor(Color.Transparent.value.toInt()))
-            ).also { colorPalette ->
-                Log.d("BookImage", "Dominant color: ${colorPalette.dominantColor}")
-            }
-        }!!
+            ?: throw IllegalArgumentException("Image URL is null or image could not be downloaded.")
+
+        val palette = extractPaletteFromImage(inputStream)
+        ColorPallet(
+            dominantColor = Color(palette.getDominantColor(Color.Transparent.value.toInt())),
+            darkMutedColor = Color(palette.getDarkMutedColor(Color.Transparent.value.toInt())),
+            darkVibrantColor = Color(palette.getDarkVibrantColor(Color.Transparent.value.toInt())),
+            lightMutedColor = Color(palette.getLightMutedColor(Color.Transparent.value.toInt())),
+            lightVibrantColor = Color(palette.getLightVibrantColor(Color.Transparent.value.toInt()))
+        ).also { colorPalette ->
+            Log.d("BookImage", "Dominant color: ${colorPalette.dominantColor}")
+        }
     }
 }
+
 

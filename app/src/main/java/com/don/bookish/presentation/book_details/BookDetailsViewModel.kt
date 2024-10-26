@@ -6,12 +6,15 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.don.bookish.data.model.BookItem
 import com.don.bookish.data.model.VolumeData
 import com.don.bookish.data.repositories.BooksRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.net.ConnectException
 import javax.inject.Inject
 import kotlin.random.Random
 
@@ -19,7 +22,7 @@ import kotlin.random.Random
 class BookDetailsViewModel @Inject constructor(
     private val repository: BooksRepository
 ): ViewModel() {
-    var bookState: BookState by mutableStateOf(BookState.Loading)
+    var bookState: BookState by mutableStateOf(BookState.Empty)
         private set
 
     var loadingJoke: String by mutableStateOf("")
@@ -37,34 +40,45 @@ class BookDetailsViewModel @Inject constructor(
         loadingJoke = loadingBookJokes[Random.nextInt(loadingBookJokes.size)]
         Log.d("BookDetailsViewModel", "Loading joke: $loadingJoke")
     }
+    val supervisorJob = SupervisorJob()
+
 
     fun getBookDetails(bookId: String) {
         bookState = BookState.Loading
+        onLoading()
+        Log.d("BookDetailsViewModel", "About to fetch details for bookId: $bookId")
 
-        viewModelScope.launch {
+        viewModelScope.launch(Dispatchers.Main + supervisorJob) {
             try {
-                Log.d("BookDetailsViewModel", "Fetching book details for: $bookId")
-                val response = repository.getBookDetails(bookId)
-                // Check if response is successful
-                if (response.isSuccessful) {
-                    bookState = BookState.Success(response.body()!!)
-                } else {
-                    // Handle non-successful response (e.g., 404, 500, etc.)
-                    bookState = BookState.Error("Error: ${response.code()}")
-                }
-                Log.d("BookDetailsViewModel", "BookState: $bookState")
+                withContext(Dispatchers.IO) {
+                    Log.d("BookDetailsViewModel", "Fetching book details for: $bookId")
+                    val response = repository.getBookDetails(bookId)
 
-            } catch (e: Exception) {
-                // Handle network errors or unexpected exceptions
+                    // Switch back to the Main thread to update UI
+                    withContext(Dispatchers.Main) {
+                        bookState = BookState.Success(response)
+                    }
+                }
+            } catch (e: ConnectException) {
                 bookState = BookState.Error("Network error. Check your internet and try again")
+                Log.e("BookDetailsViewModel", "ConnectException: ${e.message}")
+            } catch (e: IllegalArgumentException) {
+                bookState = BookState.FallbackError
+            } catch (e: Exception) {
+                bookState = BookState.Error("Something went wrong. Try again.")
+                Log.e("BookDetailsViewModel", "Exception: ${e.message}")
             }
         }
     }
+
+
 
 }
 
 sealed interface BookState{
     data class Success(val data: VolumeData): BookState
     data class Error(val message : String = "An error occurred"): BookState
-    object Loading: BookState
+    data object Loading: BookState
+    data object Empty: BookState
+    object FallbackError: BookState // New state to handle the specific error
 }
