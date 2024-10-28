@@ -1,7 +1,7 @@
-Terms of Service
-Last Updated: 28th October 2024
+# Terms of Service
+### Last Updated: 28th October 2024
 
-Introduction
+## Introduction
 
 These Terms of Service ("Terms") govern your use of the Bookish mobile application. By accessing or using the App, you agree to be bound by these Terms. If you disagree with any part of the Terms, you may not use the App.
 

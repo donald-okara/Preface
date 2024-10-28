@@ -1,7 +1,7 @@
-Privacy Policy
-Last Updated: 28th October 2024
+# Privacy Policy
+### Last Updated: 28th October 2024
 
-Introduction
+## Introduction
 
 Welcome to Bookish! We value your privacy and are committed to protecting your personal data. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our mobile application ("App"). By using the App, you agree to the terms outlined in this Privacy Policy.
 
