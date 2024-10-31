@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace = "com.don.bookish"
+    namespace = "com.don.preface"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.don.bookish"
+        applicationId = "com.don.preface"
         minSdk = 26
         targetSdk = 34
         versionCode = 1

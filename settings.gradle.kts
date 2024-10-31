@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Bookish"
+rootProject.name = "Preface"
 include(":app")
