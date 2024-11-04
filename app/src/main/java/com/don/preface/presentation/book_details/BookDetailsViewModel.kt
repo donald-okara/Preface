@@ -13,16 +13,20 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import retrofit2.Response
 import java.net.ConnectException
+import java.net.SocketTimeoutException
 import javax.inject.Inject
 import kotlin.random.Random
 
 @HiltViewModel
 class BookDetailsViewModel @Inject constructor(
     private val repository: BooksRepository
-): ViewModel() {
+) : ViewModel() {
+
     var bookState: BookState by mutableStateOf(BookState.Empty)
         private set
+
 
     var loadingJoke: String by mutableStateOf("")
         private set
@@ -31,15 +35,14 @@ class BookDetailsViewModel @Inject constructor(
         onLoading()
     }
 
-    fun clearState(){
+    fun clearState() {
         bookState = BookState.Loading
     }
 
-    private fun onLoading(){
+    fun onLoading() {
         loadingJoke = loadingBookJokes[Random.nextInt(loadingBookJokes.size)]
         Log.d("BookDetailsViewModel", "Loading joke: $loadingJoke")
     }
-    val supervisorJob = SupervisorJob()
 
 
     fun getBookDetails(bookId: String) {
@@ -47,37 +50,41 @@ class BookDetailsViewModel @Inject constructor(
         onLoading()
         Log.d("BookDetailsViewModel", "About to fetch details for bookId: $bookId")
 
-        viewModelScope.launch(Dispatchers.Main + supervisorJob) {
+        viewModelScope.launch {
             try {
-                withContext(Dispatchers.IO) {
-                    Log.d("BookDetailsViewModel", "Fetching book details for: $bookId")
-                    val response = repository.getBookDetails(bookId)
+                val response: Response<VolumeData> = repository.getBookDetails(bookId)
 
-                    // Switch back to the Main thread to update UI
-                    withContext(Dispatchers.Main) {
-                        bookState = BookState.Success(response)
+                if (response.isSuccessful) {
+                    response.body()?.let { volumeData ->
+                        bookState = BookState.Success(volumeData)
+                    } ?: run {
+                        bookState = BookState.Error("No data available")
+                        Log.e("BookDetailsViewModel", "Response body is null")
                     }
+                } else {
+                    bookState = BookState.Error("Failed to load book details: ${response.message()}")
+                    Log.e("BookDetailsViewModel", "Error response: ${response.message()}")
                 }
+
             } catch (e: ConnectException) {
                 bookState = BookState.Error("Network error. Check your internet and try again")
                 Log.e("BookDetailsViewModel", "ConnectException: ${e.message}")
             } catch (e: IllegalArgumentException) {
-                bookState = BookState.FallbackError
+                bookState = BookState.Error("Failed to load book details")
+            } catch (e: SocketTimeoutException) {
+                bookState = BookState.Error("Failed to load book details")
             } catch (e: Exception) {
                 bookState = BookState.Error("Something went wrong. Try again.")
                 Log.e("BookDetailsViewModel", "Exception: ${e.message}")
             }
         }
     }
-
-
-
 }
 
-sealed interface BookState{
-    data class Success(val data: VolumeData): BookState
-    data class Error(val message : String = "An error occurred"): BookState
-    data object Loading: BookState
-    data object Empty: BookState
-    object FallbackError: BookState // New state to handle the specific error
+sealed interface BookState {
+    data class Success(val data: VolumeData) : BookState
+    data class Error(val message: String = "An error occurred") : BookState
+    data object Loading : BookState
+    data object Empty : BookState
+    object FallbackError : BookState // New state to handle the specific error
 }

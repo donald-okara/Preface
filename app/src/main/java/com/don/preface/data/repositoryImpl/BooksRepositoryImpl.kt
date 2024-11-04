@@ -15,7 +15,7 @@ class BooksRepositoryImpl(
         return googleBooksApi.searchBooks(query)
     }
 
-    override suspend fun getBookDetails(bookId: String): VolumeData {
+    override suspend fun getBookDetails(bookId: String): Response<VolumeData> {
         return googleBooksApi.getBookDetails(bookId)
     }
 

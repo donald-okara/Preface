@@ -7,6 +7,6 @@ import retrofit2.Response
 interface BooksRepository {
     suspend fun searchBooks(query: String): Response<BookResponse>
 
-    suspend fun getBookDetails(bookId: String): VolumeData
+    suspend fun getBookDetails(bookId: String): Response<VolumeData>
 }
 

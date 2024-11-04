@@ -1,10 +1,15 @@
 package com.don.preface.presentation.book_details
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.util.Log
 import androidx.activity.compose.BackHandler
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -17,14 +22,18 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -38,6 +47,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -47,7 +57,10 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.luminance
@@ -56,6 +69,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -76,6 +90,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookDetailsScreen(
@@ -117,14 +132,15 @@ fun BookDetailsScreen(
                         )
                     }
                 },
-                modifier = modifier.background(Color.Transparent)
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                    containerColor = Color.Transparent, // Transparent background
+                    )
             )
         }
-    ) {innerPadding ->
+    ) {
         Box(
             modifier = modifier
-                .fillMaxSize()
-                .padding(innerPadding),
+                .fillMaxSize(),
             contentAlignment = Alignment.TopCenter,
         ) {
             when (bookState) {
@@ -177,6 +193,7 @@ fun BookDetailsContent(
     book: VolumeData,
     onSearchAuthor: (String) -> Unit
 ) {
+    val showPreview = remember{ mutableStateOf(false) }
     //val bookState = viewModel.bookState
     val colorPalette = remember { mutableStateOf(ColorPallet()) } // Initialize ColorPalette
     var contentColorErrorState by remember { mutableStateOf<String?>(null) }
@@ -184,18 +201,43 @@ fun BookDetailsContent(
     var lowestUrl = getLowestAvailableImageUrl(book.volumeInfo.imageLinks)
     lowestUrl = lowestUrl?.replace("http://", "https://")
 
+
+    var dominantColor by remember { mutableStateOf(Color.Transparent) }
+    var isGradientVisible by remember { mutableStateOf(false) }
+
+
     val tabs = listOf("About", "Get book")
     var selectedTabIndex by remember { mutableStateOf(0) }
 
+    var highestImageUrl = ""
+    if (book.volumeInfo.imageLinks != null) {
+        highestImageUrl = getHighestAvailableImageUrl(book.volumeInfo.imageLinks).toString()
+        highestImageUrl = highestImageUrl.replace("http://", "https://").toString()
+
+    }
     LaunchedEffect(lowestUrl) { // Assuming imageUrl is the URL for the book's image
         try {
             colorPalette.value = extractColorPalette(lowestUrl)
             contentColorErrorState = null // Reset error state on success
+
+            dominantColor = colorPalette.value.dominantColor
+            isGradientVisible = true // Trigger the gradient visibility after color is loaded
+
+
         } catch (e: Exception) {
             contentColorErrorState = e.message // Handle the error
             contentContainerErrorState = e.message // Handle the error
         }
     }
+    val gradientBrush = Brush.verticalGradient(
+        colors = listOf(
+            dominantColor.copy(alpha = 0.4f), // Start with dominant color from below
+            Color.Transparent // Transition to transparent at the top
+        ),
+        startY = 0f, // Start from the bottom
+        endY = 800f // Adjust this value to control the gradient's end position (height)
+    )
+
 
     val tertiaryContentColor = when {
         contentContainerErrorState != null -> MaterialTheme.colorScheme.onTertiaryContainer // Fallback color
@@ -265,68 +307,122 @@ fun BookDetailsContent(
 
     val scrollState = rememberScrollState()
 
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier
-            .verticalScroll(scrollState)
-            .padding(8.dp)
-            .fillMaxSize(),
-    ) {
-        TitleHeader(
-            book = book,
-            onSearchAuthor = onSearchAuthor,
-            textColor = tertiaryContentColor
-        )
-
-        val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
-        val coroutineScope = rememberCoroutineScope()
-
-        // Top Tab Row
-        ScrollableTabRow(
-            selectedTabIndex = pagerState.currentPage,
-            modifier = Modifier.fillMaxWidth(),
-            contentColor = tertiaryContentColor,
-            indicator = { tabPositions ->
-                TabRowDefaults.Indicator(
-                    modifier = Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
-                    color = tertiaryContainerColor // Set your preferred color here
-                )
-            }
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+    ){
+        // Crossfade transition for the gradient
+        AnimatedVisibility(
+            visible = isGradientVisible,
+            enter = fadeIn(animationSpec = tween(durationMillis = 800)),
+            exit = fadeOut(animationSpec = tween(durationMillis = 800)),
         ) {
-            tabs.forEachIndexed { index, title ->
-                Tab(
-                    selected = pagerState.currentPage == index,
-                    onClick = {
-                        coroutineScope.launch {
-                            pagerState.scrollToPage(index)
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(gradientBrush)
+            )
+        }
+
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .verticalScroll(scrollState)
+                .padding(8.dp)
+                .fillMaxSize()
+        ) {
+            TitleHeader(
+                book = book,
+                onSearchAuthor = onSearchAuthor,
+                textColor = tertiaryContentColor,
+                onImageClick = {
+                    showPreview.value = true
+                },
+                modifier = Modifier
+                    .padding(8.dp)
+            )
+
+            val pagerState = rememberPagerState(initialPage = 0, pageCount = { tabs.size })
+            val coroutineScope = rememberCoroutineScope()
+
+            // Top Tab Row
+            ScrollableTabRow(
+                selectedTabIndex = pagerState.currentPage,
+                modifier = Modifier
+                    .fillMaxWidth(),
+                containerColor = Color.Transparent,
+                contentColor = tertiaryContentColor,
+                indicator = { tabPositions ->
+                    TabRowDefaults.Indicator(
+                        modifier = Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
+                        color = tertiaryContainerColor // Set your preferred color here
+                    )
+                }
+            ) {
+                tabs.forEachIndexed { index, title ->
+                    Tab(
+                        selected = pagerState.currentPage == index,
+                        onClick = {
+                            coroutineScope.launch {
+                                pagerState.scrollToPage(index)
+                            }
+                        },
+                        text = { Text(text = title) }
+                    )
+                }
+            }
+
+            // Swipeable pager content for each tab
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxWidth()
+            ) { page ->
+                when (page) {
+                    0 -> AboutVolume(
+                        book = book,
+                        textColor = tertiaryContentColor
+                    )
+                    1 -> AcquireVolume(
+                        book = book,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+            }
+        }
+
+
+        // Blurry background overlay
+        if (showPreview.value) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.8f)) // Dark overlay
+            )
+
+            // Fullscreen Book Cover Preview
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .background(Color.Transparent)
+                    .clickable { showPreview.value = false } // Dismiss the preview when clicked
+            ) {
+                BookCoverPreview(
+                    highestImageUrl = highestImageUrl,
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .scale(1f)
+                        .graphicsLayer {
+                            // Apply blur effect (if you have a custom blur effect implemented)
+                            // Example placeholder for blur effect
+                            this.alpha = 1f // Keep the preview visible
                         }
-                    },
-                    text = { Text(text = title) }
                 )
             }
         }
 
-        // Swipeable pager content for each tab
-        HorizontalPager(
-            state = pagerState,
-            modifier = Modifier.fillMaxWidth()
-        ) { page ->
-            when (page) {
-                0 -> AboutVolume(
-                    book = book,
-                    textColor = tertiaryContentColor
-                )
-                1 -> AcquireVolume(
-                    book = book,
-                    modifier = Modifier.fillMaxSize()
-                )
-            }
-        }
+
     }
-
-
-
-
 
 }
 
@@ -421,8 +517,10 @@ fun AboutVolume(
                 .padding(8.dp)
                 .fillMaxWidth(
                     fraction = 0.9f
-
-                )
+                ),
+            colors = CardDefaults.cardColors(
+                containerColor = Color.Transparent
+            )
         ){
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -487,8 +585,6 @@ fun DescriptionColumn(
     val styledText = formatHtmlToAnnotatedString(description)
 
     // Text with conditional maxLines
-
-
     Column {
         // Display the styled text
         Text(
@@ -519,69 +615,69 @@ fun DescriptionColumn(
 }
 
 
-
 @Composable
 fun TitleHeader(
+    modifier: Modifier = Modifier,
+    onImageClick: () -> Unit,
     book: VolumeData,
     onSearchAuthor: (String) -> Unit, // Callback to handle author clicks
     textColor: Color = MaterialTheme.colorScheme.onTertiaryContainer
 ) {
-    Row(
-        modifier = Modifier
-            .fillMaxSize(),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
+    Column(
+        modifier = modifier
+            .wrapContentHeight(), // Take only the space needed by the content
+        verticalArrangement = Arrangement.spacedBy(8.dp), // Space between elements
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        BookImage(book = book)
-
-        // Column for title and authors
-        Column(
+        BookImage(
+            book = book,
+            onImageClick = onImageClick,
             modifier = Modifier
-                .fillMaxHeight()
-                .weight(1f), // Allow the column to take up remaining space
-            verticalArrangement = Arrangement.Center
-        ) {
-            // Display the book title
-            Text(
-                text = book.volumeInfo.title,
-                style = MaterialTheme.typography.headlineSmall, // Use appropriate text style
-                modifier = Modifier.padding(bottom = 8.dp) // Space below the title
-            )
+                .size(width = 240.dp, height = 300.dp)
+                .padding(8.dp)
+        )
 
-            // Display the book authors, if available
-            book.volumeInfo.authors?.let { authors ->
-                Row(
-                    modifier = Modifier.padding(bottom = 16.dp) // Space below authors
-                ) {
-                    authors.forEachIndexed { index, author ->
+        // Display the book title
+        Text(
+            text = book.volumeInfo.title,
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = Modifier.padding(bottom = 4.dp) // Minor padding if needed
+        )
+
+        // Display the book authors, if available
+        book.volumeInfo.authors?.let { authors ->
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(bottom = 4.dp)
+            ) {
+                authors.forEachIndexed { index, author ->
+                    Text(
+                        text = AnnotatedString(author),
+                        modifier = Modifier.clickable {
+                            onSearchAuthor(author)
+                        },
+                        style = MaterialTheme.typography.bodyLarge.copy(color = textColor),
+                    )
+                    if (index < authors.size - 1) {
                         Text(
-                            text = AnnotatedString(author),
-                            modifier = Modifier.clickable {
-                                onSearchAuthor(author)
-                            },
-                            style = MaterialTheme.typography.bodyLarge.copy(color = textColor),
+                            text = ", ",
+                            style = MaterialTheme.typography.bodyLarge
                         )
-                        // Add a separator if it's not the last author
-                        if (index < authors.size - 1) {
-                            Text(
-                                text = ", ",
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                        }
                     }
                 }
             }
+        }
 
-            // Display the book published date, if available
-            book.volumeInfo.publishedDate?.let { date ->
-                Text(
-                    text = date,
-                    style = MaterialTheme.typography.bodyMedium, // Use appropriate text style
-                    modifier = Modifier
-                        .padding(bottom = 16.dp) // Space below the date
-                        .graphicsLayer(alpha = 0.8f) // Set alpha to 0.8
-                )
-            }
+        // Display the book published date, if available
+        book.volumeInfo.publishedDate?.let { date ->
+            Text(
+                text = date,
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.graphicsLayer(alpha = 0.8f)
+            )
         }
     }
 }
@@ -589,18 +685,14 @@ fun TitleHeader(
 
 @Composable
 fun BookImage(
-    book: VolumeData
-){
-    // Set a constant size for the image
-    val imageSize = Modifier
-        .size(width = 120.dp, height = 160.dp) // Set a non-square size
-        .clip(RoundedCornerShapeMedium) // Add rounded corners
-
+    onImageClick: () -> Unit,
+    book: VolumeData,
+    modifier: Modifier = Modifier // Allow external modification of size
+) {
     // Display the book cover image
     if (book.volumeInfo.imageLinks != null) {
         var highestImageUrl = getHighestAvailableImageUrl(book.volumeInfo.imageLinks)
         highestImageUrl = highestImageUrl?.replace("http://", "https://")
-
 
         var dominantColor by remember { mutableStateOf(Color.Transparent) }
 
@@ -618,23 +710,28 @@ fun BookImage(
 
         AsyncImage(
             model = ImageRequest.Builder(context = LocalContext.current)
-                .data(highestImageUrl?.replace("http://", "https://")) // Replacing "http" with "https"
+                .data(highestImageUrl)
                 .crossfade(true)
                 .build(),
             contentDescription = stringResource(R.string.book_cover),
+            contentScale = ContentScale.FillHeight,
             placeholder = painterResource(R.drawable.undraw_writer_q06d),
-            contentScale = ContentScale.FillBounds, // Scale to fill the size while maintaining aspect ratio
-            modifier = imageSize.padding(end = 16.dp) // Space between the image and the text
+            modifier = modifier
+                .clip(RoundedCornerShapeMedium)
+                .clickable {
+                    onImageClick()
+                }
         )
     } else {
         Image(
             painter = painterResource(R.drawable.undraw_writer_q06d),
             contentDescription = "Loading",
-            contentScale = ContentScale.FillBounds, // Scale to fill the size while maintaining aspect ratio
-            modifier = imageSize.padding(end = 16.dp) // Space between the image and the text
+            modifier = Modifier.fillMaxSize() // Fill the container
         )
+
     }
 }
+
 
 
 
@@ -685,6 +782,24 @@ fun DetailsLoadingScreen(
 }
 
 @Composable
+fun BookCoverPreview(
+    modifier: Modifier = Modifier,
+    highestImageUrl: String?
+) {
+    AsyncImage(
+        model = ImageRequest.Builder(context = LocalContext.current)
+            .data(highestImageUrl)
+            .crossfade(true)
+            .build(),
+        contentScale = ContentScale.Fit,
+        contentDescription = stringResource(R.string.book_cover),
+        placeholder = painterResource(R.drawable.undraw_writer_q06d),
+        modifier = modifier
+
+    )
+}
+
+@Composable
 fun DetailsErrorScreen(
     modifier: Modifier = Modifier,
     text: String,
@@ -697,8 +812,10 @@ fun DetailsErrorScreen(
     ) {
         // Set a constant size for the loading image
         val imageSize = Modifier
-            .size(width = 120.dp, height = 160.dp) // Set a non-square size
+            .size(width = 200.dp, height = 240.dp) // Set a non-square size
             .clip(RoundedCornerShapeMedium) // Add rounded corners
+            .padding(16.dp) // Add padding around the image
+
 
         Image(
             painter = painterResource(R.drawable.undraw_writer_q06d),
@@ -750,7 +867,8 @@ fun search(url : String, context: Context) {
 }
 
 fun getHighestAvailableImageUrl(imageLinks: ImageLinks?): String? {
-    return imageLinks?.large
+    return imageLinks?.extraLarge
+        ?: imageLinks?.large
         ?: imageLinks?.medium
         ?: imageLinks?.small
         ?: imageLinks?.thumbnail

@@ -144,7 +144,7 @@ fun BookishSplashScreen(
             .background(color = colorResource(R.color.brown))
     ){
         Image(
-            painter = painterResource(id = R.drawable.splash_screen2),
+            painter = painterResource(id = R.drawable.splash_screen_2),
             contentDescription = null,
             modifier = modifier
                 .fillMaxSize()

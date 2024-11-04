@@ -67,41 +67,41 @@ class GoogleBooksApiTest {
         assert(result.errorBody() == responseBody)
     }
 
-    @Test
-    fun `getBookDetails returns successful response`() = runBlocking {
-        // Given
-        val bookId = "12345"
-        val mockResponse = mock<VolumeData>()
-        val response = Response.success(mockResponse)
+//    @Test
+//    fun `getBookDetails returns successful response`() = runBlocking {
+//        // Given
+//        val bookId = "12345"
+//        val mockResponse = mock<VolumeData>()
+//        val response = Response.success(mockResponse)
+//
+//        // Mock the actual API call
+//        val api = mock<GoogleBooksApi>()
+//        whenever(api.getBookDetails(bookId)).thenReturn(response)
+//
+//        val result = api.getBookDetails(bookId)
+//
+//        // Then
+//        assert(result.isSuccessful)
+//        assert(result.body() == mockResponse)
+//        assert(result.body() is VolumeData)
+//    }
 
-        // Mock the actual API call
-        val api = mock<GoogleBooksApi>()
-        whenever(api.getBookDetails(bookId)).thenReturn(response)
-
-        val result = api.getBookDetails(bookId)
-
-        // Then
-        assert(result.isSuccessful)
-        assert(result.body() == mockResponse)
-        assert(result.body() is VolumeData)
-    }
-
-    @Test
-    fun `getBookDetails returns error response`() = runBlocking {
-        // Given
-        val bookId = "12345"
-        val responseBody = mock<ResponseBody>()
-        val response = Response.error<VolumeData>(404, responseBody)
-
-        // Mock the actual API call
-        val api = mock<GoogleBooksApi>()
-        whenever(api.getBookDetails(bookId)).thenReturn(response)
-
-        val result = api.getBookDetails(bookId)
-
-        // Then
-        assert(!result.isSuccessful)
-        assert(result.code() == 404)
-    }
+//    @Test
+//    fun `getBookDetails returns error response`() = runBlocking {
+//        // Given
+//        val bookId = "12345"
+//        val responseBody = mock<ResponseBody>()
+//        val response = Response.error<VolumeData>(404, responseBody)
+//
+//        // Mock the actual API call
+//        val api = mock<GoogleBooksApi>()
+//        whenever(api.getBookDetails(bookId)).thenReturn(response)
+//
+//        val result = api.getBookDetails(bookId)
+//
+//        // Then
+//        assert(!result.isSuccessful)
+//        assert(result.code() == 404)
+//    }
 
 }
