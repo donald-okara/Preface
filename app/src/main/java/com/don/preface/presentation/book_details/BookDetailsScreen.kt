@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -44,12 +43,13 @@ import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRowDefaults
+import androidx.compose.material3.TabRowDefaults.SecondaryIndicator
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -57,7 +57,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
@@ -69,6 +68,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -77,7 +78,7 @@ import androidx.core.content.ContextCompat
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.don.preface.R
-import com.don.preface.data.model.ImageLinks
+import com.don.preface.components.ImageUrlFetcher
 import com.don.preface.data.model.VolumeData
 import com.don.preface.data.model.ui.ColorPallet
 import com.don.preface.presentation.shared_components.downloadImage
@@ -85,8 +86,10 @@ import com.don.preface.presentation.shared_components.extractColorPalette
 import com.don.preface.presentation.shared_components.extractPaletteFromImage
 import com.don.preface.presentation.shared_components.formatHtmlToAnnotatedString
 import com.don.preface.ui.theme.BookishTheme
+import com.don.preface.ui.theme.RoundedCornerShapeLarge
 import com.don.preface.ui.theme.RoundedCornerShapeMedium
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -97,10 +100,12 @@ fun BookDetailsScreen(
     modifier: Modifier = Modifier,
     bookId: String,
     onSearchAuthor: (String) -> Unit,
-    bookState: BookState,
+    bookState: StateFlow<BookState>, // Accept StateFlow here
     bookDetailsViewModel: BookDetailsViewModel,
     onBackPressed: () -> Unit
 ){
+    val currentBookState by bookState.collectAsState()
+
     LaunchedEffect(key1 = bookId) {
         bookDetailsViewModel.getBookDetails(bookId)
     }
@@ -143,19 +148,19 @@ fun BookDetailsScreen(
                 .fillMaxSize(),
             contentAlignment = Alignment.TopCenter,
         ) {
-            when (bookState) {
+            when (currentBookState) {
                 is BookState.Success -> {
 
                     BookDetailsContent(
                         modifier = modifier.align(Alignment.TopCenter),
-                        book = bookState.data,
+                        book = (currentBookState as BookState.Success).data,
                         onSearchAuthor = onSearchAuthor,
                     )
                 }
 
                 is BookState.Error -> {
                     DetailsErrorScreen(
-                        text = bookState.message,
+                        text = (currentBookState as BookState.Error).message,
                         onRefresh = { bookDetailsViewModel.getBookDetails(bookId) }
 
                     )
@@ -191,6 +196,8 @@ fun BookDetailsScreen(
 fun BookDetailsContent(
     modifier: Modifier = Modifier,
     book: VolumeData,
+    lowestImageUrlFetcher: ImageUrlFetcher = lowestAvailableImageUrlFetcher, // Default to highest
+    highestImageUrlFetcher: ImageUrlFetcher = highestAvailableImageUrlFetcher, // Default to highest
     onSearchAuthor: (String) -> Unit
 ) {
     val showPreview = remember{ mutableStateOf(false) }
@@ -198,7 +205,7 @@ fun BookDetailsContent(
     val colorPalette = remember { mutableStateOf(ColorPallet()) } // Initialize ColorPalette
     var contentColorErrorState by remember { mutableStateOf<String?>(null) }
     var contentContainerErrorState by remember { mutableStateOf<String?>(null) }
-    var lowestUrl = getLowestAvailableImageUrl(book.volumeInfo.imageLinks)
+    var lowestUrl = lowestImageUrlFetcher.fetchImageUrl(book.volumeInfo.imageLinks)
     lowestUrl = lowestUrl?.replace("http://", "https://")
 
 
@@ -206,16 +213,15 @@ fun BookDetailsContent(
     var isGradientVisible by remember { mutableStateOf(false) }
 
 
-    val tabs = listOf("About", "Get book")
-    var selectedTabIndex by remember { mutableStateOf(0) }
+    val tabs = listOf("About", "Get book", "Publish details")
 
     var highestImageUrl = ""
     if (book.volumeInfo.imageLinks != null) {
-        highestImageUrl = getHighestAvailableImageUrl(book.volumeInfo.imageLinks).toString()
-        highestImageUrl = highestImageUrl.replace("http://", "https://").toString()
+        highestImageUrl = highestImageUrlFetcher.fetchImageUrl(book.volumeInfo.imageLinks).toString()
+        highestImageUrl = highestImageUrl.replace("http://", "https://")
 
     }
-    LaunchedEffect(lowestUrl) { // Assuming imageUrl is the URL for the book's image
+    LaunchedEffect(lowestUrl) {
         try {
             colorPalette.value = extractColorPalette(lowestUrl)
             contentColorErrorState = null // Reset error state on success
@@ -239,71 +245,9 @@ fun BookDetailsContent(
     )
 
 
-    val tertiaryContentColor = when {
-        contentContainerErrorState != null -> MaterialTheme.colorScheme.onTertiaryContainer // Fallback color
-        // Default state if colorPalette is null
-        isSystemInDarkTheme() -> {
-            val dominantColor = colorPalette.value.dominantColor
-            val lightVibrantColor = colorPalette.value.lightVibrantColor
+    val tertiaryContentColor = getTertiaryContentColor(colorPalette.value, contentContainerErrorState)
 
-            if (lightVibrantColor != Color.Transparent) {
-                lightVibrantColor
-            } else if (dominantColor != Color.Transparent) {
-                if (dominantColor.luminance() < 0.5) {
-                    MaterialTheme.colorScheme.onTertiaryContainer // Use a contrasting color if too dark
-                } else {
-                    dominantColor // Use the dominant color if it's sufficiently dark
-                }
-            } else {
-                MaterialTheme.colorScheme.onTertiaryContainer // Fallback color
-            }
-        }
-        else -> { // Light theme
-            val dominantColor = colorPalette.value.dominantColor
-            val darkVibrantColor = colorPalette.value.darkVibrantColor
-
-            if (darkVibrantColor != Color.Transparent) {
-                darkVibrantColor
-            } else if (dominantColor != Color.Transparent) {
-                if (dominantColor.luminance() > 0.5) {
-                    MaterialTheme.colorScheme.onTertiaryContainer // Use a contrasting color if too light
-                } else {
-                    dominantColor // Use the dominant color if it's sufficiently light
-                }
-            } else {
-                MaterialTheme.colorScheme.onTertiaryContainer // Fallback color
-            }
-        }
-    }
-
-    val tertiaryContainerColor = when {
-        contentContainerErrorState != null -> MaterialTheme.colorScheme.tertiaryContainer // Fallback color
-        // Default state if colorPalette is null
-        isSystemInDarkTheme() -> {
-            val dominantColor = colorPalette.value.dominantColor
-            val lightMutedColor = colorPalette.value.lightMutedColor
-
-            if (lightMutedColor != Color.Transparent) {
-                lightMutedColor
-            } else if (dominantColor != Color.Transparent) {
-                dominantColor
-            } else {
-                MaterialTheme.colorScheme.tertiaryContainer // Fallback color
-            }
-        }
-        else -> { // Light theme
-            val dominantColor = colorPalette.value.dominantColor
-            val darkMutedColor = colorPalette.value.darkMutedColor
-
-            if (darkMutedColor != Color.Transparent) {
-                darkMutedColor
-            } else if (dominantColor != Color.Transparent) {
-                dominantColor
-            } else {
-                MaterialTheme.colorScheme.tertiaryContainer // Fallback color
-            }
-        }
-    }
+    val tertiaryContainerColor = getTertiaryContainerColor(colorPalette.value, contentContainerErrorState)
 
     val scrollState = rememberScrollState()
 
@@ -354,7 +298,7 @@ fun BookDetailsContent(
                 containerColor = Color.Transparent,
                 contentColor = tertiaryContentColor,
                 indicator = { tabPositions ->
-                    TabRowDefaults.Indicator(
+                    SecondaryIndicator(
                         modifier = Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
                         color = tertiaryContainerColor // Set your preferred color here
                     )
@@ -373,7 +317,7 @@ fun BookDetailsContent(
                 }
             }
 
-            // Swipeable pager content for each tab
+            // Swipe-able pager content for each tab
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier.fillMaxWidth()
@@ -387,17 +331,25 @@ fun BookDetailsContent(
                         book = book,
                         modifier = Modifier.fillMaxSize()
                     )
+                    2 -> PublishDetails(
+                        book = book,
+                    )
                 }
             }
         }
 
 
-        // Blurry background overlay
         if (showPreview.value) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(MaterialTheme.colorScheme.scrim.copy(alpha = 0.8f)) // Dark overlay
+                    .graphicsLayer {
+                        alpha = 0.5f // Adjust transparency to enhance blur effect
+                        shadowElevation = 8.dp.toPx() // Simulates depth for blur effect
+                        shape = RoundedCornerShape(0) // Apply shape for additional control
+                        clip = true // Required for proper blur clipping
+                    }
+                    .background(Color.Black.copy(alpha = 0.6f)) // Semi-transparent overlay
             )
 
             // Fullscreen Book Cover Preview
@@ -413,8 +365,6 @@ fun BookDetailsContent(
                         .fillMaxSize()
                         .scale(1f)
                         .graphicsLayer {
-                            // Apply blur effect (if you have a custom blur effect implemented)
-                            // Example placeholder for blur effect
                             this.alpha = 1f // Keep the preview visible
                         }
                 )
@@ -434,14 +384,39 @@ fun AcquireVolume(
     val context = LocalContext.current
     val volumeName = book.volumeInfo.title
     val amazonSearchUrl = "https://www.amazon.com/s?k=$volumeName&i=stripbooks"
+    val somanamiUrl = "https://www.somanami.co.ke/search-results?q=$volumeName"
+    val prestigeUrl = "https://prestigebookshop.com/?s=$volumeName&post_type=product"
 
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier
+        modifier = modifier
             .padding(8.dp)
             .fillMaxSize()
     ) {
-        AcquireFormat(
+
+        AcquireBookItem(
+            image = R.drawable.somanamilogo,
+            contentDescription = "Soma nami",
+            text = "Search for \"${book.volumeInfo.title}\" in Soma nami",
+            onClick = {
+                search(
+                    url = somanamiUrl,
+                    context = context
+                )
+            }
+        )
+        AcquireBookItem(
+            image = R.drawable.prestigelogo,
+            contentDescription = "Prestige bookstore",
+            text = "Search for \"${book.volumeInfo.title}\" in Prestige",
+            onClick = {
+                search(
+                    url = prestigeUrl,
+                    context = context
+                )
+            }
+        )
+        AcquireBookItem(
             image = R.drawable.amazon_buy_logo,
             contentDescription = "Amazon",
             text = "Search for \"${book.volumeInfo.title}\" in Amazon",
@@ -457,7 +432,7 @@ fun AcquireVolume(
 }
 
 @Composable
-fun AcquireFormat(
+fun AcquireBookItem(
     modifier: Modifier = Modifier,
     image : Int,
     contentDescription : String,
@@ -468,21 +443,26 @@ fun AcquireFormat(
         headlineContent = {
             Text(
                 text = contentDescription,
-                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Start,
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                 modifier = modifier.padding(8.dp)
             )
         },
         supportingContent = {
             Text(
                 text = text,
-                maxLines = 1,
+                textAlign = TextAlign.Start,
+                maxLines = 2,
             )
         },
         leadingContent = {
             Image(
                 painter = painterResource(id = image),
                 contentDescription = contentDescription,
-                modifier = modifier.size(40.dp)
+                contentScale = ContentScale.Crop,
+                modifier = modifier
+                    .size(40.dp)
+                    .clip(RoundedCornerShapeLarge)
             )
         },
         modifier = modifier
@@ -491,6 +471,67 @@ fun AcquireFormat(
     )
 }
 
+@Composable
+fun PublishDetails(
+    book: VolumeData,
+){
+    OutlinedCard(
+        modifier = Modifier
+            .padding(8.dp)
+            .fillMaxWidth(
+                fraction = 0.9f
+            ),
+        colors = CardDefaults.cardColors(
+            containerColor = Color.Transparent
+        )
+    ){
+        Column(
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.padding(8.dp)
+        ) {
+            // Publisher Information
+            book.volumeInfo.publisher.let {
+                Text(
+                    text = "Published by: $it",
+                )
+            }
+
+            // Industry Identifiers
+            book.volumeInfo.industryIdentifiers.forEach { identifier ->
+                Text(
+                    text = "${identifier.type}: ${identifier.identifier}",
+                )
+            }
+
+            // Pages
+            Text(
+                text = "Pages: ${book.volumeInfo.pageCount}",
+            )
+
+            // Language
+            Text(
+                text = "Language: ${book.volumeInfo.language}",
+            )
+
+            // Maturity Ratings
+            Text(
+                text = "Maturity Ratings: ${book.volumeInfo.maturityRating}",
+            )
+
+            // Categories
+            book.volumeInfo.categories.let { categories ->
+                val processedCategories = categories.flatMap { it.split("/") }.toSet().toList()
+
+                Text(text = "Categories:")
+                Text(
+                    text = processedCategories.joinToString(", "),
+                    modifier = Modifier.padding(start = 16.dp) // Indent the categories
+                )
+            }
+        }
+
+    }
+}
 
 @Composable
 fun AboutVolume(
@@ -502,73 +543,10 @@ fun AboutVolume(
         modifier = Modifier
             .padding(8.dp)
     ) {
-        Text(
-            text = "About this edition",
-            style = MaterialTheme.typography.titleLarge,
-        )
-
         DescriptionColumn(
-            description = book.volumeInfo.description ?: "",
-            textColor = textColor
+            description = book.volumeInfo.description,
+            textColor = textColor,
         )
-
-        OutlinedCard(
-            modifier = Modifier
-                .padding(8.dp)
-                .fillMaxWidth(
-                    fraction = 0.9f
-                ),
-            colors = CardDefaults.cardColors(
-                containerColor = Color.Transparent
-            )
-        ){
-            Column(
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.padding(8.dp)
-            ) {
-                // Publisher Information
-                book.volumeInfo.publisher?.let {
-                    Text(
-                        text = "Published by: $it",
-                    )
-                }
-
-                // Industry Identifiers
-                book.volumeInfo.industryIdentifiers?.forEach { identifier ->
-                    Text(
-                        text = "${identifier.type}: ${identifier.identifier}",
-                    )
-                }
-
-                // Pages
-                Text(
-                    text = "Pages: ${book.volumeInfo.pageCount}",
-                )
-
-                // Language
-                Text(
-                    text = "Language: ${book.volumeInfo.language}",
-                )
-
-                // Maturity Ratings
-                Text(
-                    text = "Maturity Ratings: ${book.volumeInfo.maturityRating}",
-                )
-
-                // Categories
-                book.volumeInfo.categories?.let { categories ->
-                    val processedCategories = categories.flatMap { it.split("/") }.toSet().toList()
-
-                    Text(text = "Categories:")
-                    Text(
-                        text = processedCategories.joinToString(", "),
-                        modifier = Modifier.padding(start = 16.dp) // Indent the categories
-                    )
-                }
-            }
-
-        }
-
     }
 }
 
@@ -598,6 +576,7 @@ fun DescriptionColumn(
             Text(
                 text = "Show More",
                 color = textColor,
+                style = TextStyle(fontWeight = FontWeight.Bold),
                 modifier = Modifier
                     .clickable { isExpanded = true }
                     .padding(top = 4.dp)
@@ -606,6 +585,7 @@ fun DescriptionColumn(
             Text(
                 text = "Show Less",
                 color = textColor,
+                style = TextStyle(fontWeight = FontWeight.Bold),
                 modifier = Modifier
                     .clickable { isExpanded = false }
                     .padding(top = 4.dp)
@@ -633,8 +613,8 @@ fun TitleHeader(
             book = book,
             onImageClick = onImageClick,
             modifier = Modifier
-                .size(width = 240.dp, height = 300.dp)
-                .padding(8.dp)
+                .size(400.dp)
+                .padding(16.dp)
         )
 
         // Display the book title
@@ -646,7 +626,7 @@ fun TitleHeader(
         )
 
         // Display the book authors, if available
-        book.volumeInfo.authors?.let { authors ->
+        book.volumeInfo.authors.let { authors ->
             Row(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
@@ -671,7 +651,7 @@ fun TitleHeader(
         }
 
         // Display the book published date, if available
-        book.volumeInfo.publishedDate?.let { date ->
+        book.volumeInfo.publishedDate.let { date ->
             Text(
                 text = date,
                 style = MaterialTheme.typography.bodyMedium,
@@ -685,13 +665,14 @@ fun TitleHeader(
 
 @Composable
 fun BookImage(
+    modifier: Modifier = Modifier, // Allow external modification of size
     onImageClick: () -> Unit,
     book: VolumeData,
-    modifier: Modifier = Modifier // Allow external modification of size
+    imageUrlFetcher: ImageUrlFetcher = highestAvailableImageUrlFetcher, // Default to highest
 ) {
     // Display the book cover image
     if (book.volumeInfo.imageLinks != null) {
-        var highestImageUrl = getHighestAvailableImageUrl(book.volumeInfo.imageLinks)
+        var highestImageUrl = imageUrlFetcher.fetchImageUrl(book.volumeInfo.imageLinks)
         highestImageUrl = highestImageUrl?.replace("http://", "https://")
 
         var dominantColor by remember { mutableStateOf(Color.Transparent) }
@@ -852,11 +833,70 @@ fun DetailsErrorScreen(
     }
 }
 
-fun getPurchaseLink(volumeData: VolumeData): String? {
-    // Check if the book is for sale or available for purchase
-    return when (volumeData.saleInfo.saleability) {
-        "FOR_SALE", "FOR_PREORDER", "FREE" -> volumeData.volumeInfo.infoLink
-        else -> null // No purchase link available
+@Composable
+fun getTertiaryContainerColor(
+    colorPalette: ColorPallet,
+    contentContainerErrorState: String?,
+    isDarkTheme: Boolean = isSystemInDarkTheme()
+): Color {
+    return when {
+        contentContainerErrorState != null -> MaterialTheme.colorScheme.tertiaryContainer
+        isDarkTheme -> {
+            val dominantColor = colorPalette.dominantColor
+            val lightMutedColor = colorPalette.lightMutedColor
+
+            when {
+                lightMutedColor != Color.Transparent -> lightMutedColor
+                dominantColor != Color.Transparent -> dominantColor
+                else -> MaterialTheme.colorScheme.tertiaryContainer
+            }
+        }
+        else -> { // Light theme
+            val dominantColor = colorPalette.dominantColor
+            val darkMutedColor = colorPalette.darkMutedColor
+
+            when {
+                darkMutedColor != Color.Transparent -> darkMutedColor
+                dominantColor != Color.Transparent -> dominantColor
+                else -> MaterialTheme.colorScheme.tertiaryContainer
+            }
+        }
+    }
+}
+
+
+@Composable
+fun getTertiaryContentColor(
+    colorPalette: ColorPallet,
+    contentContainerErrorState: String?,
+    isDarkTheme: Boolean = isSystemInDarkTheme()
+): Color {
+    return when {
+        contentContainerErrorState != null -> MaterialTheme.colorScheme.onTertiaryContainer
+        isDarkTheme -> {
+            val dominantColor = colorPalette.dominantColor
+            val lightVibrantColor = colorPalette.lightVibrantColor
+
+            when {
+                lightVibrantColor != Color.Transparent -> lightVibrantColor
+                dominantColor != Color.Transparent && dominantColor.luminance() < 0.5 ->
+                    MaterialTheme.colorScheme.onTertiaryContainer
+                dominantColor != Color.Transparent -> dominantColor
+                else -> MaterialTheme.colorScheme.onTertiaryContainer
+            }
+        }
+        else -> { // Light theme
+            val dominantColor = colorPalette.dominantColor
+            val darkVibrantColor = colorPalette.darkVibrantColor
+
+            when {
+                darkVibrantColor != Color.Transparent -> darkVibrantColor
+                dominantColor != Color.Transparent && dominantColor.luminance() > 0.5 ->
+                    MaterialTheme.colorScheme.onTertiaryContainer
+                dominantColor != Color.Transparent -> dominantColor
+                else -> MaterialTheme.colorScheme.onTertiaryContainer
+            }
+        }
     }
 }
 
@@ -866,41 +906,54 @@ fun search(url : String, context: Context) {
     ContextCompat.startActivity(context, intent, null)
 }
 
-fun getHighestAvailableImageUrl(imageLinks: ImageLinks?): String? {
-    return imageLinks?.extraLarge
-        ?: imageLinks?.large
-        ?: imageLinks?.medium
-        ?: imageLinks?.small
-        ?: imageLinks?.thumbnail
-        ?: imageLinks?.smallThumbnail
+val highestAvailableImageUrlFetcher = ImageUrlFetcher { imageLinks ->
+    imageLinks?.extraLarge.takeIf { !it.isNullOrEmpty() }
+        ?: imageLinks?.large.takeIf { !it.isNullOrEmpty() }
+        ?: imageLinks?.medium.takeIf { !it.isNullOrEmpty() }
+        ?: imageLinks?.small.takeIf { !it.isNullOrEmpty() }
+        ?: imageLinks?.thumbnail.takeIf { !it.isNullOrEmpty() }
+        ?: imageLinks?.smallThumbnail.takeIf { !it.isNullOrEmpty() }
 }
 
-fun getLowestAvailableImageUrl(imageLinks: ImageLinks?): String? {
-    return imageLinks?.smallThumbnail
-        ?: imageLinks?.thumbnail
-        ?: imageLinks?.medium
-        ?: imageLinks?.small
-        ?: imageLinks?.large
+val lowestAvailableImageUrlFetcher = ImageUrlFetcher { imageLinks ->
+    imageLinks?.smallThumbnail.takeIf { !it.isNullOrEmpty() }
+        ?: imageLinks?.thumbnail.takeIf { !it.isNullOrEmpty() }
+        ?: imageLinks?.medium.takeIf { !it.isNullOrEmpty() }
+        ?: imageLinks?.small.takeIf { !it.isNullOrEmpty() }
+        ?: imageLinks?.large.takeIf { !it.isNullOrEmpty() }
 }
+
 
 @Preview
 @Composable
 fun AcquirablePreview(){
     BookishTheme{
         Column {
-            AcquireFormat(
+            AcquireBookItem(
                 image = R.drawable.undraw_empty_cart_co35,
                 contentDescription = "Buy book",
                 text = "https://pixabay.com/images/search/icon%20pdf/",
 
             )
-            AcquireFormat(
+            AcquireBookItem(
                 image = R.drawable.amazon,
                 contentDescription = "Buy book",
                 text = "https://pixabay.com/images/search/icon%20pdf/",
 
             )
-            AcquireFormat(
+            AcquireBookItem(
+                image = R.drawable.somanamilogo,
+                contentDescription = "Buy book",
+                text = "https://pixabay.com/images/search/icon%20pdf/",
+
+            )
+            AcquireBookItem(
+                image = R.drawable.prestigelogo,
+                contentDescription = "Buy book",
+                text = "https://pixabay.com/images/search/icon%20pdf/",
+
+            )
+            AcquireBookItem(
                 image = R.drawable.amazon_buy_logo,
                 contentDescription = "Buy book",
                 text = "https://pixabay.com/images/search/icon%20pdf/",

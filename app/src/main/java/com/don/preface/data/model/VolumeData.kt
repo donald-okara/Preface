@@ -16,26 +16,26 @@ data class VolumeData(
 @Serializable
 data class VolumeInfoDet(
     val title: String,
-    val authors: List<String>?,
-    val publisher: String?,
-    val publishedDate: String?,
-    val description: String?,
-    val industryIdentifiers: List<IndustryIdentifier>?,
+    val authors: List<String> = emptyList(),
+    val publisher: String = "",
+    val publishedDate: String = "",
+    val description: String = "",
+    val industryIdentifiers: List<IndustryIdentifier> = emptyList(),
     val readingModes: ReadingModes?,
-    val pageCount: Int?,
-    val printedPageCount: Int?,
+    val pageCount: Int = 0,
+    val printedPageCount: Int = 0,
     val dimensions: Dimensions?,
-    val printType: String?,
-    val categories: List<String>?,
-    val maturityRating: String?,
-    val allowAnonLogging: Boolean?,
-    val contentVersion: String?,
+    val printType: String = "",
+    val categories: List<String> = emptyList(),
+    val maturityRating: String = "",
+    val allowAnonLogging: Boolean = false,
+    val contentVersion: String = "",
     val panelizationSummary: PanelizationSummary?,
     val imageLinks: ImageLinks?,
-    val language: String?,
-    val previewLink: String?,
-    val infoLink: String?,
-    val canonicalVolumeLink: String?
+    val language: String = "",
+    val previewLink: String = "",
+    val infoLink: String = "",
+    val canonicalVolumeLink: String = ""
 )
 
 @Serializable
@@ -51,8 +51,8 @@ data class ReadingModes(
 )
 @Serializable
 data class Dimensions(
-    val height: String?,
-    val width: String?,
+    val height: String = "",
+    val width: String = "",
     val thickness: String?
 )
 @Serializable
@@ -76,7 +76,7 @@ data class AccessInfo(
     val textToSpeechPermission: String,
     val epub: Epub,
     val pdf: Pdf,
-    val webReaderLink: String?,
+    val webReaderLink: String = "",
     val accessViewStatus: String,
     val quoteSharingAllowed: Boolean
 )

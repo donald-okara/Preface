@@ -64,6 +64,8 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icons.extended)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+
     implementation("androidx.compose.foundation:foundation:1.6.0")
 
     implementation("com.google.android.gms:play-services-auth:20.2.0")
@@ -76,8 +78,7 @@ dependencies {
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore.ktx)
     kapt("com.google.dagger:hilt-android-compiler:2.51")
-    implementation("androidx.hilt:hilt-navigation-compose:1.1.0") // Replace with the latest versionimplementation("androidx.hilt:hilt-lifecycle-viewmodel:1.1.0") // Replace with the latest version
-    kapt("androidx.hilt:hilt-compiler:1.1.0") // Or use ksp
+    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
 
     // Retrofit with Kotlin serialization Converter
     implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")

@@ -1,5 +1,6 @@
 package com.don.preface.presentation.search
 
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -8,6 +9,9 @@ import androidx.lifecycle.viewModelScope
 import com.don.preface.data.model.BookItem
 import com.don.preface.data.repositories.BooksRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.random.Random
@@ -17,8 +21,8 @@ class SearchViewModel @Inject constructor(
     private val repository: BooksRepository
 ) : ViewModel() {
 
-    var searchUiState: SearchState by mutableStateOf(SearchState.Empty)
-        private set
+    private var _searchUiState = MutableStateFlow<SearchState>(SearchState.Empty)
+    val searchUiState: StateFlow<SearchState> = _searchUiState
 
     var searchQuery by mutableStateOf("")
         private set
@@ -35,7 +39,7 @@ class SearchViewModel @Inject constructor(
 
     fun clearSearch() {
         searchQuery = ""
-        searchUiState = SearchState.Empty
+        _searchUiState.update { SearchState.Empty }
     }
 
     fun onSearchQueryChange(query: String) {
@@ -65,17 +69,17 @@ class SearchViewModel @Inject constructor(
     }
 
     fun searchBooks(query: String) {
-        searchUiState = SearchState.Loading
+        _searchUiState.update { SearchState.Loading }
         viewModelScope.launch {
             try {
                 val response = repository.searchBooks(query)
                 if (response.isSuccessful) {
-                    searchUiState = SearchState.Success(response.body()?.items ?: emptyList())
+                    _searchUiState.update{ SearchState.Success(response.body()?.items ?: emptyList()) }
                 } else {
-                    searchUiState = SearchState.Error("Failed with status: ${response.code()}")
+                    _searchUiState.update{ SearchState.Error("Failed with status: ${response.code()}") }
                 }
             } catch (e: Exception) {
-                searchUiState = SearchState.Error("An error occurred. Check your internet and try again")
+                _searchUiState.update{ SearchState.Error("An error occurred. Check your internet and try again") }
             }
         }
     }

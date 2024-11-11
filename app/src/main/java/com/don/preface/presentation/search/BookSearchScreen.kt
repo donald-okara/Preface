@@ -36,6 +36,8 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -63,15 +65,18 @@ import com.don.preface.ui.theme.RoundedCornerShapeExtraLarge
 import com.don.preface.ui.theme.RoundedCornerShapeLarge
 import com.don.preface.ui.theme.RoundedCornerShapeMedium
 import com.don.preface.ui.theme.RoundedCornerShapeSmall
+import kotlinx.coroutines.flow.StateFlow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookSearchScreen(
     modifier: Modifier = Modifier,
-    searchState: SearchState,
+    searchState: StateFlow<SearchState>,
     viewModel: SearchViewModel,
     onNavigateToBookItem: (String) -> Unit
 ) {
+
+    val currentBookState by searchState.collectAsState()
 
     LaunchedEffect(searchState) {
         Log.d("SearchState", "searchState: $searchState")
@@ -110,13 +115,13 @@ fun BookSearchScreen(
 
             Spacer(modifier = modifier.height(16.dp))
 
-            when (searchState) {
+            when (currentBookState) {
                 is SearchState.Success -> {
-                    if (searchState.data.isEmpty()) {
+                    if ((currentBookState as SearchState.Success).data.isEmpty()) {
                         Text(text = "No books found. Try searching for something else.")
                     }else{
                         BooksGridScreen(
-                            books = searchState.data,
+                            books = (currentBookState as SearchState.Success).data,
                             onNavigateToBookItem = onNavigateToBookItem
                         )
                     }
@@ -125,7 +130,7 @@ fun BookSearchScreen(
                 }
                 is SearchState.Error ->{
                     SearchErrorScreen(
-                        text = searchState.message,
+                        text = (currentBookState as SearchState.Error).message,
                         onRefresh = viewModel::onSearch
 
                     )
@@ -160,14 +165,14 @@ fun SearchErrorScreen(
         Text(
             text = "Error",
             style = MaterialTheme.typography.headlineSmall, // Use appropriate text style
-            modifier = Modifier.padding(bottom = 8.dp) // Space below the title
+            modifier = modifier.padding(bottom = 8.dp) // Space below the title
         )
 
         // Display the book authors, if available
         Text(
             text = text, // Join authors with a comma
             style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onTertiaryContainer), // Use appropriate text style
-            modifier = Modifier
+            modifier = modifier
                 .padding(bottom = 16.dp)
                 .clickable {
                     onRefresh()
@@ -190,14 +195,14 @@ fun SearchLoadingScreen(
         Text(
             text = "Loading",
             style = MaterialTheme.typography.headlineSmall, // Use appropriate text style
-            modifier = Modifier.padding(bottom = 8.dp) // Space below the title
+            modifier = modifier.padding(bottom = 8.dp) // Space below the title
         )
 
         // Display the book authors, if available
         Text(
             text = text, // Join authors with a comma
             style = MaterialTheme.typography.bodyLarge, // Use appropriate text style
-            modifier = Modifier
+            modifier = modifier
                 .padding(bottom = 16.dp)
         )
 
@@ -307,13 +312,11 @@ fun BooksGridScreen(
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ){
         items(items = books, key = { book -> book.id }) { book ->
-            if (book.volumeInfo.title != null) {
-                BookItem(
-                    book = book,
-                    modifier = Modifier.padding(4.dp),
-                    onNavigateToBookItem = onNavigateToBookItem
-                )
-            }
+            BookItem(
+                book = book,
+                modifier = Modifier.padding(4.dp),
+                onNavigateToBookItem = onNavigateToBookItem
+            )
         }
     }
 }
@@ -339,7 +342,7 @@ fun BookItem(
             if (book.volumeInfo.imageLinks?.thumbnail != null) {
                 AsyncImage(
                     model = ImageRequest.Builder(context = LocalContext.current)
-                        .data(book.volumeInfo.imageLinks.thumbnail?.replace("http://", "https://")) // Replacing "http" with "https"
+                        .data(book.volumeInfo.imageLinks.thumbnail.replace("http://", "https://")) // Replacing "http" with "https"
                         .crossfade(true)
                         .build(),
                     contentDescription = stringResource(R.string.book_cover),
@@ -446,4 +449,3 @@ fun LoadingScreenPreview(){
     }
 }
 
-//Thursdays Jackson Biko

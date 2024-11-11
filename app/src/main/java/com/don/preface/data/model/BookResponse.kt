@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 data class BookResponse(
     val kind: String,
     val totalItems: Int,
-    val items: List<BookItem>?
+    val items: List<BookItem> = emptyList()
 )
 
 @Serializable
@@ -18,20 +18,20 @@ data class BookItem(
 @Serializable
 data class VolumeInfo(
     val title: String,
-    val authors: List<String>?,
-    val publisher: String?,
-    val publishedDate: String?,
-    val description: String?,
+    val authors: List<String> = emptyList(),
+    val publisher: String = "",
+    val publishedDate: String = "",
+    val description: String = "",
     val imageLinks: ImageLinks?,
-    val previewLink: String?
+    val previewLink: String = ""
 )
 
 @Serializable
 data class ImageLinks(
-    val smallThumbnail: String?,
-    val thumbnail: String?,
-    val small: String?,
-    val medium: String?,
-    val large: String?,
-    val extraLarge: String?
+    val smallThumbnail: String = "",
+    val thumbnail: String = "",
+    val small: String = "",
+    val medium: String = "",
+    val large: String = "",
+    val extraLarge: String = ""
 )

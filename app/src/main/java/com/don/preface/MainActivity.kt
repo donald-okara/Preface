@@ -41,8 +41,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-
-
             BookishTheme {
                 val searchViewModel = hiltViewModel<SearchViewModel>()
                 val bookDetailsViewModel = hiltViewModel<BookDetailsViewModel>()
