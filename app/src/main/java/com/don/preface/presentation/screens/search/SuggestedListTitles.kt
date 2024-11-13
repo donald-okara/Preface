@@ -1,0 +1,82 @@
+package com.don.preface.presentation.screens.search
+
+val suggestedBookTitles = listOf(
+    "The Great Gatsby by F. Scott Fitzgerald",
+    "1984 by George Orwell",
+    "To Kill a Mockingbird by Harper Lee",
+    "Pride and Prejudice by Jane Austen",
+    "The Catcher in the Rye by J.D. Salinger",
+    "Dune by Frank Herbert",
+    "Ender's Game by Orson Scott Card",
+    "The Hobbit by J.R.R. Tolkien",
+    "Neuromancer by William Gibson",
+    "A Song of Ice and Fire (Series) by George R.R. Martin",
+    "Sapiens: A Brief History of Humankind by Yuval Noah Harari",
+    "Educated by Tara Westover",
+    "Becoming by Michelle Obama",
+    "The Immortal Life of Henrietta Lacks by Rebecca Skloot",
+    "Born a Crime by Trevor Noah",
+    "Gone Girl by Gillian Flynn",
+    "The Girl with the Dragon Tattoo by Stieg Larsson",
+    "The Da Vinci Code by Dan Brown",
+    "Big Little Lies by Liane Moriarty",
+    "The Silent Patient by Alex Michaelides",
+    "The Fault in Our Stars by John Green",
+    "Harry Potter and the Sorcerer's Stone by J.K. Rowling",
+    "The Hunger Games by Suzanne Collins",
+    "Divergent by Veronica Roth",
+    "The Perks of Being a Wallflower by Stephen Chbosky",
+    "The Book Thief by Markus Zusak",
+    "All the Light We Cannot See by Anthony Doerr",
+    "The Nightingale by Kristin Hannah",
+    "The Tattooist of Auschwitz by Heather Morris",
+    "The Help by Kathryn Stockett",
+    "The Power of Habit by Charles Duhigg",
+    "Atomic Habits by James Clear",
+
+    // African Books
+    "Things Fall Apart by Chinua Achebe",
+    "Half of a Yellow Sun by Chimamanda Ngozi Adichie",
+    "The No. 1 Ladies' Detective Agency by Alexander McCall Smith",
+    "Americanah by Chimamanda Ngozi Adichie",
+    "Homegoing by Yaa Gyasi",
+    "The Bone Season by Samantha Shannon (Series)",
+    "Disgrace by J.M. Coetzee",
+    "The Fishermen by Chigozie Obioma",
+    "We Need New Names by NoViolet Bulawayo",
+    "The Secret Lives of Baba Segi's Wives by Lola Shoneyin",
+    "Stay with Me by Ayobami Adebayo",
+    "A Man of the People by Chinua Achebe",
+    "The Grass Is Singing by Doris Lessing",
+    "Born a Crime: Stories from a South African Childhood by Trevor Noah",
+    "The Girl Who Smiled Beads by Clemantine Wamariya",
+    "The Old Drift by Namwali Serpell",
+
+    // Additional African Titles
+    "The Joys of Womanhood by Buchi Emecheta",
+    "So Long a Letter by Mariama Bâ",
+    "The Shadow of the Sun by Ryszard Kapuściński",
+    "The Book of Chameleons by José Eduardo Agualusa",
+    "The Black Prism by Brent Weeks (Series)",//- Set in a fictional African-inspired world
+    "My Name Is Not Friday by Jon Walter",
+    "The Secret History of Las Vegas by Chris Abani",
+    "Kintu by Jennifer Nansubuga Makumbi",
+    "Black Mamba Boy by Nadifa Mohamed",
+    "The Death of the Messenger by A. Igoni Barrett",
+    "Children of Blood and Bone by Tomi Adeyemi",
+    "The Girl with the Louding Voice by Abi Daré",
+    "The Mango Bride by Marivi Soliven",
+    "The Return by Sonia Dada",
+    "A Spool of Blue Thread by Anne Tyler" //- Though not exclusively African, includes African narratives
+)
+
+
+val searchMessages = listOf(
+    "Hold on, just checking the dusty shelves for that one!",
+    "One sec, I’m squeezing between the shelves to find it.",
+    "Flipping through endless pages... I’ll find it!",
+    "Sending the librarians on a top-secret mission!",
+    "Sweeping through the fantasy section... just in case.",
+    "Checking under every book pile for this one!",
+    "Dodging bookworms as I search the archives!"
+)

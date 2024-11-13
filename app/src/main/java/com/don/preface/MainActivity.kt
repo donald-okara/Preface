@@ -27,10 +27,10 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.don.preface.presentation.book_details.BookDetailsScreen
-import com.don.preface.presentation.book_details.BookDetailsViewModel
-import com.don.preface.presentation.search.BookSearchScreen
-import com.don.preface.presentation.search.SearchViewModel
+import com.don.preface.presentation.screens.book_details.BookDetailsScreen
+import com.don.preface.presentation.screens.book_details.BookDetailsViewModel
+import com.don.preface.presentation.screens.search.BookSearchScreen
+import com.don.preface.presentation.screens.search.SearchViewModel
 import com.don.preface.ui.theme.BookishTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
