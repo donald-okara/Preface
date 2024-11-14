@@ -1,7 +1,7 @@
 *.iml
 .gradle
-app/client_secret.json
 app/google-services.json
+app/client_secret.json
 app/src/main/res/values/secrets.xml
 /local.properties
 /.idea/caches

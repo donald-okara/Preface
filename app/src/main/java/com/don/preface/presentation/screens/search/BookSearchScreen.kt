@@ -58,6 +58,8 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.don.preface.R
 import com.don.preface.data.model.BookItem
+import com.don.preface.presentation.screens.search.components.BookSearchBar
+import com.don.preface.presentation.screens.search.components.BooksGridScreen
 import com.don.preface.ui.theme.BookishTheme
 import com.don.preface.ui.theme.RoundedCornerShapeCircle
 import com.don.preface.ui.theme.RoundedCornerShapeExtraExtraLarge
@@ -209,235 +211,7 @@ fun SearchLoadingScreen(
     }
 }
 
-@Composable
-fun BookSearchBar(
-    modifier: Modifier = Modifier,
-    bookSearch: String,
-    onBookSearchChange: (String) -> Unit,
-    suggestedBook: String,
-    isSearchPopulated: Boolean = false,
-    onClear: () -> Unit = {},
-    onShuffle: () -> Unit,
-    shape: RoundedCornerShape,
-    onSearch: () -> Unit,
-    maxCharacters: Int = 50 // Add a maxCharacters parameter
 
-){
-    val focusRequester = remember { FocusRequester() } // For controlling focus
-    val focusManager = LocalFocusManager.current // To clear focus and dismiss keyboard
-
-    OutlinedTextField(
-        value = bookSearch,
-        singleLine = true,
-        placeholder = {
-            Text(
-                stringResource(R.string.search_hint, suggestedBook),
-                maxLines = 1, // Placeholder will be on a single line
-                textAlign = TextAlign.Start
-            )
-        },
-        onValueChange = { newValue ->
-            if (newValue.length <= maxCharacters) {
-                onBookSearchChange(newValue) // Only update the state if the limit isn't exceeded
-            }
-        },
-        keyboardOptions = KeyboardOptions.Default.copy(
-            imeAction = ImeAction.Search // Set the IME action to Search
-        ),
-        keyboardActions = KeyboardActions(
-            onSearch = {
-                onSearch() // Trigger search when the search action is performed
-                focusManager.clearFocus() // Clear focus on search
-            }
-        ),
-        trailingIcon = {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ){
-                IconButton(
-                    onClick = { onShuffle() }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Shuffle,
-                        contentDescription = stringResource(R.string.shuffle)
-                    )
-                }
-                IconButton(
-                    onClick = {
-                        onSearch()
-                        focusManager.clearFocus() // Clear focus when search is pressed
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Search,
-                        contentDescription = stringResource(R.string.search)
-                    )
-                }
-            }
-        },
-
-        shape = shape,
-        leadingIcon = {
-            IconButton(
-                onClick = {
-                    onClear()
-                },
-                enabled = isSearchPopulated
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Clear,
-                    contentDescription = stringResource(R.string.clear)
-                )
-            }
-        },
-        modifier = modifier
-            .fillMaxWidth()
-            .focusRequester(focusRequester) // Attach the focusRequester to the text field
-
-    )
-}
-
-@Composable
-fun BooksGridScreen(
-    books: List<BookItem>,
-    modifier: Modifier = Modifier,
-    onNavigateToBookItem: (String) -> Unit
-
-){
-    LazyVerticalGrid(
-        columns = GridCells.Adaptive(150.dp),
-        modifier = modifier.padding(4.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
-    ){
-        items(items = books, key = { book -> book.id }) { book ->
-            BookItem(
-                book = book,
-                modifier = Modifier.padding(4.dp),
-                onNavigateToBookItem = onNavigateToBookItem
-            )
-        }
-    }
-}
-
-@Composable
-fun BookItem(
-    modifier: Modifier = Modifier,
-    book : BookItem,
-    onNavigateToBookItem: (String) -> Unit
-) {
-    Card(
-        modifier = modifier
-            .padding(4.dp)
-            .aspectRatio(0.7f)
-            .fillMaxWidth()
-            .clickable {
-                onNavigateToBookItem(book.id)
-            },
-        shape = RoundedCornerShapeMedium,
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
-    ) {
-        Box {
-            if (book.volumeInfo.imageLinks?.thumbnail != null) {
-                AsyncImage(
-                    model = ImageRequest.Builder(context = LocalContext.current)
-                        .data(book.volumeInfo.imageLinks.thumbnail.replace("http://", "https://")) // Replacing "http" with "https"
-                        .crossfade(true)
-                        .build(),
-                    contentDescription = stringResource(R.string.book_cover),
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            } else {
-                // Show a placeholder image if thumbnail is null
-                Image(
-                    painter = painterResource(R.drawable.undraw_writer_q06d), // Add a placeholder drawable
-                    contentDescription = stringResource(R.string.book_cover),
-                    contentScale = ContentScale.Crop,
-                    modifier = Modifier.fillMaxWidth()
-                )
-            }
-
-            // Black overlay
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(color = Color.Black.copy(alpha = 0.3f)) // Semi-transparent black
-            )
-
-            Text(
-                text = book.volumeInfo.title, // Handle null title
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
-                color = Color.White, // White text color
-                modifier = Modifier
-                    .align(Alignment.BottomStart) // Align the text to the bottom start
-                    .padding(8.dp)
-            )
-        }
-    }
-}
-
-
-@Preview
-@Composable
-fun SearchScreenPreview(){
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ){
-        BookSearchBar(
-            bookSearch = "",
-            onBookSearchChange = {},
-            suggestedBook = "RoundedCornerShapeSmall",
-            onShuffle = {},
-            onSearch = {},
-            shape = RoundedCornerShapeSmall
-        )
-        BookSearchBar(
-            bookSearch = "",
-            onBookSearchChange = {},
-            suggestedBook = "RoundedCornerShapeMedium",
-            onShuffle = {},
-            onSearch = {},
-            shape = RoundedCornerShapeMedium
-        )
-        BookSearchBar(
-            bookSearch = "",
-            onBookSearchChange = {},
-            suggestedBook = "RoundedCornerShapeLarge",
-            onShuffle = {},
-            onSearch = {},
-            shape = RoundedCornerShapeLarge
-        )
-        BookSearchBar(
-            bookSearch = "",
-            onBookSearchChange = {},
-            suggestedBook = "RoundedCornerShapeExtraLarge",
-            onShuffle = {},
-            onSearch = {},
-            shape = RoundedCornerShapeExtraLarge
-        )
-        BookSearchBar(
-            bookSearch = "",
-            onBookSearchChange = {},
-            suggestedBook = "RoundedCornerShapeExtraExtraLarge",
-            onShuffle = {},
-            onSearch = {},
-            shape = RoundedCornerShapeExtraExtraLarge
-        )
-        BookSearchBar(
-            bookSearch = "",
-            onBookSearchChange = {},
-            suggestedBook = "RoundedCornerShapeCircle",
-            onShuffle = {},
-            onSearch = {},
-            shape = RoundedCornerShapeCircle
-        )
-    }
-}
 
 @Preview
 @Composable
@@ -445,6 +219,17 @@ fun LoadingScreenPreview(){
     BookishTheme {
         SearchLoadingScreen(
             text = "Loading some jokes for you"
+        )
+    }
+}
+
+@Preview
+@Composable
+fun ErrorScreenPreview(){
+    BookishTheme {
+        SearchErrorScreen(
+            onRefresh = {},
+            text = "Something went wrong"
         )
     }
 }
