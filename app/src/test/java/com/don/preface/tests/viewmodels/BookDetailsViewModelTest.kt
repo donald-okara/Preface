@@ -5,7 +5,7 @@ import com.don.preface.fake.data.FakeBookDetailsDataSource
 import com.don.preface.fake.repositories.FakeBookRepository
 import com.don.preface.presentation.screens.book_details.BookDetailsViewModel
 import com.don.preface.presentation.screens.book_details.BookState
-import com.don.preface.presentation.utils.logger.Logger
+import com.don.preface.domain.logger.Logger
 import com.don.preface.rules.TestDispatcherRule
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals

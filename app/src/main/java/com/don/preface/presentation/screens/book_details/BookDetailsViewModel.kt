@@ -7,7 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.don.preface.data.model.BookDetailsResponse
 import com.don.preface.data.repositories.BooksRepository
-import com.don.preface.presentation.utils.logger.Logger
+import com.don.preface.domain.logger.Logger
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

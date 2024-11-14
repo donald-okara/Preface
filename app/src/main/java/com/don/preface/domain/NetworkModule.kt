@@ -6,8 +6,8 @@ import com.don.preface.data.repositories.UserRepository
 import com.don.preface.data.repositoryImpl.BooksRepositoryImpl
 import com.don.preface.data.repositoryImpl.UserRepositoryImpl
 import com.don.preface.network.GoogleBooksApi
-import com.don.preface.presentation.utils.logger.Logger
-import com.don.preface.presentation.utils.logger.LoggerImpl
+import com.don.preface.domain.logger.Logger
+import com.don.preface.domain.logger.LoggerImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -66,7 +66,7 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun providesLogger(): Logger{
+    fun providesLogger(): Logger {
         return LoggerImpl()
     }
 
