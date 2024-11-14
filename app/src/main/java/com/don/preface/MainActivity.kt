@@ -21,6 +21,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -31,7 +32,7 @@ import com.don.preface.presentation.screens.book_details.BookDetailsScreen
 import com.don.preface.presentation.screens.book_details.BookDetailsViewModel
 import com.don.preface.presentation.screens.search.BookSearchScreen
 import com.don.preface.presentation.screens.search.SearchViewModel
-import com.don.preface.ui.theme.BookishTheme
+import com.don.preface.ui.theme.PrefaceTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.delay
 
@@ -41,7 +42,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            BookishTheme {
+            PrefaceTheme {
                 val searchViewModel = hiltViewModel<SearchViewModel>()
                 val bookDetailsViewModel = hiltViewModel<BookDetailsViewModel>()
 
@@ -53,13 +54,14 @@ class MainActivity : ComponentActivity() {
                         startDestination = BookishScreen.Splash.name
                     ) {
                         composable(BookishScreen.Splash.name) {
-                            BookishSplashScreen(
+                            PrefaceSplashScreen(
                                 onNavigateToMain = {
                                     navController.navigate(startDestination.name){
                                         // Clear splash screen from back stack
                                         popUpTo(BookishScreen.Splash.name) { inclusive = true }
                                     }
-                                }
+                                },
+                                modifier = Modifier.testTag("SplashScreen")
                             )
                         }
 
@@ -112,7 +114,7 @@ enum class BookishScreen {
 }
 
 @Composable
-fun BookishSplashScreen(
+fun PrefaceSplashScreen(
     modifier: Modifier = Modifier,
     onNavigateToMain : () -> Unit
 ) {
@@ -143,7 +145,7 @@ fun BookishSplashScreen(
     ){
         Image(
             painter = painterResource(id = R.drawable.splash_screen_2),
-            contentDescription = null,
+            contentDescription = "Splash Screen",
             modifier = modifier
                 .fillMaxSize()
                 .scale(scale.value)

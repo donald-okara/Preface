@@ -24,7 +24,7 @@ import androidx.compose.ui.unit.dp
 import com.don.preface.R
 import com.don.preface.data.model.BookDetailsResponse
 import com.don.preface.presentation.screens.book_details.search
-import com.don.preface.ui.theme.BookishTheme
+import com.don.preface.ui.theme.PrefaceTheme
 import com.don.preface.ui.theme.RoundedCornerShapeLarge
 
 @Composable
@@ -125,7 +125,7 @@ fun AcquireBookItem(
 @Preview
 @Composable
 fun AcquirablePreview(){
-    BookishTheme{
+    PrefaceTheme{
         Column {
             AcquireBookItem(
                 image = R.drawable.undraw_empty_cart_co35,

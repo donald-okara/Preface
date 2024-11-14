@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -23,7 +22,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
@@ -31,14 +29,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
@@ -62,41 +57,24 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import com.don.preface.R
-import com.don.preface.presentation.utils.contracts.ImageUrlFetcherContract
 import com.don.preface.data.model.BookDetailsResponse
 import com.don.preface.presentation.screens.book_details.components.AboutVolume
 import com.don.preface.presentation.screens.book_details.components.AcquireVolume
 import com.don.preface.presentation.screens.book_details.components.BookCoverPreview
 import com.don.preface.presentation.screens.book_details.components.PublishDetails
 import com.don.preface.presentation.screens.book_details.components.TitleHeader
-import com.don.preface.presentation.utils.color_utils.model.ColorPallet
+import com.don.preface.presentation.utils.color_utils.extractColorPalette
 import com.don.preface.presentation.utils.color_utils.getTertiaryContainerColor
 import com.don.preface.presentation.utils.color_utils.getTertiaryContentColor
-import com.don.preface.presentation.utils.color_utils.downloadImage
-import com.don.preface.presentation.utils.color_utils.extractColorPalette
-import com.don.preface.presentation.utils.color_utils.extractPaletteFromImage
-import com.don.preface.presentation.utils.formatting_utils.formatHtmlToAnnotatedString
-import com.don.preface.ui.theme.BookishTheme
-import com.don.preface.ui.theme.RoundedCornerShapeLarge
+import com.don.preface.presentation.utils.color_utils.model.ColorPallet
+import com.don.preface.presentation.utils.contracts.ImageUrlFetcherContract
 import com.don.preface.ui.theme.RoundedCornerShapeMedium
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
