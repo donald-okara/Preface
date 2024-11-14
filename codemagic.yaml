@@ -2,19 +2,9 @@ workflows:
   android:
     name: Android Kotlin Build
     instance_type: linux
-    environment:
-      android: true
-    caching:
-      - path: ~/.gradle/caches  # Cache Gradle dependencies to speed up subsequent builds
-      - path: ~/.gradle/wrapper  # Cache Gradle wrapper files
     scripts:
       - echo "Running Gradle build"
       - ./gradlew clean build  # Run Gradle build command (adjust for your project as necessary)
       - ./gradlew test  # Run unit tests if you have them (adjust if using Android Test or other test types)
     artifacts:
       - app/build/outputs/apk/release/app-release.apk  # Path to the APK output after the build
-    webhooks:
-      on_success:
-        url: "https://your-webhook-success-url.com"  # Optional: notify an endpoint on success
-      on_failure:
-        url: "https://your-webhook-failure-url.com"  # Optional: notify an endpoint on failure
