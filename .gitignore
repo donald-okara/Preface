@@ -17,7 +17,3 @@ app/src/main/res/values/secrets.xml
 .cxx
 local.properties
 Preface
-preface-key.jks.base64
-signed.apk
-signed.apk.idsig
-your-key.jks

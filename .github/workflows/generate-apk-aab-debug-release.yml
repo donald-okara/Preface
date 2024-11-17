@@ -58,36 +58,27 @@ jobs:
       - name: Build gradle project
         run: ./gradlew build
 
-      # Create APK Debug
-      - name: Build apk debug project (APK) - ${{ env.main_project_module }} module
-        run: ./gradlew assembleDebug
+      - name: Decode KeyStore
+        run: echo "${{ secrets.SIGNINGKEYBASE64 }}" | base64 -d > preface-keystore.jks
 
-      # Create APK Release
-      - name: Build apk release project (APK) - ${{ env.main_project_module }} module
-        run: ./gradlew assemble
+      - name: Build App
+        run: |
+          ./gradlew assembleRelease
 
-      # Create Bundle AAB Release
-      - name: Build app bundle release (AAB) - ${{ env.main_project_module }} module
-        run: ./gradlew ${{ env.main_project_module }}:bundleRelease
+      - name: Sign APK
+        run: |
+          jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
+          -keystore preface-keystore.jks \
+          -storepass "${{ secrets.KEYSTORE_PASSWORD }}" \
+          app/build/outputs/apk/release/app-release-unsigned.apk \
+          "${{ secrets.KEY_ALIAS }}"
 
-      # Upload Artifact Build
-      - name: Upload APK Debug - ${{ env.repository_name }}
-        uses: actions/upload-artifact@v4
+      - name: Align APK
+        run: |
+          zipalign -v 4 app/build/outputs/apk/release/app-release-unsigned.apk app/build/outputs/apk/release/app-release.apk
+
+      - name: Upload Release APK
+        uses: actions/upload-artifact@v3
         with:
-          name: ${{ env.date_today }} - ${{ env.app_name }} - ${{ env.repository_name }} - APK(s) debug generated
-          path: ${{ env.main_project_module }}/build/outputs/apk/debug/
-
-      - name: Upload APK Release - ${{ env.repository_name }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.date_today }} - ${{ env.app_name }} - ${{ env.repository_name }} - APK(s) release generated
-          path: ${{ env.main_project_module }}/build/outputs/apk/release/
-
-      - name: Upload AAB (App Bundle) Release - ${{ env.repository_name }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ env.date_today }} - ${{ env.app_name }} - ${{ env.repository_name }} - App bundle(s) AAB release generated
-          path: ${{ env.main_project_module }}/build/outputs/bundle/release/
-
-
-      # You can now reference API_KEY, CLIENT_ID, and google-services.json locally in your app or build process
+          name: Preface-App
+          path: app/build/outputs/apk/release/app-release.apk
