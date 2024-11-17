@@ -37,29 +37,11 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      # Install Android SDK Tools
-      - name: Install Android SDK Tools
+      # Ensure Android SDK and Build Tools Are Available
+      - name: Ensure Android SDK in Path
         run: |
-          mkdir -p $HOME/android-sdk/cmdline-tools
-          curl -o commandlinetools.zip https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
-          unzip -q commandlinetools.zip -d $HOME/android-sdk/cmdline-tools
-          mv $HOME/android-sdk/cmdline-tools/cmdline-tools $HOME/android-sdk/cmdline-tools/tools
-        env:
-          PATH: $HOME/android-sdk/cmdline-tools/tools/bin:$HOME/android-sdk/platform-tools:$PATH
-
-      # Set ANDROID_HOME and Update PATH
-      - name: Set Android Home
-        run: |
-          echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
-          echo "PATH=$HOME/android-sdk/cmdline-tools/tools/bin:$HOME/android-sdk/platform-tools:$PATH" >> $GITHUB_ENV
-
-      # Accept SDK Licenses
-      - name: Accept SDK Licenses
-        run: yes | $HOME/android-sdk/cmdline-tools/tools/bin/sdkmanager --licenses
-
-      # Install Build Tools
-      - name: Install Build Tools
-        run: $HOME/android-sdk/cmdline-tools/tools/bin/sdkmanager "build-tools;33.0.0" "platform-tools"
+          echo "PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools:$ANDROID_HOME/build-tools/33.0.0:$PATH" >> $GITHUB_ENV
+          echo "ANDROID_SDK_ROOT=$ANDROID_HOME" >> $GITHUB_ENV
 
       - name: Load Google Service File
         env:
@@ -82,7 +64,6 @@ jobs:
       - name: Build Gradle Project
         run: ./gradlew build
 
-      # Decode KeyStore
       - name: Decode KeyStore
         run: echo "${{ secrets.SIGNINGKEYBASE64 }}" | base64 -d > preface-keystore.jks
 
@@ -101,7 +82,7 @@ jobs:
       # Align APK
       - name: Align APK
         run: |
-          $HOME/android-sdk/build-tools/33.0.0/zipalign -v 4 app/build/outputs/apk/release/app-release-unsigned.apk app/build/outputs/apk/release/app-release.apk
+          zipalign -v 4 app/build/outputs/apk/release/app-release-unsigned.apk app/build/outputs/apk/release/app-release.apk
 
       # Upload Release APK as Artifact
       - name: Upload Release APK
