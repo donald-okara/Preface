@@ -44,8 +44,12 @@ jobs:
 
       - name: Load secrets xml file
         env:
-          DATA: ${{ secrets.SECRETS_XML}}
+          DATA: ${{ secrets.SECRETS_XML }}
         run: echo $DATA | base64 -di > app/src/main/res/values/secrets.xml
+
+      # Decode the preface-key.jks file from base64
+      - name: Decode preface-key.jks from base64 and save to keystore
+        run: echo ${{ secrets.KEY_JKS }} | base64 -di > preface-key.jks
 
       - name: Change wrapper permissions
         run: chmod +x ./gradlew
@@ -88,6 +92,3 @@ jobs:
         with:
           name: ${{ env.date_today }} - ${{ env.app_name }} - ${{ env.repository_name }} - App bundle(s) AAB release generated
           path: ${{ env.main_project_module }}/build/outputs/bundle/release/
-
-
-      # You can now reference API_KEY, CLIENT_ID, and google-services.json locally in your app or build process
