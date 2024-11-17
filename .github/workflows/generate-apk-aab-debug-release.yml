@@ -37,6 +37,16 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
+      - name: Load Google Service file
+        env:
+          DATA: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: echo $DATA | base64 -di > app/google-services.json
+
+      - name: Load secrets xml file
+        env:
+          DATA: ${{ secrets.SECRETS_XML}}
+        run: echo $DATA | base64 -di > app/src/main/res/values/secrets.xml
+
       - name: Change wrapper permissions
         run: chmod +x ./gradlew
 
@@ -79,11 +89,5 @@ jobs:
           name: ${{ env.date_today }} - ${{ env.app_name }} - ${{ env.repository_name }} - App bundle(s) AAB release generated
           path: ${{ env.main_project_module }}/build/outputs/bundle/release/
 
-      # Example of using API_KEY, GOOGLE_SERVICES_JSON, CLIENT_ID
-      - name: Set up Google Services and API Key
-        run: |
-          echo "${{ secrets.GOOGLE_SERVICES_JSON }}" > .app/google-services.json
-          echo "API_KEY=${{ secrets.API_KEY }}" >> $GITHUB_ENV
-          echo "CLIENT_ID=${{ secrets.CLIENT_ID }}" >> $GITHUB_ENV
 
       # You can now reference API_KEY, CLIENT_ID, and google-services.json locally in your app or build process
