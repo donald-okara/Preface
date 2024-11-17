@@ -1,10 +1,10 @@
-name: Generated APK AAB (Upload - Create Artifact To Github Action)
+name: Generate APK AAB and Upload as Artifact
 
 env:
   # The name of the main module repository
   main_project_module: app
 
-  # The name of the app (now changed to Preface)
+  # The name of the app
   app_name: Preface
 
 on:
@@ -37,34 +37,43 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      - name: Load Google Service file
+      # Install Android SDK Build Tools
+      - name: Install Android Build Tools
+        run: yes | sdkmanager "build-tools;33.0.0" # Adjust version if needed
+
+      # Ensure zipalign is in PATH
+      - name: Add build-tools to PATH
+        run: echo "::add-path::/usr/local/lib/android/sdk/build-tools/33.0.0" # Adjust version if needed
+
+      - name: Load Google Service File
         env:
           DATA: ${{ secrets.GOOGLE_SERVICES_JSON }}
         run: echo $DATA | base64 -di > app/google-services.json
 
-      - name: Load secrets xml file
+      - name: Load Secrets XML File
         env:
-          DATA: ${{ secrets.SECRETS_XML}}
+          DATA: ${{ secrets.SECRETS_XML }}
         run: echo $DATA | base64 -di > app/src/main/res/values/secrets.xml
 
-      - name: Change wrapper permissions
+      - name: Change Wrapper Permissions
         run: chmod +x ./gradlew
 
       # Run Tests Build
-      - name: Run gradle tests
+      - name: Run Gradle Tests
         run: ./gradlew test
 
       # Run Build Project
-      - name: Build gradle project
+      - name: Build Gradle Project
         run: ./gradlew build
 
+      # Decode KeyStore
       - name: Decode KeyStore
         run: echo "${{ secrets.SIGNINGKEYBASE64 }}" | base64 -d > preface-keystore.jks
 
       - name: Build App
-        run: |
-          ./gradlew assembleRelease
+        run: ./gradlew assembleRelease
 
+      # Sign APK
       - name: Sign APK
         run: |
           jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 \
@@ -73,10 +82,11 @@ jobs:
           app/build/outputs/apk/release/app-release-unsigned.apk \
           "${{ secrets.KEY_ALIAS }}"
 
+      # Align APK
       - name: Align APK
-        run: |
-          zipalign -v 4 app/build/outputs/apk/release/app-release-unsigned.apk app/build/outputs/apk/release/app-release.apk
+        run: zipalign -v 4 app/build/outputs/apk/release/app-release-unsigned.apk app/build/outputs/apk/release/app-release.apk
 
+      # Upload Release APK as Artifact
       - name: Upload Release APK
         uses: actions/upload-artifact@v3
         with:
