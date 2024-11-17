@@ -80,10 +80,9 @@ jobs:
           path: ${{ env.main_project_module }}/build/outputs/bundle/release/
 
       # Example of using API_KEY, GOOGLE_SERVICES_JSON, CLIENT_ID
-      - name: Set up Google Services and API Key
-        run: |
-          echo "${{ secrets.GOOGLE_SERVICES_JSON }}" > .app/google-services.json
-          echo "API_KEY=${{ secrets.API_KEY }}" >> $GITHUB_ENV
-          echo "CLIENT_ID=${{ secrets.CLIENT_ID }}" >> $GITHUB_ENV
+      - name: Create Google Services JSON File
+        env:
+          GOOGLE_SERVICES_JSON: ${{ secrets.GOOGLE_SERVICES_JSON }}
+        run: echo $GOOGLE_SERVICES_JSON | base64 -di > ./app/google-services.json
 
       # You can now reference API_KEY, CLIENT_ID, and google-services.json locally in your app or build process
