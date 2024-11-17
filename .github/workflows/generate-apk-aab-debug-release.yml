@@ -54,7 +54,7 @@ jobs:
       - name: Decode Keystore and set up signing
         run: |
           echo "$KEYSTORE_FILE" | base64 -d > /tmp/my-release-key.jks
-          echo "storeFile=/tmp/my-release-key.jks" >> $GITHUB_ENV
+          echo "storeFile=/tmp/preface-key.jks" >> $GITHUB_ENV
           echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
           echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> $GITHUB_ENV
           echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> $GITHUB_ENV
