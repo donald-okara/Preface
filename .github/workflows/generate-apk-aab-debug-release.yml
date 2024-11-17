@@ -50,6 +50,15 @@ jobs:
       - name: Change wrapper permissions
         run: chmod +x ./gradlew
 
+      # Decode Keystore from Secrets and set up signing
+      - name: Decode Keystore and set up signing
+        run: |
+          echo "$KEYSTORE_FILE" | base64 -d > /tmp/my-release-key.jks
+          echo "storeFile=/tmp/my-release-key.jks" >> $GITHUB_ENV
+          echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" >> $GITHUB_ENV
+          echo "keyAlias=${{ secrets.KEY_ALIAS }}" >> $GITHUB_ENV
+          echo "keyPassword=${{ secrets.KEY_PASSWORD }}" >> $GITHUB_ENV
+
       # Run Tests Build
       - name: Run gradle tests
         run: ./gradlew test
@@ -64,11 +73,19 @@ jobs:
 
       # Create APK Release
       - name: Build apk release project (APK) - ${{ env.main_project_module }} module
-        run: ./gradlew assemble
+        run: ./gradlew assembleRelease \
+          -Pandroid.injected.signing.store.file=$storeFile \
+          -Pandroid.injected.signing.store.password=$storePassword \
+          -Pandroid.injected.signing.key.alias=$keyAlias \
+          -Pandroid.injected.signing.key.password=$keyPassword
 
       # Create Bundle AAB Release
       - name: Build app bundle release (AAB) - ${{ env.main_project_module }} module
-        run: ./gradlew ${{ env.main_project_module }}:bundleRelease
+        run: ./gradlew ${{ env.main_project_module }}:bundleRelease \
+          -Pandroid.injected.signing.store.file=$storeFile \
+          -Pandroid.injected.signing.store.password=$storePassword \
+          -Pandroid.injected.signing.key.alias=$keyAlias \
+          -Pandroid.injected.signing.key.password=$keyPassword
 
       # Upload Artifact Build
       - name: Upload APK Debug - ${{ env.repository_name }}
@@ -88,6 +105,3 @@ jobs:
         with:
           name: ${{ env.date_today }} - ${{ env.app_name }} - ${{ env.repository_name }} - App bundle(s) AAB release generated
           path: ${{ env.main_project_module }}/build/outputs/bundle/release/
-
-
-      # You can now reference API_KEY, CLIENT_ID, and google-services.json locally in your app or build process
