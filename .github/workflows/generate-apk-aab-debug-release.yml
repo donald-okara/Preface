@@ -86,7 +86,7 @@ jobs:
 
       # Upload Release APK as Artifact
       - name: Upload Release APK
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Preface-App
           path: app/build/outputs/apk/release/app-release.apk
