@@ -37,13 +37,28 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      # Install Android SDK Build Tools
-      - name: Install Android Build Tools
-        run: yes | sdkmanager "build-tools;33.0.0" # Adjust version if needed
+      # Install Android SDK Tools
+      - name: Install Android SDK
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget unzip
+          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
+          mkdir -p $HOME/android-sdk/cmdline-tools
+          unzip cmdline-tools.zip -d $HOME/android-sdk/cmdline-tools
+          mv $HOME/android-sdk/cmdline-tools/cmdline-tools $HOME/android-sdk/cmdline-tools/tools
+          echo "ANDROID_HOME=$HOME/android-sdk" >> $GITHUB_ENV
+          echo "PATH=$HOME/android-sdk/cmdline-tools/tools/bin:$HOME/android-sdk/platform-tools:$PATH" >> $GITHUB_ENV
+        env:
+          ANDROID_HOME: $HOME/android-sdk
+          PATH: $HOME/android-sdk/cmdline-tools/tools/bin:$HOME/android-sdk/platform-tools:$PATH
 
-      # Ensure zipalign is in PATH
-      - name: Add build-tools to PATH
-        run: echo "::add-path::/usr/local/lib/android/sdk/build-tools/33.0.0" # Adjust version if needed
+      # Accept SDK Licenses
+      - name: Accept SDK Licenses
+        run: yes | sdkmanager --licenses
+
+      # Install Required Build Tools
+      - name: Install Build Tools
+        run: sdkmanager "build-tools;33.0.0" "platform-tools"
 
       - name: Load Google Service File
         env:
