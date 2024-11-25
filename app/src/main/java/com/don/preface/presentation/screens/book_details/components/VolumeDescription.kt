@@ -19,11 +19,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.don.preface.data.model.BookDetailsResponse
+import com.don.preface.data.model.BookItem
 import com.don.preface.presentation.utils.formatting_utils.formatHtmlToAnnotatedString
 
 @Composable
 fun AboutVolume(
-    book: BookDetailsResponse,
+    book: BookItem,
     textColor: Color = MaterialTheme.colorScheme.onTertiaryContainer
 ){
     Column(
@@ -31,10 +32,12 @@ fun AboutVolume(
         modifier = Modifier
             .padding(8.dp)
     ) {
-        DescriptionColumn(
-            description = book.volumeInfo.description,
-            textColor = textColor,
-        )
+        book.volumeInfo.description.let {
+            DescriptionColumn(
+                description = it,
+                textColor = textColor,
+            )
+        }
     }
 }
 

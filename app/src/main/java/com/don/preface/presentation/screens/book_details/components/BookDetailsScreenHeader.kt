@@ -34,6 +34,7 @@ import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.don.preface.R
 import com.don.preface.data.model.BookDetailsResponse
+import com.don.preface.data.model.BookItem
 import com.don.preface.presentation.screens.book_details.highestAvailableImageUrlFetcher
 import com.don.preface.presentation.utils.color_utils.downloadImage
 import com.don.preface.presentation.utils.color_utils.extractPaletteFromImage
@@ -46,7 +47,7 @@ import kotlinx.coroutines.withContext
 fun TitleHeader(
     modifier: Modifier = Modifier,
     onImageClick: () -> Unit,
-    book: BookDetailsResponse,
+    book: BookItem,
     onSearchAuthor: (String) -> Unit, // Callback to handle author clicks
     textColor: Color = MaterialTheme.colorScheme.onTertiaryContainer
 ) {
@@ -99,12 +100,14 @@ fun TitleHeader(
 
         // Display the book published date, if available
         book.volumeInfo.publishedDate.let { date ->
-            Text(
-                text = date,
-                style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.graphicsLayer(alpha = 0.8f)
-            )
+            if (date != null) {
+                Text(
+                    text = date,
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.graphicsLayer(alpha = 0.8f)
+                )
+            }
         }
     }
 }
@@ -114,7 +117,7 @@ fun TitleHeader(
 fun BookImage(
     modifier: Modifier = Modifier, // Allow external modification of size
     onImageClick: () -> Unit,
-    book: BookDetailsResponse,
+    book: BookItem,
     imageUrlFetcher: ImageUrlFetcherContract = highestAvailableImageUrlFetcher, // Default to highest
 ) {
     // Display the book cover image

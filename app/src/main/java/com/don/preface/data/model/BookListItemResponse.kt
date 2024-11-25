@@ -1,5 +1,8 @@
 package com.don.preface.data.model
 
+import android.os.Parcelable
+import androidx.compose.runtime.Stable
+import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -9,12 +12,15 @@ data class BookListItemResponse(
     val items: List<BookItem> = emptyList()
 )
 
+@Stable
+@Parcelize
 @Serializable
 data class BookItem(
     val id: String,
     val volumeInfo: VolumeInfo
-)
+): Parcelable
 
+@Parcelize
 @Serializable
 data class VolumeInfo(
     val title: String,
@@ -24,8 +30,9 @@ data class VolumeInfo(
     val description: String = "",
     val imageLinks: ImageLinks?,
     val previewLink: String = ""
-)
+): Parcelable
 
+@Parcelize
 @Serializable
 data class ImageLinks(
     val smallThumbnail: String = "",
@@ -34,4 +41,4 @@ data class ImageLinks(
     val medium: String = "",
     val large: String = "",
     val extraLarge: String = ""
-)
+): Parcelable

@@ -21,6 +21,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.don.preface.data.model.BookItem
 import com.don.preface.presentation.screens.search.components.BookSearchBar
 import com.don.preface.presentation.screens.search.components.BooksGridScreen
 import com.don.preface.ui.theme.PrefaceTheme
@@ -33,7 +34,7 @@ fun BookSearchScreen(
     modifier: Modifier = Modifier,
     searchState: StateFlow<SearchState>,
     viewModel: SearchViewModel,
-    onNavigateToBookItem: (String) -> Unit
+    onNavigateToBookItem: (BookItem) -> Unit
 ) {
 
     val currentBookState by searchState.collectAsState()

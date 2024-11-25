@@ -3,18 +3,19 @@ plugins {
     alias(libs.plugins.kotlin.android)
     id("kotlin-kapt")
     id("com.google.dagger.hilt.android")
-    id("org.jetbrains.kotlin.plugin.serialization") version "1.9.10"
+    id("kotlin-parcelize")
+    id("org.jetbrains.kotlin.plugin.serialization") version "2.0.0"
     alias(libs.plugins.google.gms.google.services)
 }
 
 android {
     namespace = "com.don.preface"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.don.preface"
         minSdk = 26
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
@@ -64,57 +65,57 @@ dependencies {
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icons.extended)
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
+    implementation(libs.kotlinx.coroutines.core)
 
-    implementation("androidx.compose.foundation:foundation:1.6.0")
+    implementation(libs.androidx.foundation)
 
-    implementation("com.google.android.gms:play-services-auth:20.2.0")
+    implementation(libs.play.services.auth)
 
     //Dagger Hilt
-    implementation("com.google.dagger:hilt-android:2.51")
+    implementation(libs.hilt.android)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.androidx.palette.ktx)
     implementation(libs.androidx.lifecycle.process)
     implementation(libs.firebase.auth)
     implementation(libs.firebase.firestore.ktx)
-    kapt("com.google.dagger:hilt-android-compiler:2.51")
-    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
+    kapt(libs.hilt.android.compiler)
+    implementation(libs.androidx.hilt.navigation.compose)
 
     // Retrofit with Kotlin serialization Converter
-    implementation("com.jakewharton.retrofit:retrofit2-kotlinx-serialization-converter:1.0.0")
-    implementation("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation("com.squareup.okhttp3:okhttp:4.11.0")
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.0")
-    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
+    implementation(libs.retrofit2.kotlinx.serialization.converter)
+    implementation(libs.retrofit)
+    implementation(libs.okhttp)
+    implementation(libs.kotlinx.serialization.json)
+    implementation (libs.converter.gson)
 
-    implementation("androidx.palette:palette:1.0.0")
+    implementation(libs.androidx.palette.ktx)
 
 
     //Coil
-    implementation("io.coil-kt:coil-compose:2.4.0")
-    implementation("io.coil-kt:coil:2.0.0-rc02")
-    implementation("io.coil-kt:coil-gif:2.0.0-rc02")
-    implementation("io.coil-kt:coil-compose:2.0.0-rc02")
-    implementation("androidx.core:core-splashscreen:1.0.0")
+    implementation(libs.coil.compose)
+    implementation(libs.coil)
+    implementation(libs.coil.gif)
+    implementation(libs.coil.compose)
+    implementation(libs.androidx.core.splashscreen)
 
 
     //Html parser
-    implementation("androidx.core:core-ktx:1.9.0") // Check for the latest version
+    implementation(libs.androidx.core.ktx.v1150) // Check for the latest version
 
 
-    implementation("com.github.bumptech.glide:glide:4.15.1") // Latest version
-    kapt("com.github.bumptech.glide:compiler:4.15.1")
+    implementation(libs.glide) // Latest version
+    kapt(libs.compiler)
 
     testImplementation(libs.junit)
-    testImplementation("org.mockito.kotlin:mockito-kotlin:4.0.0")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.0")
-    testImplementation("androidx.arch.core:core-testing:2.1.0")
-    testImplementation( "junit:junit:4.13.2")
-    testImplementation("org.mockito:mockito-inline:4.0.0")
-    testImplementation("org.mockito:mockito-core:4.0.0")
+    testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.androidx.core.testing)
+    testImplementation( libs.junit)
+    testImplementation(libs.mockito.inline)
+    testImplementation(libs.mockito.core)
 
     androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation("com.squareup.okhttp3:mockwebserver:4.9.3")
+    androidTestImplementation(libs.mockwebserver)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)

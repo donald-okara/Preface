@@ -16,26 +16,26 @@ data class BookDetailsResponse(
 @Serializable
 data class VolumeInfoDet(
     val title: String,
-    val authors: List<String> = emptyList(),
+    val authors: List<String>?,
     val publisher: String = "",
-    val publishedDate: String = "",
-    val description: String = "",
+    val publishedDate: String?,
+    val description: String?,
     val industryIdentifiers: List<IndustryIdentifier> = emptyList(),
     val readingModes: ReadingModes?,
-    val pageCount: Int = 0,
-    val printedPageCount: Int = 0,
+    val pageCount: Int? = 0,
+    val printedPageCount: Int? = 0,
     val dimensions: Dimensions?,
-    val printType: String = "",
+    val printType: String?,
     val categories: List<String> = emptyList(),
-    val maturityRating: String = "",
-    val allowAnonLogging: Boolean = false,
-    val contentVersion: String = "",
+    val maturityRating: String?,
+    val allowAnonLogging: Boolean? = false,
+    val contentVersion: String?,
     val panelizationSummary: PanelizationSummary?,
     val imageLinks: ImageLinks?,
-    val language: String = "",
-    val previewLink: String = "",
-    val infoLink: String = "",
-    val canonicalVolumeLink: String = ""
+    val language: String?,
+    val previewLink: String?,
+    val infoLink: String?,
+    val canonicalVolumeLink: String?
 )
 
 @Serializable
@@ -69,16 +69,16 @@ data class SaleInfo(
 
 @Serializable
 data class AccessInfo(
-    val country: String,
-    val viewability: String,
-    val embeddable: Boolean,
-    val publicDomain: Boolean,
-    val textToSpeechPermission: String,
-    val epub: Epub,
-    val pdf: Pdf,
-    val webReaderLink: String = "",
-    val accessViewStatus: String,
-    val quoteSharingAllowed: Boolean
+    val country: String?,
+    val viewability: String?,
+    val embeddable: Boolean?,
+    val publicDomain: Boolean?,
+    val textToSpeechPermission: String?,
+    val epub: Epub?,
+    val pdf: Pdf?,
+    val webReaderLink: String? = "",
+    val accessViewStatus: String?,
+    val quoteSharingAllowed: Boolean?
 )
 
 @Serializable

@@ -62,6 +62,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.don.preface.R
 import com.don.preface.data.model.BookDetailsResponse
+import com.don.preface.data.model.BookItem
 import com.don.preface.presentation.screens.book_details.components.AboutVolume
 import com.don.preface.presentation.screens.book_details.components.AcquireVolume
 import com.don.preface.presentation.screens.book_details.components.BookCoverPreview
@@ -81,23 +82,13 @@ import kotlinx.coroutines.launch
 @Composable
 fun BookDetailsScreen(
     modifier: Modifier = Modifier,
-    bookId: String,
+    book:BookItem?,
     onSearchAuthor: (String) -> Unit,
-    bookState: StateFlow<BookState>, // Accept StateFlow here
+   // bookState: StateFlow<BookState>, // Accept StateFlow here
     bookDetailsViewModel: BookDetailsViewModel,
     onBackPressed: () -> Unit
 ){
-    val currentBookState by bookState.collectAsState()
-
-    LaunchedEffect(key1 = bookId) {
-        bookDetailsViewModel.getBookDetails(bookId)
-    }
-
-    BackHandler {
-        bookDetailsViewModel.clearState()  // Add a function in the ViewModel to clear data
-        onBackPressed()
-    }
-
+    //val currentBookState by bookState.collectAsState()
 
     Scaffold(
         topBar = {
@@ -131,37 +122,17 @@ fun BookDetailsScreen(
                 .fillMaxSize(),
             contentAlignment = Alignment.TopCenter,
         ) {
-            when (currentBookState) {
-                is BookState.Success -> {
-
-                    BookDetailsContent(
-                        modifier = modifier.align(Alignment.TopCenter),
-                        book = (currentBookState as BookState.Success).data,
-                        onSearchAuthor = onSearchAuthor,
-                    )
-                }
-
-                is BookState.Error -> {
-                    DetailsErrorScreen(
-                        text = (currentBookState as BookState.Error).message,
-                        onRefresh = { bookDetailsViewModel.getBookDetails(bookId) }
-
-                    )
-                }
-
-                is BookState.Loading -> {
-                    DetailsLoadingScreen(
-                        text = bookDetailsViewModel.loadingJoke
-                    )
-                }
-
-                is BookState.Empty -> {
-
-                }
-                is BookState.FallbackError -> {
-                    onBackPressed()
-                }
-
+            if (book != null) {
+                BookDetailsContent(
+                    modifier = modifier.align(Alignment.TopCenter),
+                    book = book,
+                    onSearchAuthor = onSearchAuthor,
+                )
+            }else{
+                DetailsErrorScreen(
+                    text = "Book not found",
+                    onRefresh = onBackPressed
+                ) 
             }
         }
 
@@ -178,7 +149,7 @@ fun BookDetailsScreen(
 @Composable
 fun BookDetailsContent(
     modifier: Modifier = Modifier,
-    book: BookDetailsResponse,
+    book: BookItem,
     lowestImageUrlFetcher: ImageUrlFetcherContract = lowestAvailableImageUrlFetcher, // Default to highest
     highestImageUrlFetcher: ImageUrlFetcherContract = highestAvailableImageUrlFetcher, // Default to highest
     onSearchAuthor: (String) -> Unit
@@ -312,13 +283,13 @@ fun BookDetailsContent(
                         book = book,
                         textColor = tertiaryContentColor
                     )
-                    1 -> AcquireVolume(
+                    /*1 -> AcquireVolume(
                         book = book,
                         modifier = Modifier.fillMaxSize()
                     )
                     2 -> PublishDetails(
                         book = book,
-                    )
+                    )*/
                 }
             }
         }
