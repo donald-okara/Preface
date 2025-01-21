@@ -4,11 +4,12 @@ import com.don.preface.data.model.BookItem
 import com.don.preface.data.model.BookListItemResponse
 import com.don.preface.data.model.ImageLinks
 import com.don.preface.data.model.VolumeInfo
+import com.don.preface.presentation.screens.search.SearchState
 import retrofit2.Response
 
 object FakeBooksDataSource {
 
-    private val fakeBookListItemResponse: BookListItemResponse = BookListItemResponse(
+    val fakeBookListItemResponse: BookListItemResponse = BookListItemResponse(
         kind = "books#volumes",
         totalItems = 3,
         items = listOf(
@@ -73,5 +74,13 @@ object FakeBooksDataSource {
     )
 
     val fakeBookList: Response<BookListItemResponse> = Response.success(fakeBookListItemResponse)
+
+    val fakeSearchSuccessState = SearchState.Success(
+        fakeBookList.body()?.items ?: emptyList()
+    )
+
+    val fakeSearchErrorResponseState = SearchState.Error("Failed with status: 404")
+
+    val fakeSearchErrorState = SearchState.Error("An error occurred. Check your internet and try again")
 
 }

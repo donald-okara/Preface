@@ -44,6 +44,7 @@ class BookDetailsViewModel @Inject constructor(
         volumeId?.let {
             repository.getBookDetails(it)
         }
+        onLoading()
     }
 
 

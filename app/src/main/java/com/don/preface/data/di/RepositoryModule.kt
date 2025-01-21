@@ -5,6 +5,7 @@ import com.don.preface.R
 import com.don.preface.data.repositoryImpl.BooksRepositoryImpl
 import com.don.preface.domain.logger.Logger
 import com.don.preface.domain.repositories.BooksRepository
+import com.don.preface.domain.utils.color_utils.DefaultColorPaletteExtractor
 import com.don.preface.network.GoogleBooksApi
 import dagger.Module
 import dagger.Provides
@@ -24,9 +25,10 @@ object RepositoryModule {
         logger : Logger
     ): BooksRepository {
         return BooksRepositoryImpl(
-            googleBooksApi,
-            context.getString(R.string.api_key),
-            logger
+            googleBooksApi = googleBooksApi,
+            apiKey = context.getString(R.string.api_key),
+            logger = logger,
+            colorPaletteExtractor = DefaultColorPaletteExtractor()
         )
     }
 }

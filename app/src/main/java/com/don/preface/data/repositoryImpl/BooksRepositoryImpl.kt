@@ -7,7 +7,7 @@ import com.don.preface.domain.logger.Logger
 import com.don.preface.domain.repositories.BooksRepository
 import com.don.preface.domain.states.BookUiState
 import com.don.preface.domain.states.ResultState
-import com.don.preface.domain.utils.color_utils.extractColorPalette
+import com.don.preface.domain.utils.color_utils.ColorPaletteExtractor
 import com.don.preface.domain.utils.color_utils.model.ColorPallet
 import com.don.preface.network.GoogleBooksApi
 import com.don.preface.presentation.screens.book_details.BookDetailsViewModel.Companion.TAG
@@ -23,11 +23,13 @@ import java.net.ConnectException
 class BooksRepositoryImpl(
     private val googleBooksApi: GoogleBooksApi,
     private val apiKey: String,
+    private val colorPaletteExtractor: ColorPaletteExtractor,
     private val logger: Logger
 ) : BooksRepository {
 
     private val _bookState = MutableStateFlow(BookUiState())
     override val bookUiState: StateFlow<BookUiState> = _bookState
+
 
     override suspend fun searchBooks(
         query: String
@@ -40,9 +42,6 @@ class BooksRepositoryImpl(
         _bookState.update { newState }
     }
 
-    fun clearState() {
-        updateBookState(BookUiState())
-    }
 
 
     override suspend fun getBookDetails(bookId: String) {
@@ -70,7 +69,7 @@ class BooksRepositoryImpl(
                     val colorPallet = if (highestImageUrl.isNullOrEmpty()) {
                         ColorPallet()
                     } else {
-                        extractColorPalette(highestImageUrl)
+                        colorPaletteExtractor.extractColorPalette(highestImageUrl)
                     }
 
 
@@ -84,8 +83,7 @@ class BooksRepositoryImpl(
                         )
                     )
 
-                    logger.logDebug(TAG, "book highestUrl : ${bookUiState.value.highestImageUrl}")
-                    logger.logDebug(TAG, "book state : ${bookUiState.value}")
+
                 } ?: run {
                     // Handle case where no data is available
                     updateBookState(
@@ -93,7 +91,6 @@ class BooksRepositoryImpl(
                             resultState = ResultState.Error("No data available")
                         )
                     )
-                    logger.logError(TAG, "No data available")
                 }
             } else {
                 // Handle unsuccessful response
@@ -102,17 +99,15 @@ class BooksRepositoryImpl(
                         resultState = ResultState.Error("Failed to load book details")
                     )
                 )
-                logger.logError(TAG, "Error response: ${response.message()}")
             }
 
-        } catch (e: ConnectException) {
+        } catch (e: Exception) {
             // Handle network error
             updateBookState(
                 BookUiState(
                     resultState = ResultState.Error("Network error. Check your internet and try again")
                 )
             )
-            logger.logError(TAG, "ConnectException: ${e.message}")
         }
     }
 

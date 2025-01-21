@@ -57,6 +57,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.don.preface.R
 import com.don.preface.data.model.VolumeInfoDet
 import com.don.preface.domain.states.ResultState
@@ -127,24 +128,15 @@ fun BookDetailsScreen(
                 isGradientVisible = bookUiState.value.resultState == ResultState.Success
             )
 
-            if (bookUiState.value.resultState == ResultState.Loading) {
+            if (bookUiState.value.resultState != ResultState.Success) {
                 DetailsLoadingScreen(
                     modifier = modifier
                         .padding(16.dp),
-                    text = loadingJoke
+                    text = if(bookUiState.value.resultState == ResultState.Loading) loadingJoke else "Failed to load your book. Please try again",
+                    onRetryAction = bookDetailsViewModel::refreshAction
                 )
 
 
-            }else if (bookUiState.value.resultState == ResultState.Error()) {
-                DetailsErrorScreen(
-                    modifier = modifier
-                        .padding(16.dp),
-                    text = "We could not fetch your book at this moment. Please try again later",
-                    onRefresh = {
-                        bookDetailsViewModel.refreshAction()
-                    }
-
-                )
             }
 
 
@@ -309,6 +301,7 @@ fun BookDetailsContent(
 @Composable
 fun DetailsLoadingScreen(
     modifier: Modifier = Modifier,
+    onRetryAction: () -> Unit,
     text: String
 ) {
     Column(
@@ -327,7 +320,11 @@ fun DetailsLoadingScreen(
         Text(
             text = text, // Join authors with a comma
             style = MaterialTheme.typography.bodyLarge, // Use appropriate text style
-            modifier = modifier.padding(bottom = 16.dp) // Space below the authors
+            modifier = modifier
+                .padding(bottom = 16.dp) // Space below the authors
+                .clickable {
+                    onRetryAction()
+                }
         )
 
     }

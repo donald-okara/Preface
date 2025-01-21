@@ -11,7 +11,7 @@ object FakeBookUiState {
         BookUiState(
             bookDetails = fakeBookDetailsResponse,
             resultState = ResultState.Success,
-            highestImageUrl = "https://example.com/highest_image.jpg",
+            //highestImageUrl = "https://example.com/highest_image.jpg",
             colorPallet = ColorPallet()
         )
     val fakeBookUiStateError: BookUiState =

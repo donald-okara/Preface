@@ -10,7 +10,7 @@ import org.junit.rules.TestWatcher
 import org.junit.runner.Description
 
 class TestDispatcherRule @OptIn(ExperimentalCoroutinesApi::class) constructor(
-    val testDispatcher: TestDispatcher = UnconfinedTestDispatcher(),
+    private val testDispatcher: TestDispatcher = UnconfinedTestDispatcher(),
 ) : TestWatcher() {
 
     @OptIn(ExperimentalCoroutinesApi::class)
@@ -23,4 +23,6 @@ class TestDispatcherRule @OptIn(ExperimentalCoroutinesApi::class) constructor(
     override fun finished(description: Description) {
         Dispatchers.resetMain()
     }
+
+
 }

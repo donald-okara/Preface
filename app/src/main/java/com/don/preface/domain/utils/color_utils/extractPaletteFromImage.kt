@@ -35,22 +35,32 @@ fun getColorHashCode(color: Color): Int {
     return (alpha shl 24) or (red shl 16) or (green shl 8) or blue
 }
 
-suspend fun extractColorPalette(lowestImageUrl: String?): ColorPallet {
-    return withContext(Dispatchers.IO) {
-        val inputStream = lowestImageUrl?.let { downloadImage(it) }
-            ?: throw IllegalArgumentException("Image URL is null or image could not be downloaded.")
+interface ColorPaletteExtractor {
+    suspend fun extractColorPalette(imageUrl: String?): ColorPallet
+}
 
-        val palette = extractPaletteFromImage(inputStream)
-        ColorPallet(
-            dominantColor = Color(palette.getDominantColor(Color.Transparent.value.toInt())),
-            darkMutedColor = Color(palette.getDarkMutedColor(Color.Transparent.value.toInt())),
-            darkVibrantColor = Color(palette.getDarkVibrantColor(Color.Transparent.value.toInt())),
-            lightMutedColor = Color(palette.getLightMutedColor(Color.Transparent.value.toInt())),
-            lightVibrantColor = Color(palette.getLightVibrantColor(Color.Transparent.value.toInt()))
-        ).also { colorPalette ->
-            Log.d("BookImage", "Dominant color: ${colorPalette.dominantColor}")
+class DefaultColorPaletteExtractor : ColorPaletteExtractor {
+    override suspend fun extractColorPalette(imageUrl: String?): ColorPallet {
+        return withContext(Dispatchers.IO) {
+            val inputStream = imageUrl?.let { downloadImage(it) }
+                ?: throw IllegalArgumentException("Image URL is null or image could not be downloaded.")
+
+            val palette = extractPaletteFromImage(inputStream)
+            ColorPallet(
+                dominantColor = Color(palette.getDominantColor(Color.Transparent.value.toInt())),
+                darkMutedColor = Color(palette.getDarkMutedColor(Color.Transparent.value.toInt())),
+                darkVibrantColor = Color(palette.getDarkVibrantColor(Color.Transparent.value.toInt())),
+                lightMutedColor = Color(palette.getLightMutedColor(Color.Transparent.value.toInt())),
+                lightVibrantColor = Color(palette.getLightVibrantColor(Color.Transparent.value.toInt()))
+            ).also { colorPalette ->
+                Log.d("BookImage", "Dominant color: ${colorPalette.dominantColor}")
+            }
         }
     }
+
 }
+
+
+
 
 

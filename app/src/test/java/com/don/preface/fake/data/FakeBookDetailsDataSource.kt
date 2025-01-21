@@ -32,6 +32,7 @@ object FakeBookDetailsDataSource {
             readingModes = ReadingModes(text = false, image = false),
             pageCount = 466,
             printedPageCount = 484,
+            imageLinks = ImageLinks(),
             dimensions = Dimensions(height = "18.00 cm", width = "11.50 cm", thickness = "3.80 cm"),
             printType = "BOOK",
             categories = listOf("Fiction / Mystery & Detective / General", "Fiction / Thrillers / Suspense", "Fiction / Family Life / Marriage & Divorce"),
@@ -39,19 +40,12 @@ object FakeBookDetailsDataSource {
             allowAnonLogging = false,
             contentVersion = "0.3.0.0.preview.0",
             panelizationSummary = PanelizationSummary(containsEpubBubbles = false, containsImageBubbles = false),
-            imageLinks = ImageLinks(
-                smallThumbnail = "http://books.google.com/books/content?id=5cu7sER89nwC&printsec=frontcover&img=1&zoom=5",
-                thumbnail = "http://books.google.com/books/content?id=5cu7sER89nwC&printsec=frontcover&img=1&zoom=1",
-                small = "http://books.google.com/books/content?id=5cu7sER89nwC&printsec=frontcover&img=1&zoom=2",
-                medium = "http://books.google.com/books/content?id=5cu7sER89nwC&printsec=frontcover&img=1&zoom=3",
-                large = "http://books.google.com/books/content?id=5cu7sER89nwC&printsec=frontcover&img=1&zoom=4",
-                extraLarge = "http://books.google.com/books/content?id=5cu7sER89nwC&printsec=frontcover&img=1&zoom=6"
-            ),
             language = "en",
             previewLink = "http://books.google.com/books?id=5cu7sER89nwC&hl=&source=gbs_api",
             infoLink = "https://play.google.com/store/books/details?id=5cu7sER89nwC&source=gbs_api",
             canonicalVolumeLink = "https://play.google.com/store/books/details?id=5cu7sER89nwC"
         ),
+
         saleInfo = SaleInfo(
             country = "KE",
             saleability = "NOT_FOR_SALE",
