@@ -9,11 +9,14 @@ import com.don.preface.network.GoogleBooksApi
 import retrofit2.Response
 
 class FakeBookApiService : GoogleBooksApi {
-    override suspend fun searchBooks(query: String): Response<BookListItemResponse> = FakeBooksDataSource.fakeBookList
+    override suspend fun searchBooks(
+        query: String,
+        apiKey: String
+    ): Response<BookListItemResponse> = FakeBooksDataSource.fakeBookList
 
-    override suspend fun getBookDetails(bookId: String): Response<BookDetailsResponse> = FakeBookDetailsDataSource.fakeBookDetails
+    override suspend fun getBookDetails(
+        bookId: String,
+        apiKey: String
+    ): Response<BookDetailsResponse> = FakeBookDetailsDataSource.fakeBookDetails
 
-    override suspend fun getUserLibrary(accessToken: String, apiKey: String): LibraryResponse{
-        TODO()
-    }
 }

@@ -36,7 +36,7 @@ class BooksRepositoryImpl(
     }
 
 
-    private fun updateBookState(newState: BookUiState) {
+    override fun updateBookState(newState: BookUiState) {
         _bookState.update { newState }
     }
 
@@ -62,7 +62,8 @@ class BooksRepositoryImpl(
                 response.body()?.let { volumeData ->
                     // Extract the highest image URL from the book details
                     val highestImageUrl = volumeData.volumeInfo.imageLinks.let {
-                        it.extraLarge ?: it.large ?: it.medium ?: it.small ?: it.thumbnail ?: it.smallThumbnail
+                        it.extraLarge ?: it.large ?: it.medium ?: it.small ?: it.thumbnail
+                        ?: it.smallThumbnail
                     }?.replace("http", "https")
 
 
