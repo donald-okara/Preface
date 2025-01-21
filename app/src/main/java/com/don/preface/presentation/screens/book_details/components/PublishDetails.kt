@@ -12,10 +12,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.don.preface.data.model.BookDetailsResponse
+import com.don.preface.data.model.VolumeInfoDet
 
 @Composable
 fun PublishDetails(
-    book: BookDetailsResponse,
+    volumeInfo: VolumeInfoDet,
 ){
     OutlinedCard(
         modifier = Modifier
@@ -32,14 +33,12 @@ fun PublishDetails(
             modifier = Modifier.padding(8.dp)
         ) {
             // Publisher Information
-            book.volumeInfo.publisher.let {
-                Text(
-                    text = "Published by: $it",
-                )
-            }
+            Text(
+                text = "Published by: ${volumeInfo.publisher}",
+            )
 
             // Industry Identifiers
-            book.volumeInfo.industryIdentifiers.forEach { identifier ->
+            volumeInfo.industryIdentifiers.forEach { identifier ->
                 Text(
                     text = "${identifier.type}: ${identifier.identifier}",
                 )
@@ -47,21 +46,21 @@ fun PublishDetails(
 
             // Pages
             Text(
-                text = "Pages: ${book.volumeInfo.pageCount}",
+                text = "Pages: ${volumeInfo.pageCount}",
             )
 
             // Language
             Text(
-                text = "Language: ${book.volumeInfo.language}",
+                text = "Language: ${volumeInfo.language}",
             )
 
             // Maturity Ratings
             Text(
-                text = "Maturity Ratings: ${book.volumeInfo.maturityRating}",
+                text = "Maturity Ratings: ${volumeInfo.maturityRating}",
             )
 
             // Categories
-            book.volumeInfo.categories.let { categories ->
+            volumeInfo.categories.let { categories ->
                 val processedCategories = categories.flatMap { it.split("/") }.toSet().toList()
 
                 Text(text = "Categories:")

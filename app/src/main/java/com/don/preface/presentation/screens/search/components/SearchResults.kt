@@ -35,7 +35,7 @@ import com.don.preface.ui.theme.RoundedCornerShapeMedium
 fun BooksGridScreen(
     books: List<BookItem>,
     modifier: Modifier = Modifier,
-    onNavigateToBookItem: (BookItem) -> Unit
+    onNavigateToBookItem: (String) -> Unit
 
 ){
     LazyVerticalGrid(
@@ -58,7 +58,7 @@ fun BooksGridScreen(
 fun BookItem(
     modifier: Modifier = Modifier,
     book : BookItem,
-    onNavigateToBookItem: (BookItem) -> Unit
+    onNavigateToBookItem: (String) -> Unit
 ) {
     Card(
         modifier = modifier
@@ -66,7 +66,7 @@ fun BookItem(
             .aspectRatio(0.7f)
             .fillMaxWidth()
             .clickable {
-                onNavigateToBookItem(book)
+                onNavigateToBookItem(book.id)
             },
         shape = RoundedCornerShapeMedium,
         elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)

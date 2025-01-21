@@ -1,4 +1,4 @@
-package com.don.preface.presentation.utils.color_utils.model
+package com.don.preface.domain.utils.color_utils.model
 
 import androidx.compose.ui.graphics.Color
 

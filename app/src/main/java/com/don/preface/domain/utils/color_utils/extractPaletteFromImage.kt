@@ -1,8 +1,8 @@
-package com.don.preface.presentation.utils.color_utils
+package com.don.preface.domain.utils.color_utils
 
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import com.don.preface.presentation.utils.color_utils.model.ColorPallet
+import com.don.preface.domain.utils.color_utils.model.ColorPallet
 import java.io.InputStream
 import androidx.palette.graphics.Palette
 import android.graphics.BitmapFactory

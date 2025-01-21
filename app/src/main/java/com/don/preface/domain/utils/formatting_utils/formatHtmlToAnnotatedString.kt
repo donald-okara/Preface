@@ -1,4 +1,4 @@
-package com.don.preface.presentation.utils.formatting_utils
+package com.don.preface.domain.utils.formatting_utils
 
 import android.text.Spanned
 import android.text.style.CharacterStyle

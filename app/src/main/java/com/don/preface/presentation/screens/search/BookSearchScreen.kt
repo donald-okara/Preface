@@ -21,27 +21,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.don.preface.data.model.BookItem
 import com.don.preface.presentation.screens.search.components.BookSearchBar
 import com.don.preface.presentation.screens.search.components.BooksGridScreen
 import com.don.preface.ui.theme.PrefaceTheme
 import com.don.preface.ui.theme.RoundedCornerShapeMedium
-import kotlinx.coroutines.flow.StateFlow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookSearchScreen(
     modifier: Modifier = Modifier,
-    searchState: StateFlow<SearchState>,
-    viewModel: SearchViewModel,
-    onNavigateToBookItem: (BookItem) -> Unit
+    viewModel: SearchViewModel = hiltViewModel(),
+    onNavigateToBookItem: (String) -> Unit
 ) {
 
-    val currentBookState by searchState.collectAsState()
+    val searchState by viewModel.searchUiState.collectAsState()
 
-    LaunchedEffect(searchState) {
-        Log.d("SearchState", "searchState: $searchState")
-    }
+
 
     Scaffold(
         topBar = {
@@ -76,13 +73,13 @@ fun BookSearchScreen(
 
             Spacer(modifier = modifier.height(16.dp))
 
-            when (currentBookState) {
+            when (searchState) {
                 is SearchState.Success -> {
-                    if ((currentBookState as SearchState.Success).data.isEmpty()) {
+                    if ((searchState as SearchState.Success).data.isEmpty()) {
                         Text(text = "No books found. Try searching for something else.")
                     }else{
                         BooksGridScreen(
-                            books = (currentBookState as SearchState.Success).data,
+                            books = (searchState as SearchState.Success).data,
                             onNavigateToBookItem = onNavigateToBookItem
                         )
                     }
@@ -91,7 +88,7 @@ fun BookSearchScreen(
                 }
                 is SearchState.Error ->{
                     SearchErrorScreen(
-                        text = (currentBookState as SearchState.Error).message,
+                        text = (searchState as SearchState.Error).message,
                         onRefresh = viewModel::onSearch
 
                     )

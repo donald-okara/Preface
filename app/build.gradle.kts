@@ -1,11 +1,11 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.hilt.android)
     id("kotlin-kapt")
-    id("com.google.dagger.hilt.android")
     id("kotlin-parcelize")
     id("org.jetbrains.kotlin.plugin.serialization") version "2.0.0"
-    alias(libs.plugins.google.gms.google.services)
 }
 
 android {
@@ -69,15 +69,11 @@ dependencies {
 
     implementation(libs.androidx.foundation)
 
-    implementation(libs.play.services.auth)
-
     //Dagger Hilt
     implementation(libs.hilt.android)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.androidx.palette.ktx)
     implementation(libs.androidx.lifecycle.process)
-    implementation(libs.firebase.auth)
-    implementation(libs.firebase.firestore.ktx)
     kapt(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
 
@@ -99,11 +95,8 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
 
 
-    //Html parser
-    implementation(libs.androidx.core.ktx.v1150) // Check for the latest version
-
-
     implementation(libs.glide) // Latest version
+    //noinspection KaptUsageInsteadOfKsp
     kapt(libs.compiler)
 
     testImplementation(libs.junit)

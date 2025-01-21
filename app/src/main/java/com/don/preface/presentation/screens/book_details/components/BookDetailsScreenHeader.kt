@@ -6,7 +6,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -14,10 +13,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,48 +28,42 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.don.preface.R
-import com.don.preface.data.model.BookDetailsResponse
-import com.don.preface.data.model.BookItem
-import com.don.preface.presentation.screens.book_details.highestAvailableImageUrlFetcher
-import com.don.preface.presentation.utils.color_utils.downloadImage
-import com.don.preface.presentation.utils.color_utils.extractPaletteFromImage
-import com.don.preface.presentation.utils.contracts.ImageUrlFetcherContract
+import com.don.preface.data.model.VolumeInfoDet
 import com.don.preface.ui.theme.RoundedCornerShapeMedium
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 @Composable
 fun TitleHeader(
     modifier: Modifier = Modifier,
     onImageClick: () -> Unit,
-    book: BookItem,
-    onSearchAuthor: (String) -> Unit, // Callback to handle author clicks
+    volumeInfo: VolumeInfoDet,
+    imageUrl: String? = null,
+    onSearchAuthor: (String) -> Unit,
     textColor: Color = MaterialTheme.colorScheme.onTertiaryContainer
 ) {
     Column(
         modifier = modifier
-            .wrapContentHeight(), // Take only the space needed by the content
-        verticalArrangement = Arrangement.spacedBy(8.dp), // Space between elements
+            .wrapContentHeight(),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         BookImage(
-            book = book,
             onImageClick = onImageClick,
-            modifier = Modifier
+            imageUrl = imageUrl,
+            modifier = modifier
                 .size(400.dp)
                 .padding(16.dp)
         )
 
         // Display the book title
         Text(
-            text = book.volumeInfo.title,
+            text = volumeInfo.title,
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.headlineSmall,
-            modifier = Modifier.padding(bottom = 4.dp) // Minor padding if needed
+            modifier = modifier.padding(bottom = 4.dp) // Minor padding if needed
         )
 
         // Display the book authors, if available
-        book.volumeInfo.authors.let { authors ->
+        volumeInfo.authors.let { authors ->
             Row(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
@@ -99,16 +88,12 @@ fun TitleHeader(
         }
 
         // Display the book published date, if available
-        book.volumeInfo.publishedDate.let { date ->
-            if (date != null) {
-                Text(
-                    text = date,
-                    style = MaterialTheme.typography.bodyMedium,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.graphicsLayer(alpha = 0.8f)
-                )
-            }
-        }
+        Text(
+            text = volumeInfo.publishedDate,
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.graphicsLayer(alpha = 0.8f)
+        )
     }
 }
 
@@ -117,31 +102,25 @@ fun TitleHeader(
 fun BookImage(
     modifier: Modifier = Modifier, // Allow external modification of size
     onImageClick: () -> Unit,
-    book: BookItem,
-    imageUrlFetcher: ImageUrlFetcherContract = highestAvailableImageUrlFetcher, // Default to highest
+    imageUrl : String? = null,
 ) {
-    // Display the book cover image
-    if (book.volumeInfo.imageLinks != null) {
-        var highestImageUrl = imageUrlFetcher.fetchImageUrl(book.volumeInfo.imageLinks)
-        highestImageUrl = highestImageUrl?.replace("http://", "https://")
 
-        var dominantColor by remember { mutableStateOf(Color.Transparent) }
+    LaunchedEffect(Unit) {
+        Log.d("BookImage", "imageUrl : $imageUrl")
+    }
+    if (imageUrl.isNullOrEmpty()) {
+        Image(
+            painter = painterResource(R.drawable.undraw_writer_q06d),
+            contentDescription = stringResource(R.string.book_cover),
+            contentScale = ContentScale.FillBounds,
+            modifier = modifier
+                .clip(RoundedCornerShapeMedium)
 
-        LaunchedEffect(highestImageUrl) {
-            withContext(Dispatchers.IO) {
-                val inputStream = highestImageUrl?.let { downloadImage(it) }
-                inputStream?.let {
-                    val palette = extractPaletteFromImage(it)
-                    dominantColor = Color(palette.getDominantColor(Color.Transparent.value.toInt()))
-
-                    Log.d("BookImage", "Dominant color: $dominantColor")
-                }
-            }
-        }
-
+        )
+    }else{
         AsyncImage(
             model = ImageRequest.Builder(context = LocalContext.current)
-                .data(highestImageUrl)
+                .data(imageUrl)
                 .crossfade(true)
                 .build(),
             contentDescription = stringResource(R.string.book_cover),
@@ -153,14 +132,8 @@ fun BookImage(
                     onImageClick()
                 }
         )
-    } else {
-        Image(
-            painter = painterResource(R.drawable.undraw_writer_q06d),
-            contentDescription = "Loading",
-            modifier = Modifier.fillMaxSize() // Fill the container
-        )
-
     }
+
 }
 
 @Composable

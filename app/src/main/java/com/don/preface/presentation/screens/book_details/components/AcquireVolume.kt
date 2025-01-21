@@ -22,7 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.don.preface.R
-import com.don.preface.data.model.BookDetailsResponse
+import com.don.preface.data.model.VolumeInfoDet
 import com.don.preface.presentation.screens.book_details.search
 import com.don.preface.ui.theme.PrefaceTheme
 import com.don.preface.ui.theme.RoundedCornerShapeLarge
@@ -30,10 +30,10 @@ import com.don.preface.ui.theme.RoundedCornerShapeLarge
 @Composable
 fun AcquireVolume(
     modifier: Modifier = Modifier,
-    book: BookDetailsResponse,
+    volumeInfo: VolumeInfoDet,
 ){
     val context = LocalContext.current
-    val volumeName = book.volumeInfo.title
+    val volumeName = volumeInfo.title
     val amazonSearchUrl = "https://www.amazon.com/s?k=$volumeName&i=stripbooks"
     val somanamiUrl = "https://www.somanami.co.ke/search-results?q=$volumeName"
     val prestigeUrl = "https://prestigebookshop.com/?s=$volumeName&post_type=product"
@@ -48,7 +48,7 @@ fun AcquireVolume(
         AcquireBookItem(
             image = R.drawable.somanamilogo,
             contentDescription = "Soma nami",
-            text = "Search for \"${book.volumeInfo.title}\" in Soma nami",
+            text = "Search for \"${volumeInfo.title}\" in Soma nami",
             onClick = {
                 search(
                     url = somanamiUrl,
@@ -59,7 +59,7 @@ fun AcquireVolume(
         AcquireBookItem(
             image = R.drawable.prestigelogo,
             contentDescription = "Prestige bookstore",
-            text = "Search for \"${book.volumeInfo.title}\" in Prestige",
+            text = "Search for \"${volumeInfo.title}\" in Prestige",
             onClick = {
                 search(
                     url = prestigeUrl,
@@ -70,7 +70,7 @@ fun AcquireVolume(
         AcquireBookItem(
             image = R.drawable.amazon_buy_logo,
             contentDescription = "Amazon",
-            text = "Search for \"${book.volumeInfo.title}\" in Amazon",
+            text = "Search for \"${volumeInfo.title}\" in Amazon",
             onClick = {
                 search(
                     url = amazonSearchUrl,

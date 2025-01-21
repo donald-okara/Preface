@@ -1,4 +1,4 @@
-package com.don.preface.domain
+package com.don.preface
 
 import android.app.Application
 import dagger.hilt.android.HiltAndroidApp

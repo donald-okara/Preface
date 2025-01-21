@@ -35,10 +35,10 @@ data class VolumeInfo(
 @Parcelize
 @Serializable
 data class ImageLinks(
-    val smallThumbnail: String = "",
-    val thumbnail: String = "",
-    val small: String = "",
-    val medium: String = "",
-    val large: String = "",
-    val extraLarge: String = ""
+    val smallThumbnail: String? = null,
+    val thumbnail: String? = null,
+    val small: String? = null,
+    val medium: String? = null,
+    val large: String? = null,
+    val extraLarge: String? = null
 ): Parcelable

@@ -4,12 +4,10 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -42,17 +40,15 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
@@ -60,21 +56,17 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.don.preface.R
-import com.don.preface.data.model.BookDetailsResponse
-import com.don.preface.data.model.BookItem
+import com.don.preface.data.model.VolumeInfoDet
+import com.don.preface.domain.states.ResultState
+import com.don.preface.domain.utils.color_utils.getDominantColor
 import com.don.preface.presentation.screens.book_details.components.AboutVolume
 import com.don.preface.presentation.screens.book_details.components.AcquireVolume
 import com.don.preface.presentation.screens.book_details.components.BookCoverPreview
 import com.don.preface.presentation.screens.book_details.components.PublishDetails
 import com.don.preface.presentation.screens.book_details.components.TitleHeader
-import com.don.preface.presentation.utils.color_utils.extractColorPalette
-import com.don.preface.presentation.utils.color_utils.getTertiaryContainerColor
-import com.don.preface.presentation.utils.color_utils.getTertiaryContentColor
-import com.don.preface.presentation.utils.color_utils.model.ColorPallet
-import com.don.preface.presentation.utils.contracts.ImageUrlFetcherContract
 import com.don.preface.ui.theme.RoundedCornerShapeMedium
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -82,13 +74,17 @@ import kotlinx.coroutines.launch
 @Composable
 fun BookDetailsScreen(
     modifier: Modifier = Modifier,
-    book:BookItem?,
     onSearchAuthor: (String) -> Unit,
-   // bookState: StateFlow<BookState>, // Accept StateFlow here
-    bookDetailsViewModel: BookDetailsViewModel,
+    bookDetailsViewModel: BookDetailsViewModel = hiltViewModel(),
     onBackPressed: () -> Unit
 ){
-    //val currentBookState by bookState.collectAsState()
+    val bookUiState = bookDetailsViewModel.bookState.collectAsState()
+    val loadingJoke = bookDetailsViewModel.loadingJoke
+    val imageUrl = bookUiState.value.highestImageUrl
+
+    val colorPallet = bookUiState.value.colorPallet
+    val dominantColor = getDominantColor(colorPallet)
+
 
     Scaffold(
         topBar = {
@@ -122,19 +118,38 @@ fun BookDetailsScreen(
                 .fillMaxSize(),
             contentAlignment = Alignment.TopCenter,
         ) {
-            if (book != null) {
-                BookDetailsContent(
-                    modifier = modifier.align(Alignment.TopCenter),
-                    book = book,
-                    onSearchAuthor = onSearchAuthor,
+            BookDetailsContent(
+                modifier = modifier.align(Alignment.TopCenter),
+                volumeInfo = bookUiState.value.bookDetails.volumeInfo,
+                onSearchAuthor = onSearchAuthor,
+                imageUrl = imageUrl,
+                dominantColor = dominantColor,
+                isGradientVisible = bookUiState.value.resultState == ResultState.Success
+            )
+
+            if (bookUiState.value.resultState == ResultState.Loading) {
+                DetailsLoadingScreen(
+                    modifier = modifier
+                        .padding(16.dp),
+                    text = loadingJoke
                 )
-            }else{
+
+
+            }else if (bookUiState.value.resultState == ResultState.Error()) {
                 DetailsErrorScreen(
-                    text = "Book not found",
-                    onRefresh = onBackPressed
-                ) 
+                    modifier = modifier
+                        .padding(16.dp),
+                    text = "We could not fetch your book at this moment. Please try again later",
+                    onRefresh = {
+                        bookDetailsViewModel.refreshAction()
+                    }
+
+                )
             }
+
+
         }
+
 
 
     }
@@ -145,72 +160,33 @@ fun BookDetailsScreen(
 
 
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun BookDetailsContent(
     modifier: Modifier = Modifier,
-    book: BookItem,
-    lowestImageUrlFetcher: ImageUrlFetcherContract = lowestAvailableImageUrlFetcher, // Default to highest
-    highestImageUrlFetcher: ImageUrlFetcherContract = highestAvailableImageUrlFetcher, // Default to highest
+    volumeInfo: VolumeInfoDet,
+    dominantColor : Color,
+    imageUrl: String? = null,
+    isGradientVisible: Boolean,
     onSearchAuthor: (String) -> Unit
 ) {
-    val showPreview = remember{ mutableStateOf(false) }
-    //val bookState = viewModel.bookState
-    val colorPalette = remember { mutableStateOf(ColorPallet()) } // Initialize ColorPalette
-    var contentColorErrorState by remember { mutableStateOf<String?>(null) }
-    var contentContainerErrorState by remember { mutableStateOf<String?>(null) }
-    var lowestUrl = lowestImageUrlFetcher.fetchImageUrl(book.volumeInfo.imageLinks)
-    lowestUrl = lowestUrl?.replace("http://", "https://")
-
-
-    var dominantColor by remember { mutableStateOf(Color.Transparent) }
-    var isGradientVisible by remember { mutableStateOf(false) }
-
-
     val tabs = listOf("About", "Get book", "Publish details")
-
-    var highestImageUrl = ""
-    if (book.volumeInfo.imageLinks != null) {
-        highestImageUrl = highestImageUrlFetcher.fetchImageUrl(book.volumeInfo.imageLinks).toString()
-        highestImageUrl = highestImageUrl.replace("http://", "https://")
-
-    }
-
-
-    LaunchedEffect(lowestUrl) {
-        try {
-            colorPalette.value = extractColorPalette(lowestUrl)
-            contentColorErrorState = null // Reset error state on success
-
-            dominantColor = colorPalette.value.dominantColor
-            isGradientVisible = true // Trigger the gradient visibility after color is loaded
-
-
-        } catch (e: Exception) {
-            contentColorErrorState = e.message // Handle the error
-            contentContainerErrorState = e.message // Handle the error
-        }
-    }
-    val gradientBrush = Brush.verticalGradient(
-        colors = listOf(
-            dominantColor.copy(alpha = 0.4f), // Start with dominant color from below
-            Color.Transparent // Transition to transparent at the top
-        ),
-        startY = 0f, // Start from the bottom
-        endY = 800f // Adjust this value to control the gradient's end position (height)
-    )
-
-
-    val tertiaryContentColor = getTertiaryContentColor(colorPalette.value, contentContainerErrorState)
-
-    val tertiaryContainerColor = getTertiaryContainerColor(colorPalette.value, contentContainerErrorState)
-
     val scrollState = rememberScrollState()
 
-    Box(
+    val showPreview = remember{ mutableStateOf(false) }
+
+   Box(
         modifier = modifier
             .fillMaxSize()
     ){
+       val gradientBrush = Brush.verticalGradient(
+           colors = listOf(
+               dominantColor.copy(alpha = 0.4f), // Start with dominant color from below
+               Color.Transparent // Transition to transparent at the top
+           ),
+           startY = 0f, // Start from the bottom
+           endY = 800f // Adjust this value to control the gradient's end position (height)
+       )
+
         // Crossfade transition for the gradient
         AnimatedVisibility(
             visible = isGradientVisible,
@@ -218,7 +194,7 @@ fun BookDetailsContent(
             exit = fadeOut(animationSpec = tween(durationMillis = 800)),
         ) {
             Box(
-                modifier = Modifier
+                modifier = modifier
                     .fillMaxSize()
                     .background(gradientBrush)
             )
@@ -227,19 +203,20 @@ fun BookDetailsContent(
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
+            modifier = modifier
                 .verticalScroll(scrollState)
                 .padding(8.dp)
                 .fillMaxSize()
         ) {
             TitleHeader(
-                book = book,
+                volumeInfo = volumeInfo,
                 onSearchAuthor = onSearchAuthor,
-                textColor = tertiaryContentColor,
+                imageUrl = imageUrl,
+                textColor = dominantColor,
                 onImageClick = {
                     showPreview.value = true
                 },
-                modifier = Modifier
+                modifier = modifier
                     .padding(8.dp)
             )
 
@@ -249,14 +226,14 @@ fun BookDetailsContent(
             // Top Tab Row
             ScrollableTabRow(
                 selectedTabIndex = pagerState.currentPage,
-                modifier = Modifier
+                modifier = modifier
                     .fillMaxWidth(),
                 containerColor = Color.Transparent,
-                contentColor = tertiaryContentColor,
+                contentColor = dominantColor,
                 indicator = { tabPositions ->
                     SecondaryIndicator(
-                        modifier = Modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
-                        color = tertiaryContainerColor // Set your preferred color here
+                        modifier = modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
+                        //color = tertiaryContainerColor // Set your preferred color here
                     )
                 }
             ) {
@@ -276,58 +253,54 @@ fun BookDetailsContent(
             // Swipe-able pager content for each tab
             HorizontalPager(
                 state = pagerState,
-                modifier = Modifier.fillMaxWidth()
+                modifier = modifier.fillMaxWidth()
             ) { page ->
                 when (page) {
                     0 -> AboutVolume(
-                        book = book,
-                        textColor = tertiaryContentColor
+                        volumeInfo = volumeInfo,
                     )
-                    /*1 -> AcquireVolume(
-                        book = book,
-                        modifier = Modifier.fillMaxSize()
+                    1 -> AcquireVolume(
+                        volumeInfo = volumeInfo,
+                        modifier = modifier.fillMaxSize()
                     )
                     2 -> PublishDetails(
-                        book = book,
-                    )*/
+                        volumeInfo = volumeInfo,
+                    )
                 }
             }
         }
 
+       if (showPreview.value) {
+           Box(
+               modifier = Modifier
+                   .fillMaxSize()
+                   .graphicsLayer {
+                       alpha = 0.5f // Adjust transparency to enhance blur effect
+                       shadowElevation = 8.dp.toPx() // Simulates depth for blur effect
+                       shape = RoundedCornerShape(0) // Apply shape for additional control
+                       clip = true // Required for proper blur clipping
+                   }
+                   .background(Color.Black.copy(alpha = 0.6f)) // Semi-transparent overlay
+           )
 
-        if (showPreview.value) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .graphicsLayer {
-                        alpha = 0.5f // Adjust transparency to enhance blur effect
-                        shadowElevation = 8.dp.toPx() // Simulates depth for blur effect
-                        shape = RoundedCornerShape(0) // Apply shape for additional control
-                        clip = true // Required for proper blur clipping
-                    }
-                    .background(Color.Black.copy(alpha = 0.6f)) // Semi-transparent overlay
-            )
-
-            // Fullscreen Book Cover Preview
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Transparent)
-                    .clickable { showPreview.value = false } // Dismiss the preview when clicked
-            ) {
-                BookCoverPreview(
-                    highestImageUrl = highestImageUrl,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .scale(1f)
-                        .graphicsLayer {
-                            this.alpha = 1f // Keep the preview visible
-                        }
-                )
-            }
-        }
-
-
+           // Fullscreen Book Cover Preview
+           Box(
+               modifier = Modifier
+                   .fillMaxSize()
+                   .background(Color.Transparent)
+                   .clickable { showPreview.value = false } // Dismiss the preview when clicked
+           ) {
+               BookCoverPreview(
+                   highestImageUrl = imageUrl,
+                   modifier = Modifier
+                       .fillMaxSize()
+                       .scale(1f)
+                       .graphicsLayer {
+                           this.alpha = 1f // Keep the preview visible
+                       }
+               )
+           }
+       }
     }
 
 }
@@ -338,46 +311,28 @@ fun DetailsLoadingScreen(
     modifier: Modifier = Modifier,
     text: String
 ) {
-    Row(
-        modifier = modifier.fillMaxSize(),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
+    Column(
+        modifier = modifier
+            .fillMaxHeight(),
+        verticalArrangement = Arrangement.Center
     ) {
-        // Set a constant size for the loading image
-        val imageSize = modifier
-            .size(width = 120.dp, height = 180.dp) // Set a non-square size
-            .clip(RoundedCornerShapeMedium) // Add rounded corners
-
-        Image(
-            painter = painterResource(R.drawable.undraw_writer_q06d),
-            contentDescription = "Loading",
-            contentScale = ContentScale.FillBounds, // Scale to fill the size while maintaining aspect ratio
-            modifier = imageSize.padding(end = 16.dp) // Space between the image and the text
+        // Display the book title
+        Text(
+            text = "Loading",
+            style = MaterialTheme.typography.headlineSmall, // Use appropriate text style
+            modifier = modifier.padding(bottom = 8.dp) // Space below the title
         )
 
-        Column(
-            modifier = modifier
-                .fillMaxHeight()
-                .weight(1f), // Allow the column to take up remaining space
-            verticalArrangement = Arrangement.Center
-        ) {
-            // Display the book title
-            Text(
-                text = "Loading",
-                style = MaterialTheme.typography.headlineSmall, // Use appropriate text style
-                modifier = modifier.padding(bottom = 8.dp) // Space below the title
-            )
+        // Display the book authors, if available
+        Text(
+            text = text, // Join authors with a comma
+            style = MaterialTheme.typography.bodyLarge, // Use appropriate text style
+            modifier = modifier.padding(bottom = 16.dp) // Space below the authors
+        )
 
-            // Display the book authors, if available
-            Text(
-                text =text, // Join authors with a comma
-                style = MaterialTheme.typography.bodyLarge, // Use appropriate text style
-                modifier = modifier.padding(bottom = 16.dp) // Space below the authors
-            )
-
-        }
     }
 }
+
 
 
 @Composable
@@ -386,52 +341,32 @@ fun DetailsErrorScreen(
     text: String,
     onRefresh: () -> Unit
 ) {
-    Row(
-        modifier = modifier.fillMaxSize(),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
+    Column(
+        modifier = modifier
+            .fillMaxHeight(),
+        verticalArrangement = Arrangement.Center
     ) {
-        // Set a constant size for the loading image
-        val imageSize = Modifier
-            .size(width = 200.dp, height = 240.dp) // Set a non-square size
-            .clip(RoundedCornerShapeMedium) // Add rounded corners
-            .padding(16.dp) // Add padding around the image
-
-
-        Image(
-            painter = painterResource(R.drawable.undraw_writer_q06d),
-            contentDescription = "Error",
-            contentScale = ContentScale.FillBounds, // Scale to fill the size while maintaining aspect ratio
-            modifier = imageSize.padding(end = 16.dp) // Space between the image and the text
+        // Display the book title
+        Text(
+            text = "Error",
+            style = MaterialTheme.typography.headlineSmall, // Use appropriate text style
+            modifier = modifier.padding(bottom = 8.dp) // Space below the title
         )
 
-        Column(
+        // Display the book authors, if available
+        Text(
+            text = text, // Join authors with a comma
+            style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onTertiaryContainer), // Use appropriate text style
             modifier = modifier
-                .fillMaxHeight()
-                .weight(1f), // Allow the column to take up remaining space
-            verticalArrangement = Arrangement.Center
-        ) {
-            // Display the book title
-            Text(
-                text = "Error",
-                style = MaterialTheme.typography.headlineSmall, // Use appropriate text style
-                modifier = modifier.padding(bottom = 8.dp) // Space below the title
-            )
+                .padding(bottom = 16.dp)
+                .clickable {
+                    onRefresh()
+                }
+        )
 
-            // Display the book authors, if available
-            Text(
-                text =text, // Join authors with a comma
-                style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onTertiaryContainer), // Use appropriate text style
-                modifier = modifier
-                    .padding(bottom = 16.dp)
-                    .clickable {
-                        onRefresh()
-                    }
-            )
-
-        }
     }
 }
+
 
 
 fun search(url : String, context: Context) {
@@ -440,22 +375,6 @@ fun search(url : String, context: Context) {
     ContextCompat.startActivity(context, intent, null)
 }
 
-val highestAvailableImageUrlFetcher = ImageUrlFetcherContract { imageLinks ->
-    imageLinks?.extraLarge.takeIf { !it.isNullOrEmpty() }
-        ?: imageLinks?.large.takeIf { !it.isNullOrEmpty() }
-        ?: imageLinks?.medium.takeIf { !it.isNullOrEmpty() }
-        ?: imageLinks?.small.takeIf { !it.isNullOrEmpty() }
-        ?: imageLinks?.thumbnail.takeIf { !it.isNullOrEmpty() }
-        ?: imageLinks?.smallThumbnail.takeIf { !it.isNullOrEmpty() }
-}
-
-val lowestAvailableImageUrlFetcher = ImageUrlFetcherContract { imageLinks ->
-    imageLinks?.smallThumbnail.takeIf { !it.isNullOrEmpty() }
-        ?: imageLinks?.thumbnail.takeIf { !it.isNullOrEmpty() }
-        ?: imageLinks?.medium.takeIf { !it.isNullOrEmpty() }
-        ?: imageLinks?.small.takeIf { !it.isNullOrEmpty() }
-        ?: imageLinks?.large.takeIf { !it.isNullOrEmpty() }
-}
 
 
 

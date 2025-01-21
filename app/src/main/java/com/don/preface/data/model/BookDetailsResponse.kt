@@ -4,38 +4,38 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class BookDetailsResponse(
-    val kind: String,
-    val id: String,
-    val etag: String,
-    val selfLink: String,
-    val volumeInfo: VolumeInfoDet,
-    val saleInfo: SaleInfo,
-    val accessInfo: AccessInfo
+    val kind: String = "",
+    val id: String = "",
+    val etag: String = "",
+    val selfLink: String = "",
+    val volumeInfo: VolumeInfoDet = VolumeInfoDet(),
+    val saleInfo: SaleInfo = SaleInfo(),
+    val accessInfo: AccessInfo = AccessInfo()
 )
 
 @Serializable
 data class VolumeInfoDet(
-    val title: String,
-    val authors: List<String>?,
+    val title: String = "",
+    val authors: List<String> = emptyList(),
     val publisher: String = "",
-    val publishedDate: String?,
-    val description: String?,
+    val publishedDate: String = "",
+    val description: String = "",
     val industryIdentifiers: List<IndustryIdentifier> = emptyList(),
-    val readingModes: ReadingModes?,
-    val pageCount: Int? = 0,
-    val printedPageCount: Int? = 0,
-    val dimensions: Dimensions?,
-    val printType: String?,
+    val readingModes: ReadingModes = ReadingModes(),
+    val pageCount: Int = 0,
+    val printedPageCount: Int = 0,
+    val dimensions: Dimensions = Dimensions(),
+    val printType: String = "",
     val categories: List<String> = emptyList(),
-    val maturityRating: String?,
-    val allowAnonLogging: Boolean? = false,
-    val contentVersion: String?,
-    val panelizationSummary: PanelizationSummary?,
-    val imageLinks: ImageLinks?,
-    val language: String?,
-    val previewLink: String?,
-    val infoLink: String?,
-    val canonicalVolumeLink: String?
+    val maturityRating: String = "",
+    val allowAnonLogging: Boolean = false,
+    val contentVersion: String = "",
+    val panelizationSummary: PanelizationSummary = PanelizationSummary(),
+    val imageLinks: ImageLinks = ImageLinks(),
+    val language: String = "",
+    val previewLink: String= "",
+    val infoLink: String = "",
+    val canonicalVolumeLink: String = ""
 )
 
 @Serializable
@@ -46,48 +46,48 @@ data class IndustryIdentifier(
 
 @Serializable
 data class ReadingModes(
-    val text: Boolean,
-    val image: Boolean
+    val text: Boolean = false,
+    val image: Boolean = false
 )
 @Serializable
 data class Dimensions(
     val height: String = "",
     val width: String = "",
-    val thickness: String?
+    val thickness: String = ""
 )
 @Serializable
 data class PanelizationSummary(
-    val containsEpubBubbles: Boolean,
-    val containsImageBubbles: Boolean
+    val containsEpubBubbles: Boolean = false,
+    val containsImageBubbles: Boolean = false
 )
 @Serializable
 data class SaleInfo(
-    val country: String,
-    val saleability: String,
-    val isEbook: Boolean
+    val country: String = "",
+    val saleability: String = "",
+    val isEbook: Boolean = false
 )
 
 @Serializable
 data class AccessInfo(
-    val country: String?,
-    val viewability: String?,
-    val embeddable: Boolean?,
-    val publicDomain: Boolean?,
-    val textToSpeechPermission: String?,
-    val epub: Epub?,
-    val pdf: Pdf?,
-    val webReaderLink: String? = "",
-    val accessViewStatus: String?,
-    val quoteSharingAllowed: Boolean?
+    val country: String = "",
+    val viewability: String = "",
+    val embeddable: Boolean = false,
+    val publicDomain: Boolean = false,
+    val textToSpeechPermission: String = "",
+    val epub: Epub = Epub(),
+    val pdf: Pdf = Pdf(),
+    val webReaderLink: String = "",
+    val accessViewStatus: String = "",
+    val quoteSharingAllowed: Boolean = false
 )
 
 @Serializable
 data class Epub(
-    val isAvailable: Boolean
+    val isAvailable: Boolean = false
 )
 
 @Serializable
 data class Pdf(
-    val isAvailable: Boolean
+    val isAvailable: Boolean = false
 )
 
