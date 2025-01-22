@@ -21,3 +21,6 @@ dependencyResolutionManagement {
 
 rootProject.name = "Preface"
 include(":app")
+include(":feature-book-details")
+include(":common-domain")
+include(":common-navigation")

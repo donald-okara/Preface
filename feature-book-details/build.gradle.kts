@@ -1,5 +1,5 @@
 plugins {
-    alias(libs.plugins.android.application)
+    alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt.android)
@@ -9,20 +9,14 @@ plugins {
 }
 
 android {
-    namespace = "com.don.preface"
+    namespace = "ke.don.feature_book_details"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.don.preface"
-        minSdk = 26
-        targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        minSdk = 24
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-        vectorDrawables {
-            useSupportLibrary = true
-        }
+        consumerProguardFiles("consumer-rules.pro")
     }
 
     buildTypes {
@@ -47,16 +41,13 @@ android {
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.1"
     }
-    packaging {
-        resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
-        }
-    }
 }
 
 dependencies {
 
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
@@ -99,9 +90,7 @@ dependencies {
     //noinspection KaptUsageInsteadOfKsp
     kapt(libs.compiler)
 
-    implementation(project(":common-navigation"))
     implementation(project(":common-domain"))
-
 
     testImplementation(libs.junit)
     testImplementation(libs.mockito.kotlin)
@@ -112,10 +101,5 @@ dependencies {
     testImplementation(libs.mockito.core)
 
     androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.mockwebserver)
     androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
 }

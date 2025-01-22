@@ -1,17 +1,12 @@
-package com.don.preface
+package ke.don.shared_navigation
 
-import android.os.Bundle
 import android.view.animation.OvershootInterpolator
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
@@ -20,32 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.compose.rememberNavController
-import com.don.preface.ui.theme.PrefaceTheme
-import dagger.hilt.android.AndroidEntryPoint
-import ke.don.shared_navigation.NavGraph
 import kotlinx.coroutines.delay
-
-@AndroidEntryPoint
-class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            PrefaceTheme {
-                val navController = rememberNavController()
-
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    NavGraph(
-                        navController = navController,
-                    )
-
-                }
-            }
-        }
-    }
-}
 
 @Composable
 fun PrefaceSplashScreen(

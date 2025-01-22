@@ -1,0 +1,166 @@
+package ke.don.feature_book_details.presentation.screens.search
+
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import ke.don.feature_book_details.presentation.screens.search.components.BookSearchBar
+import ke.don.feature_book_details.presentation.screens.search.components.BooksGridScreen
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BookSearchScreen(
+    modifier: Modifier = Modifier,
+    viewModel: SearchViewModel = hiltViewModel(),
+    onNavigateToBookItem: (String) -> Unit
+) {
+
+    val searchState by viewModel.searchUiState.collectAsState()
+
+
+
+    Scaffold(
+        topBar = {
+            CenterAlignedTopAppBar(
+                title = {
+                    Text(
+                        text = "Search",
+                        modifier = Modifier.padding(8.dp),
+                        maxLines = 1
+                    )
+                }
+            )
+        }
+    ) { innerPadding->
+        Column(
+            modifier = modifier
+                .padding(innerPadding)
+                .fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            BookSearchBar(
+                bookSearch = viewModel.searchQuery,
+                onBookSearchChange = viewModel::onSearchQueryChange,
+                suggestedBook = viewModel.suggestedBook,
+                isSearchPopulated = viewModel.searchQuery.isNotEmpty(),
+                onShuffle = viewModel::shuffleBook,
+                onClear = viewModel::clearSearch,
+                onSearch = viewModel::onSearch,
+                shape = RoundedCornerShape(16.dp)
+            )
+
+            Spacer(modifier = modifier.height(16.dp))
+
+            when (searchState) {
+                is SearchState.Success -> {
+                    if ((searchState as SearchState.Success).data.isEmpty()) {
+                        Text(text = "No books found. Try searching for something else.")
+                    }else{
+                        BooksGridScreen(
+                            books = (searchState as SearchState.Success).data,
+                            onNavigateToBookItem = onNavigateToBookItem
+                        )
+                    }
+
+
+                }
+                is SearchState.Error ->{
+                    SearchErrorScreen(
+                        text = (searchState as SearchState.Error).message,
+                        onRefresh = viewModel::onSearch
+
+                    )
+                }
+
+                is SearchState.Loading -> {
+                    SearchLoadingScreen(
+                      text = viewModel.searchMessage
+                    )
+                }
+                is SearchState.Empty -> {
+                    Text(text = "Hit the shuffle button for a new suggestion")
+                }
+            }
+
+        }
+    }
+
+}
+
+@Composable
+fun SearchErrorScreen(
+    modifier: Modifier = Modifier,
+    text: String,
+    onRefresh: () -> Unit
+) {
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Display the book title
+        Text(
+            text = "Error",
+            style = MaterialTheme.typography.headlineSmall, // Use appropriate text style
+            modifier = modifier.padding(bottom = 8.dp) // Space below the title
+        )
+
+        // Display the book authors, if available
+        Text(
+            text = text, // Join authors with a comma
+            style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onTertiaryContainer), // Use appropriate text style
+            modifier = modifier
+                .padding(bottom = 16.dp)
+                .clickable {
+                    onRefresh()
+                }
+        )
+
+    }
+}
+
+@Composable
+fun SearchLoadingScreen(
+    modifier: Modifier = Modifier,
+    text: String,
+) {
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        // Display the book title
+        Text(
+            text = "Loading",
+            style = MaterialTheme.typography.headlineSmall, // Use appropriate text style
+            modifier = modifier.padding(bottom = 8.dp) // Space below the title
+        )
+
+        // Display the book authors, if available
+        Text(
+            text = text, // Join authors with a comma
+            style = MaterialTheme.typography.bodyLarge, // Use appropriate text style
+            modifier = modifier
+                .padding(bottom = 16.dp)
+        )
+
+    }
+}
+
+
+
