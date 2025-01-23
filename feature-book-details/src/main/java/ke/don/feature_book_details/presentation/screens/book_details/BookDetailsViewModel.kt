@@ -42,7 +42,7 @@ class BookDetailsViewModel @Inject constructor(
 
     fun refreshAction() = viewModelScope.launch {
         volumeId?.let {
-            repository.getBookDetails(it)
+            booksUseCases.getBookDetails(it)
         }
         onLoading()
     }
@@ -55,7 +55,7 @@ class BookDetailsViewModel @Inject constructor(
     }
 
 
-    fun onLoading() {
+    private fun onLoading() {
         loadingJoke = loadingBookJokes[Random.nextInt(loadingBookJokes.size)]
         logger.logDebug(TAG, "Loading joke: $loadingJoke")
     }
