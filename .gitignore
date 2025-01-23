@@ -3,6 +3,7 @@
 app/google-services.json
 app/client_secret.json
 app/src/main/res/values/secrets.xml
+common-domain/src/main/java/ke/don/shared_domain/values/Secrets.kt
 /local.properties
 /.idea/caches
 /.idea/libraries
