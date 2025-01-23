@@ -1,7 +1,7 @@
 package ke.don.feature_book_details.fake.contracts
 
-import ke.don.shared_domain.screens.utils.color_utils.ColorPaletteExtractor
-import ke.don.shared_domain.screens.utils.color_utils.model.ColorPallet
+import ke.don.shared_domain.utils.color_utils.ColorPaletteExtractor
+import ke.don.shared_domain.utils.color_utils.model.ColorPallet
 
 class FakeColorPaletteExtractor :
     ColorPaletteExtractor {

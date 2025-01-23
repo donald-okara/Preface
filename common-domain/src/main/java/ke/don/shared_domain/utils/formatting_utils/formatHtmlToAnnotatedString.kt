@@ -1,4 +1,4 @@
-package ke.don.shared_domain.screens.utils.formatting_utils
+package ke.don.shared_domain.utils.formatting_utils
 
 import android.text.Spanned
 import android.text.style.CharacterStyle

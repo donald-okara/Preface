@@ -1,4 +1,4 @@
-package ke.don.shared_domain.screens.logger
+package ke.don.shared_domain.logger
 
 interface Logger {
     fun logDebug(tag: String, message: String)

@@ -11,8 +11,10 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/app" />
+            <option value="$PROJECT_DIR$/common-datasource" />
             <option value="$PROJECT_DIR$/common-domain" />
             <option value="$PROJECT_DIR$/common-navigation" />
+            <option value="$PROJECT_DIR$/feature-authentication" />
             <option value="$PROJECT_DIR$/feature-book-details" />
           </set>
         </option>

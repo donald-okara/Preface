@@ -4,7 +4,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
-import ke.don.shared_domain.screens.utils.color_utils.model.ColorPallet
+import ke.don.shared_domain.utils.color_utils.model.ColorPallet
 
 @Composable
 fun getDominantColor(

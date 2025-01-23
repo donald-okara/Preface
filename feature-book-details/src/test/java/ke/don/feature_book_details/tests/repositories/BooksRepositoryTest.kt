@@ -1,7 +1,7 @@
 package ke.don.feature_book_details.tests.repositories
 
 import ke.don.feature_book_details.data.repositoryImpl.BooksRepositoryImpl
-import ke.don.shared_domain.screens.logger.Logger
+import ke.don.shared_domain.logger.Logger
 import ke.don.feature_book_details.domain.repositories.BooksRepository
 import ke.don.feature_book_details.domain.states.ResultState
 import ke.don.feature_book_details.fake.contracts.FakeColorPaletteExtractor

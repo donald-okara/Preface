@@ -8,9 +8,9 @@ import ke.don.feature_book_details.network.GoogleBooksApi
 import ke.don.feature_book_details.presentation.screens.search.SearchState
 import ke.don.feature_book_details.presentation.screens.search.searchMessages
 import ke.don.feature_book_details.presentation.screens.search.suggestedBookTitles
-import ke.don.shared_domain.screens.logger.Logger
-import ke.don.shared_domain.screens.utils.color_utils.ColorPaletteExtractor
-import ke.don.shared_domain.screens.utils.color_utils.model.ColorPallet
+import ke.don.shared_domain.logger.Logger
+import ke.don.shared_domain.utils.color_utils.ColorPaletteExtractor
+import ke.don.shared_domain.utils.color_utils.model.ColorPallet
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update

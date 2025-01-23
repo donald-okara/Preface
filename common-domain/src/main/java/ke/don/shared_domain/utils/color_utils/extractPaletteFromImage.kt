@@ -1,8 +1,8 @@
-package ke.don.shared_domain.screens.utils.color_utils
+package ke.don.shared_domain.utils.color_utils
 
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import ke.don.shared_domain.screens.utils.color_utils.model.ColorPallet
+import ke.don.shared_domain.utils.color_utils.model.ColorPallet
 import java.io.InputStream
 import androidx.palette.graphics.Palette
 import android.graphics.BitmapFactory
