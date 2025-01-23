@@ -1,7 +1,7 @@
 package ke.don.feature_book_details.domain.states
 
 import ke.don.feature_book_details.data.model.BookDetailsResponse
-import ke.don.feature_book_details.domain.utils.color_utils.model.ColorPallet
+import ke.don.shared_domain.screens.utils.color_utils.model.ColorPallet
 
 data class BookUiState(
     val bookDetails: BookDetailsResponse = BookDetailsResponse(),

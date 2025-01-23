@@ -10,6 +10,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -50,8 +51,9 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import ke.don.feature_book_details.domain.states.ResultState
-import ke.don.feature_book_details.domain.utils.color_utils.getDominantColor
+import ke.don.feature_book_details.data.utils.getDominantColor
 import ke.don.feature_book_details.presentation.screens.book_details.components.AboutVolume
 import ke.don.feature_book_details.presentation.screens.book_details.components.AcquireVolume
 import ke.don.feature_book_details.presentation.screens.book_details.components.BookCoverPreview
@@ -64,7 +66,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun BookDetailsScreen(
     modifier: Modifier = Modifier,
-    onSearchAuthor: (String) -> Unit,
+    onNavigateToSearch: () -> Unit,
     bookDetailsViewModel: BookDetailsViewModel = hiltViewModel(),
     onBackPressed: () -> Unit
 ){
@@ -73,7 +75,7 @@ fun BookDetailsScreen(
     val imageUrl = bookUiState.value.highestImageUrl
 
     val colorPallet = bookUiState.value.colorPallet
-    val dominantColor = getDominantColor(colorPallet)
+    val dominantColor = getDominantColor(colorPallet, isDarkTheme = isSystemInDarkTheme())
 
 
     Scaffold(
@@ -111,7 +113,10 @@ fun BookDetailsScreen(
             BookDetailsContent(
                 modifier = modifier.align(Alignment.TopCenter),
                 volumeInfo = bookUiState.value.bookDetails.volumeInfo,
-                onSearchAuthor = onSearchAuthor,
+                onSearchAuthor = { author->
+                    bookDetailsViewModel.onSearchAuthor(author = author)
+                    onNavigateToSearch()
+                },
                 imageUrl = imageUrl,
                 dominantColor = dominantColor,
                 isGradientVisible = bookUiState.value.resultState == ResultState.Success
@@ -128,15 +133,8 @@ fun BookDetailsScreen(
 
 
             }
-
-
         }
-
-
-
     }
-
-
 }
 
 
@@ -162,11 +160,15 @@ fun BookDetailsContent(
     ){
        val gradientBrush = Brush.verticalGradient(
            colors = listOf(
+               dominantColor.copy(alpha = 1f), // Start with dominant color from below
+               dominantColor.copy(alpha = 0.8f), // Start with dominant color from below
+               dominantColor.copy(alpha = 0.6f), // Start with dominant color from below
                dominantColor.copy(alpha = 0.4f), // Start with dominant color from below
+               dominantColor.copy(alpha = 0.2f), // Start with dominant color from below
                Color.Transparent // Transition to transparent at the top
            ),
            startY = 0f, // Start from the bottom
-           endY = 800f // Adjust this value to control the gradient's end position (height)
+           endY = 1500f // Adjust this value to control the gradient's end position (height)
        )
 
         // Crossfade transition for the gradient
@@ -215,7 +217,7 @@ fun BookDetailsContent(
                 indicator = { tabPositions ->
                     SecondaryIndicator(
                         modifier = modifier.tabIndicatorOffset(tabPositions[pagerState.currentPage]),
-                        //color = tertiaryContainerColor // Set your preferred color here
+                        color = dominantColor
                     )
                 }
             ) {
@@ -239,6 +241,7 @@ fun BookDetailsContent(
             ) { page ->
                 when (page) {
                     0 -> AboutVolume(
+                        textColor = dominantColor,
                         volumeInfo = volumeInfo,
                     )
                     1 -> AcquireVolume(
@@ -254,7 +257,7 @@ fun BookDetailsContent(
 
        if (showPreview.value) {
            Box(
-               modifier = Modifier
+               modifier = modifier
                    .fillMaxSize()
                    .graphicsLayer {
                        alpha = 0.5f // Adjust transparency to enhance blur effect
@@ -267,14 +270,14 @@ fun BookDetailsContent(
 
            // Fullscreen Book Cover Preview
            Box(
-               modifier = Modifier
+               modifier = modifier
                    .fillMaxSize()
                    .background(Color.Transparent)
                    .clickable { showPreview.value = false } // Dismiss the preview when clicked
            ) {
                BookCoverPreview(
                    highestImageUrl = imageUrl,
-                   modifier = Modifier
+                   modifier = modifier
                        .fillMaxSize()
                        .scale(1f)
                        .graphicsLayer {

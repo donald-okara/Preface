@@ -22,12 +22,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import ke.don.feature_book_details.R
+import ke.don.feature_book_details.data.model.VolumeInfoDet
 import ke.don.feature_book_details.presentation.screens.book_details.search
 
 @Composable
 fun AcquireVolume(
     modifier: Modifier = Modifier,
-    volumeInfo: ke.don.feature_book_details.data.model.VolumeInfoDet,
+    volumeInfo: VolumeInfoDet,
 ){
     val context = LocalContext.current
     val volumeName = volumeInfo.title

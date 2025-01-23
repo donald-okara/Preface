@@ -74,16 +74,16 @@ object FakeBooksDataSource {
             )
         )
 
-    val fakeBookList: Response<ke.don.feature_book_details.data.model.BookListItemResponse> = Response.success(
-        ke.don.feature_book_details.fake.data.FakeBooksDataSource.fakeBookListItemResponse
+    val fakeBookList: Response<BookListItemResponse> = Response.success(
+        fakeBookListItemResponse
     )
 
-    val fakeSearchSuccessState = ke.don.feature_book_details.presentation.screens.search.SearchState.Success(
-        ke.don.feature_book_details.fake.data.FakeBooksDataSource.fakeBookList.body()?.items ?: emptyList()
+    val fakeSearchSuccessState = SearchState.Success(
+        fakeBookList.body()?.items ?: emptyList()
     )
 
-    val fakeSearchErrorResponseState = ke.don.feature_book_details.presentation.screens.search.SearchState.Error("Failed with status: 404")
+    val fakeSearchErrorResponseState = SearchState.Error("Failed with status: 404")
 
-    val fakeSearchErrorState = ke.don.feature_book_details.presentation.screens.search.SearchState.Error("An error occurred. Check your internet and try again")
+    val fakeSearchErrorState = SearchState.Error("An error occurred. Check your internet and try again")
 
 }

@@ -1,5 +1,8 @@
 package ke.don.feature_book_details.presentation.screens.search
 
+import android.util.Log
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,6 +17,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -32,8 +36,10 @@ fun BookSearchScreen(
 ) {
 
     val searchState by viewModel.searchUiState.collectAsState()
-
-
+    val searchMessage by viewModel.searchMessage.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val suggestedBook by viewModel.suggestedBook.collectAsState()
+    val isSearchPopulated by viewModel.isSearchPopulated.collectAsState()
 
     Scaffold(
         topBar = {
@@ -41,7 +47,7 @@ fun BookSearchScreen(
                 title = {
                     Text(
                         text = "Search",
-                        modifier = Modifier.padding(8.dp),
+                        modifier = modifier.padding(8.dp),
                         maxLines = 1
                     )
                 }
@@ -51,19 +57,21 @@ fun BookSearchScreen(
         Column(
             modifier = modifier
                 .padding(innerPadding)
+                .animateContentSize(animationSpec = tween(3000))
                 .fillMaxSize(),
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             BookSearchBar(
-                bookSearch = viewModel.searchQuery,
+                bookSearch = searchQuery,
                 onBookSearchChange = viewModel::onSearchQueryChange,
-                suggestedBook = viewModel.suggestedBook,
-                isSearchPopulated = viewModel.searchQuery.isNotEmpty(),
+                suggestedBook = suggestedBook,
+                isSearchPopulated = isSearchPopulated,
                 onShuffle = viewModel::shuffleBook,
                 onClear = viewModel::clearSearch,
                 onSearch = viewModel::onSearch,
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(16.dp),
+                modifier = modifier.padding(8.dp)
             )
 
             Spacer(modifier = modifier.height(16.dp))
@@ -91,7 +99,7 @@ fun BookSearchScreen(
 
                 is SearchState.Loading -> {
                     SearchLoadingScreen(
-                      text = viewModel.searchMessage
+                      text = searchMessage
                     )
                 }
                 is SearchState.Empty -> {

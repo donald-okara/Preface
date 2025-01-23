@@ -19,7 +19,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import ke.don.feature_book_details.data.model.VolumeInfoDet
-import ke.don.feature_book_details.domain.utils.formatting_utils.formatHtmlToAnnotatedString
+import ke.don.shared_domain.screens.utils.formatting_utils.formatHtmlToAnnotatedString
 
 @Composable
 fun AboutVolume(
@@ -49,7 +49,7 @@ fun DescriptionColumn(
 
     // Format the description
     val styledText =
-        ke.don.feature_book_details.domain.utils.formatting_utils.formatHtmlToAnnotatedString(
+        formatHtmlToAnnotatedString(
             description
         )
 

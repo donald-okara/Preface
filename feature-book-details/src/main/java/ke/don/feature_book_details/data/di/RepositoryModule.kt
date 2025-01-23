@@ -8,9 +8,10 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import ke.don.feature_book_details.R
 import ke.don.feature_book_details.data.repositoryImpl.BooksRepositoryImpl
-import ke.don.feature_book_details.domain.logger.Logger
+import ke.don.shared_domain.screens.logger.Logger
 import ke.don.feature_book_details.domain.repositories.BooksRepository
-import ke.don.feature_book_details.domain.utils.color_utils.DefaultColorPaletteExtractor
+import ke.don.feature_book_details.domain.usecase.BooksUseCases
+import ke.don.shared_domain.screens.utils.color_utils.DefaultColorPaletteExtractor
 import ke.don.feature_book_details.network.GoogleBooksApi
 import javax.inject.Singleton
 
@@ -31,4 +32,13 @@ object RepositoryModule {
             colorPaletteExtractor = DefaultColorPaletteExtractor()
         )
     }
+
+    @Provides
+    @Singleton
+    fun provideBooksUseCases(
+        booksRepository: BooksRepository
+    ): BooksUseCases {
+        return BooksUseCases(booksRepository)
+    }
+
 }

@@ -7,7 +7,9 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import ke.don.feature_book_details.domain.usecase.BooksUseCases
 import ke.don.shared_domain.screens.Screens
+import ke.don.shared_domain.screens.logger.Logger
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -16,7 +18,8 @@ import kotlin.random.Random
 @HiltViewModel
 class BookDetailsViewModel @Inject constructor(
     private val repository: ke.don.feature_book_details.domain.repositories.BooksRepository,
-    private val logger : ke.don.feature_book_details.domain.logger.Logger,
+    private val logger : Logger,
+    private val booksUseCases : BooksUseCases,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -42,6 +45,13 @@ class BookDetailsViewModel @Inject constructor(
             repository.getBookDetails(it)
         }
         onLoading()
+    }
+
+    fun onSearchAuthor(author: String) {
+        booksUseCases.onSearchQueryChange(author)
+        viewModelScope.launch {
+            booksUseCases.onSearch()
+        }
     }
 
 

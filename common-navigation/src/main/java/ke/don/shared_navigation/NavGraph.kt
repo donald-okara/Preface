@@ -65,7 +65,7 @@ fun NavGraph(
             )
         ) {
             BookDetailsScreen(
-                onSearchAuthor = { author ->
+                onNavigateToSearch = {
                     //searchViewModel.onSearch()
                     //searchViewModel.onSearchQueryChange(author)
                     navController.navigate(Screens.Search.route)

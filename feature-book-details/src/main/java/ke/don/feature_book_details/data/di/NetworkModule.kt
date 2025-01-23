@@ -1,7 +1,7 @@
 package ke.don.feature_book_details.data.di
 
-import ke.don.feature_book_details.domain.logger.Logger
-import ke.don.feature_book_details.domain.logger.LoggerImpl
+import ke.don.shared_domain.screens.logger.Logger
+import ke.don.shared_domain.screens.logger.LoggerImpl
 import ke.don.feature_book_details.network.GoogleBooksApi
 import dagger.Module
 import dagger.Provides

@@ -1,4 +1,4 @@
-package ke.don.feature_book_details.domain.utils.color_utils.model
+package ke.don.shared_domain.screens.utils.color_utils.model
 
 import androidx.compose.ui.graphics.Color
 

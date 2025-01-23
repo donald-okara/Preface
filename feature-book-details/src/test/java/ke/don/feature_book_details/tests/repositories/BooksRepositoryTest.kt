@@ -1,14 +1,16 @@
 package ke.don.feature_book_details.tests.repositories
 
 import ke.don.feature_book_details.data.repositoryImpl.BooksRepositoryImpl
-import ke.don.feature_book_details.domain.logger.Logger
+import ke.don.shared_domain.screens.logger.Logger
 import ke.don.feature_book_details.domain.repositories.BooksRepository
 import ke.don.feature_book_details.domain.states.ResultState
 import ke.don.feature_book_details.fake.contracts.FakeColorPaletteExtractor
 import ke.don.feature_book_details.fake.data.FakeBookUiState.fakeBookUiStateError
 import ke.don.feature_book_details.fake.data.FakeBookUiState.fakeBookUiStateSuccess
 import ke.don.feature_book_details.fake.data.FakeBooksDataSource
+import ke.don.feature_book_details.fake.data.FakeBooksDataSource.fakeSearchSuccessState
 import ke.don.feature_book_details.fake.network.FakeBookApiService
+import ke.don.feature_book_details.presentation.screens.search.SearchState
 import ke.don.feature_book_details.rules.TestDispatcherRule
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -34,15 +36,113 @@ class BooksRepositoryTest {
     val dispatcherRule = TestDispatcherRule()
 
     @Test
+    fun `updateSearchState updates the search state`() = runTest{
+        // Arrange
+        val searchState = repository.searchUiState
+        // Act
+        repository.updateSearchState(fakeSearchSuccessState)
+
+        // Assert
+        assertEquals(searchState.value, fakeSearchSuccessState)
+    }
+
+    @Test
+    fun `onSearchQueryChange updates the search query`() = runTest{
+        // Arrange
+        val searchQuery = repository.searchQuery
+        // Act
+        repository.onSearchQueryChange("Harry Potter")
+
+        // Assert
+        assertEquals(searchQuery.value, "Harry Potter")
+    }
+
+    @Test
+    fun `clearSearch clears the search state`() = runTest{
+        // Arrange
+        val searchQuery = repository.searchQuery
+        val searchState = repository.searchUiState
+        repository.onSearchQueryChange("Harry Potter")
+        repository.updateSearchState(fakeSearchSuccessState)
+
+        // Act
+        repository.clearSearch()
+
+        // Assert
+        assertEquals(searchState.value, SearchState.Empty)
+        assertEquals(searchQuery.value, "")
+    }
+
+    @Test
+    fun `suggestRandomBook fills the suggested book`() = runTest{
+        // Arrange
+        val suggestedBook = repository.suggestedBook
+
+        // Act
+        repository.suggestRandomBook()
+
+        // Assert
+        assert(suggestedBook.value.isNotEmpty())
+    }
+
+    @Test
+    fun `onLoading fills the search message`() = runTest{
+        // Arrange
+        val searchMessage = repository.searchMessage
+
+        // Act
+        repository.onLoading()
+
+        // Assert
+        assert(searchMessage.value.isNotEmpty())
+    }
+
+    @Test
+    fun `assignSuggestedBook fills the search query with suggested book`() = runTest{
+        // Arrange
+        val searchQuery = repository.searchQuery
+        val suggestedTitle = repository.suggestedBook
+
+        // Act
+        repository.suggestRandomBook()
+        repository.assignSuggestedBook()
+
+        // Assert
+        assertEquals(searchQuery.value, suggestedTitle.value)
+    }
+
+    @Test
+    fun `shuffleBook should update suggested book and search query`() = runTest{
+        // Arrange
+        val suggestedBook = repository.suggestedBook
+        val searchQuery = repository.searchQuery
+
+        // Act
+        repository.shuffleBook()
+
+        // Assert
+        assert(suggestedBook.value.isNotEmpty())
+        assert(searchQuery.value.isNotEmpty())
+
+        assertEquals(suggestedBook.value, searchQuery.value)
+    }
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    @Test
     fun `searchBooks should return a list of books`() = runTest{
         // Arrange
         val query = "Harry Potter"
+
         // Act
-        val response = repository.searchBooks(query)
+        repository.searchBooks(query)
+        advanceUntilIdle()
 
         // Assert
-        assert(response.isSuccessful)
-        assert(response.body()?.items?.isNotEmpty() == true)
+        assertEquals(
+            fakeSearchSuccessState,
+            repository.searchUiState.value
+        )
+
     }
 
     @Test

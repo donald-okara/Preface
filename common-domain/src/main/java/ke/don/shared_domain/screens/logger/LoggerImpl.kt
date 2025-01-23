@@ -1,4 +1,4 @@
-package ke.don.feature_book_details.domain.logger
+package ke.don.shared_domain.screens.logger
 
 class LoggerImpl : Logger {
     override fun logDebug(tag: String, message: String) {
