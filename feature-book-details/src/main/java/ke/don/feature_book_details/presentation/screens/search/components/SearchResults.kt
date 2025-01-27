@@ -37,13 +37,15 @@ fun BooksGridScreen(
     onNavigateToBookItem: (String) -> Unit
 
 ){
+    val uniqueBooks = books.distinctBy { it.id } // Ensure uniqueness
+
     LazyVerticalGrid(
         columns = GridCells.Adaptive(150.dp),
         modifier = modifier.padding(4.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp)
     ){
-        items(items = books, key = { book -> book.id }) { book ->
+        items(items = uniqueBooks, key = { book -> book.id }) { book ->
             BookItem(
                 book = book,
                 modifier = Modifier.padding(4.dp),
