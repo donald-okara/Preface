@@ -22,16 +22,6 @@ jobs:
           java-version: 17
           cache: 'gradle'
 
-      - name: Load Google Service file
-        env:
-          DATA: ${{ secrets.GOOGLE_SERVICES_JSON }}
-        run: echo $DATA | base64 -di > app/google-services.json
-
-      - name: Load secrets xml file
-        env:
-          DATA: ${{ secrets.SECRETS_XML}}
-        run: echo $DATA | base64 -di > app/src/main/res/values/secrets.xml
-
       - name: Grand execute permissions to gradlew
         run: chmod +x gradlew
 
