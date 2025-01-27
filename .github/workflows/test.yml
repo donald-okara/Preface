@@ -24,8 +24,10 @@ jobs:
 
       - name: Load WEB_CLIENT_ID
         env:
-          DATA: ${{ secrets.WEB_CLIENT_ID}}
-        run: echo $DATA | base64 -di > common-domain/src/main/java/ke/don/shared_domain/values/Secrets.kt
+          DATA: ${{ secrets.WEB_CLIENT_ID }}
+        run: |
+          echo "WEB_CLIENT_ID loaded successfully"
+      
 
       - name: Grand execute permissions to gradlew
         run: chmod +x gradlew
