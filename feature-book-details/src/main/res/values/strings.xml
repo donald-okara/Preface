@@ -1,8 +1,8 @@
 <resources>
     <string name="app_name">Preface</string>
-    <string name="book_cover">Book cover</string>
+    <string name="book_cover">Book cover for \"%1$s\</string>
     <string name="shuffle">Shuffle suggestion</string>
-    <string name="search">Search</string>
+    <string name="search">Search button</string>
     <string name="search_hint">Try: \"%1$s\"</string>
     <string name="clear">Clear</string>
 </resources>

@@ -79,7 +79,7 @@ fun BookItem(
                         .data(book.volumeInfo.imageLinks.thumbnail.replace("http://", "https://")) // Replacing "http" with "https"
                         .crossfade(true)
                         .build(),
-                    contentDescription = stringResource(R.string.book_cover),
+                    contentDescription = stringResource(R.string.book_cover, book.volumeInfo.title),
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxWidth()
                 )
@@ -87,7 +87,7 @@ fun BookItem(
                 // Show a placeholder image if thumbnail is null
                 Image(
                     painter = painterResource(R.drawable.undraw_writer_q06d), // Add a placeholder drawable
-                    contentDescription = stringResource(R.string.book_cover),
+                    contentDescription = stringResource(R.string.book_cover, book.volumeInfo.title),
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxWidth()
                 )
