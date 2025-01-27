@@ -67,6 +67,8 @@ dependencies {
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
 
+    implementation(project(":common-datasource"))
+    implementation(project(":common-domain"))
 
     implementation(libs.material)
     testImplementation(libs.junit)

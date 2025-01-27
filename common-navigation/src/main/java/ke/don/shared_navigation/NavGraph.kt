@@ -2,16 +2,15 @@ package ke.don.shared_navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.compose.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import ke.don.shared_domain.values.Screens
+import ke.don.feature_authentication.presentation.SignInScreen
 import ke.don.feature_book_details.presentation.screens.book_details.BookDetailsScreen
 import ke.don.feature_book_details.presentation.screens.search.BookSearchScreen
-import ke.don.feature_book_details.presentation.screens.search.SearchViewModel
-import ke.don.shared_domain.screens.Screens
 
 @Composable
 fun NavGraph(
@@ -35,6 +34,10 @@ fun NavGraph(
                     }
                 }
             )
+        }
+
+        composable(Screens.SignIn.route) {
+            SignInScreen()
         }
 
         composable(Screens.Search.route) {

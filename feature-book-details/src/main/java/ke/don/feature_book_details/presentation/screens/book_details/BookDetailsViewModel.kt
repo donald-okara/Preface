@@ -7,8 +7,9 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import ke.don.shared_domain.values.Screens
+import ke.don.feature_book_details.domain.states.BookUiState
 import ke.don.feature_book_details.domain.usecase.BooksUseCases
-import ke.don.shared_domain.screens.Screens
 import ke.don.shared_domain.logger.Logger
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -25,7 +26,7 @@ class BookDetailsViewModel @Inject constructor(
 
     private val volumeId = savedStateHandle.get<String>(Screens.BookDetails.volumeIdNavigationArgument)
 
-    val bookState: StateFlow<ke.don.feature_book_details.domain.states.BookUiState> = repository.bookUiState
+    val bookState: StateFlow<BookUiState> = repository.bookUiState
 
     var loadingJoke: String by mutableStateOf("")
         private set
