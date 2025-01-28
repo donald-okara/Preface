@@ -71,6 +71,9 @@ dependencies {
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
 
+    //Lottie
+    implementation( libs.lottie.compose)
+
     implementation(project(":common-datasource"))
     implementation(project(":common-domain"))
 
