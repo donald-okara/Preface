@@ -6,14 +6,13 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import ke.don.feature_book_details.R
 import ke.don.feature_book_details.data.repositoryImpl.BooksRepositoryImpl
-import ke.don.shared_domain.logger.Logger
 import ke.don.feature_book_details.domain.repositories.BooksRepository
 import ke.don.feature_book_details.domain.usecase.BooksUseCases
-import ke.don.shared_domain.utils.color_utils.DefaultColorPaletteExtractor
 import ke.don.feature_book_details.network.GoogleBooksApi
 import ke.don.shared_domain.BuildConfig
+import ke.don.shared_domain.logger.Logger
+import ke.don.shared_domain.utils.color_utils.DefaultColorPaletteExtractor
 import javax.inject.Singleton
 
 @Module
