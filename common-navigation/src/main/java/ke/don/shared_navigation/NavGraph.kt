@@ -8,9 +8,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import ke.don.shared_domain.values.Screens
-import ke.don.feature_authentication.presentation.SignInScreen
 import ke.don.feature_book_details.presentation.screens.book_details.BookDetailsScreen
 import ke.don.feature_book_details.presentation.screens.search.BookSearchScreen
+import ke.don.feature_authentication.presentation.OnboardingScreen
 
 @Composable
 fun NavGraph(
@@ -23,7 +23,7 @@ fun NavGraph(
         navController = navController,
         startDestination = Screens.Splash.route
     ) {
-        val startDestinationScreen = Screens.Search.route
+        val startDestinationScreen = Screens.OnBoarding.route
 
         composable(Screens.Splash.route) {
             PrefaceSplashScreen(
@@ -36,9 +36,10 @@ fun NavGraph(
             )
         }
 
-        composable(Screens.SignIn.route) {
-            SignInScreen()
+        composable(Screens.OnBoarding.route){
+            OnboardingScreen()
         }
+
 
         composable(Screens.Search.route) {
             BookSearchScreen(

@@ -68,6 +68,7 @@ dependencies {
     implementation(project(":common-domain"))
     implementation(project(":feature-book-details"))
     implementation(project(":feature-authentication"))
+    implementation(project(":feature-onboarding"))
     implementation(libs.androidx.navigation.compose)
 
     testImplementation(libs.junit)
