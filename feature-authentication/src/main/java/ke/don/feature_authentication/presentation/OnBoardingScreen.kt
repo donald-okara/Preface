@@ -1,6 +1,14 @@
 package ke.don.feature_authentication.presentation
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -18,8 +26,6 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.PagerState
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,6 +34,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -38,7 +45,9 @@ import com.airbnb.lottie.compose.LottieAnimation
 import com.airbnb.lottie.compose.LottieCompositionSpec
 import com.airbnb.lottie.compose.LottieConstants
 import com.airbnb.lottie.compose.rememberLottieComposition
-import ke.don.feature_authentication.R
+import ke.don.feature_authentication.data.animations
+import ke.don.feature_authentication.data.descriptions
+import ke.don.feature_authentication.data.titles
 import kotlinx.coroutines.launch
 
 
@@ -47,27 +56,9 @@ fun OnboardingScreen(
     modifier: Modifier = Modifier,
     viewModel: SignInViewModel = hiltViewModel()
 ) {
-    val animations = listOf(
-        R.raw.animation1,
-        R.raw.animation2,
-        R.raw.animation3
-    )
-    val titles = listOf(
-        "Build your library",
-        "Share bookshelf",
-        "Explore books"
-    )
-
-    val descriptions = listOf(
-        "Organize your favorite books and create a personalized bookshelves.",
-        "Easily share your bookshelves with your friends to share the joy of reading.",
-        "Discover new books and expand your horizons with our curated suggestions."
-    )
-
     val pagerState = rememberPagerState(
         pageCount = { animations.size }
     )
-
 
     Column(
         modifier
@@ -90,7 +81,7 @@ fun OnboardingScreen(
                 val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(animations[currentPage]))
                 LottieAnimation(
                     composition = composition,
-                    iterations = LottieConstants.IterateForever,
+                    iterations = 1,
                     modifier = modifier.size(400.dp)
                 )
                 Text(
@@ -109,71 +100,47 @@ fun OnboardingScreen(
             }
         }
 
-        PageIndicator(
-            pageCount = animations.size,
-            currentPage = pagerState.currentPage,
-            modifier = modifier.padding(60.dp)
-        )
-    }
+        LookaheadScope {
+            Row(
+                modifier = modifier
+                    .fillMaxWidth()
+                    .padding(8.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                PageIndicator(
+                    pageCount = animations.size,
+                    currentPage = pagerState.currentPage,
+                    modifier = modifier.padding(60.dp)
+                )
 
-    ButtonsSection(
-        pagerState = pagerState,
-        onSignInWithGoogleClicked = {
-            viewModel.onSignInWithGoogle()
+                AnimatedVisibility(
+                    visible = pagerState.currentPage == 2,
+                    enter = fadeIn(animationSpec = tween(durationMillis = 300)) +
+                            slideInVertically(
+                                initialOffsetY = { it },
+                                animationSpec = spring(stiffness = Spring.StiffnessLow)
+                            ),
+                    exit = fadeOut(animationSpec = tween(durationMillis = 200)) +
+                            slideOutVertically(
+                                targetOffsetY = { it },
+                                animationSpec = spring(stiffness = Spring.StiffnessMedium)
+                            )
+                ) {
+                    GoogleSignInButton(
+                        modifier = modifier,
+                        onClickAction = { viewModel.onSignInWithGoogle() }
+                    )
+                }
+            }
         }
-)
+
+
+
+    }
 
 }
 
-@Composable
-fun ButtonsSection(
-    modifier: Modifier = Modifier,
-    onSignInWithGoogleClicked: () -> Unit,
-    pagerState: PagerState
-) {
-
-    val scope = rememberCoroutineScope()
-
-    Box(modifier = modifier
-        .fillMaxSize()
-        .padding(30.dp)){
-        if (pagerState.currentPage != 2){
-            Text(text = "Next",
-                modifier = modifier
-                    .align(Alignment.BottomEnd)
-                    .clickable {
-
-                        scope.launch {
-                            val nextPage = pagerState.currentPage +1
-                            pagerState.scrollToPage(nextPage)
-                        }
-                    },
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-            )
-            Text(text = "Back",
-                modifier = modifier
-                    .align(Alignment.BottomStart)
-                    .clickable {
-                        scope.launch {
-                            val prevPage = pagerState.currentPage -1
-                            if (prevPage >= 0){
-                                pagerState.scrollToPage(prevPage)
-                            }
-                        }
-                    },
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-            )
-        }else{
-            GoogleSignInButton(
-                modifier = modifier
-                    .align(Alignment.BottomCenter),
-                onClickAction = onSignInWithGoogleClicked
-            )
-        }
-    }
-}
 
 @Composable
 fun PageIndicator(pageCount: Int, currentPage: Int, modifier: Modifier) {
