@@ -22,11 +22,8 @@ jobs:
           java-version: 17
           cache: 'gradle'
 
-      - name: Load WEB_CLIENT_ID
-        env:
-          DATA: ${{ secrets.WEB_CLIENT_ID }}
-        run: |
-          echo "WEB_CLIENT_ID loaded successfully"
+      - name: Get local.properties from secrets
+        run: echo "${{secrets.LOCAL_PROPERTIES }}" > $GITHUB_WORKSPACE/local.properties
       
 
       - name: Grand execute permissions to gradlew

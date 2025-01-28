@@ -9,7 +9,7 @@ import androidx.credentials.exceptions.GetCredentialException
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
-import ke.don.shared_domain.values.WEB_CLIENT_ID
+import ke.don.shared_domain.BuildConfig
 import java.security.MessageDigest
 import java.util.UUID
 
@@ -24,14 +24,14 @@ class GoogleSignInClient(
     private val digest = md.digest(bytes)
     private val nonce = digest.fold("") { str, it -> str + "%02x".format(it) }
 
-    val googleIdOption: GetGoogleIdOption = GetGoogleIdOption
+    private val googleIdOption: GetGoogleIdOption = GetGoogleIdOption
         .Builder()
         .setFilterByAuthorizedAccounts(false)
-        .setServerClientId(WEB_CLIENT_ID)
+        .setServerClientId(BuildConfig.WEB_CLIENT_ID)
         .setNonce(nonce)
         .build()
 
-    val request : GetCredentialRequest = GetCredentialRequest
+    private val request : GetCredentialRequest = GetCredentialRequest
         .Builder()
         .addCredentialOption(googleIdOption)
         .build()

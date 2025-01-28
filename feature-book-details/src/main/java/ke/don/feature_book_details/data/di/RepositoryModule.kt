@@ -13,7 +13,7 @@ import ke.don.feature_book_details.domain.repositories.BooksRepository
 import ke.don.feature_book_details.domain.usecase.BooksUseCases
 import ke.don.shared_domain.utils.color_utils.DefaultColorPaletteExtractor
 import ke.don.feature_book_details.network.GoogleBooksApi
-import ke.don.shared_domain.values.GOOGLE_API_KEY
+import ke.don.shared_domain.BuildConfig
 import javax.inject.Singleton
 
 @Module
@@ -28,7 +28,7 @@ object RepositoryModule {
     ): BooksRepository {
         return BooksRepositoryImpl(
             googleBooksApi = googleBooksApi,
-            apiKey = GOOGLE_API_KEY,
+            apiKey = BuildConfig.GOOGLE_API_KEY,
             logger = logger,
             colorPaletteExtractor = DefaultColorPaletteExtractor()
         )
