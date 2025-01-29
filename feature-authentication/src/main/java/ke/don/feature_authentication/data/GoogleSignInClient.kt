@@ -24,6 +24,7 @@ class GoogleSignInClient(
     private val digest = md.digest(bytes)
     private val nonce = digest.fold("") { str, it -> str + "%02x".format(it) }
 
+
     private val googleIdOption: GetGoogleIdOption = GetGoogleIdOption
         .Builder()
         .setFilterByAuthorizedAccounts(false)
