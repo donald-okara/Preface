@@ -6,6 +6,8 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import ke.don.common_datasource.data.repositoryImpl.ProfileRepositoryImpl
+import ke.don.common_datasource.domain.repositories.ProfileRepository
 import javax.inject.Singleton
 
 @Module
@@ -14,8 +16,14 @@ object SignInModule {
 
     @Provides
     @Singleton
-    fun provideGoogleSignInClient(@ApplicationContext context: Context): GoogleSignInClient {
-        return GoogleSignInClient(context)
+    fun provideGoogleSignInClient(
+        @ApplicationContext context: Context,
+        profileRepository: ProfileRepository
+    ): GoogleSignInClient {
+        return GoogleSignInClient(
+            context = context,
+            profileRepository = profileRepository
+        )
     }
 
 }
