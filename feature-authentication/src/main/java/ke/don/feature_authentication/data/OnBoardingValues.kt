@@ -3,9 +3,9 @@ package ke.don.feature_authentication.data
 import ke.don.feature_authentication.R
 
 val animations = listOf(
-    R.raw.animation1,
-    R.raw.animation2,
-    R.raw.animation3
+    R.raw.girlreadinganim,
+    R.raw.friendsanim,
+    R.raw.girlonbooksanim
 )
 val titles = listOf(
     "Build your library",
