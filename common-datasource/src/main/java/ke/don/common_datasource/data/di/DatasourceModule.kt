@@ -14,6 +14,10 @@ object DatasourceModule {
 
     @Provides
     @Singleton
-    fun provideProfileRepository(): ProfileRepository = ProfileRepositoryImpl()
+    fun provideProfileRepository(
+        supabaseClient: SupabaseClient
+    ): ProfileRepository = ProfileRepositoryImpl(
+        supabaseClient = supabaseClient
+    )
 
 }
