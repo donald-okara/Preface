@@ -3,6 +3,7 @@ import java.util.Properties
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.serialization)
 }
 
 // app/build.gradle (or module-level build.gradle)
@@ -32,6 +33,18 @@ android {
             "String",
             "GOOGLE_API_KEY",
             "\"${localProperties.getProperty("GOOGLE_API_KEY")}\""
+        )
+
+        buildConfigField(
+            "String",
+            "SUPABASE_URL",
+            "\"${localProperties.getProperty("SUPABASE_URL")}\""
+        )
+
+        buildConfigField(
+            "String",
+            "SUPABASE_KEY",
+            "\"${localProperties.getProperty("SUPABASE_KEY")}\""
         )
     }
 
@@ -65,6 +78,8 @@ dependencies {
     implementation(libs.androidx.foundation.android)
     implementation(libs.androidx.palette.ktx)
     implementation(libs.okhttp)
+    implementation(libs.kotlinx.serialization.json)
+
 
     implementation(libs.androidx.material3.android)
     testImplementation(libs.junit)

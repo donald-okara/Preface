@@ -25,7 +25,7 @@ class GoogleSignInClient(
         .Builder()
         .setFilterByAuthorizedAccounts(false)
         .setServerClientId(BuildConfig.WEB_CLIENT_ID)
-        .setNonce(profileRepository.nonce)
+        .setNonce(profileRepository.hashedNonce)
         .build()
 
     private val request : GetCredentialRequest = GetCredentialRequest
@@ -48,6 +48,13 @@ class GoogleSignInClient(
 
             val googleIdToken = googleIdTokenCredential.idToken
 
+            // Extract necessary data from GoogleIdTokenCredential
+            val displayName = googleIdTokenCredential.displayName
+            val profilePictureUri = googleIdTokenCredential.profilePictureUri?.toString()
+
+            profileRepository.signInAndCheckProfile(googleIdToken, displayName, profilePictureUri)
+
+
             Log.d("GoogleIDToken", googleIdToken)
             Toast.makeText(context, "Google ID Token: $googleIdToken", Toast.LENGTH_SHORT).show()
         }  catch (e: GetCredentialException) {
@@ -56,6 +63,9 @@ class GoogleSignInClient(
         } catch (e: GoogleIdTokenParsingException){
             Log.d("GetCredentialException", e.toString())
             Toast.makeText(context, "Sign in failed google id token parsing exception", Toast.LENGTH_SHORT).show()
+        }catch (e: Exception) {
+            Log.d("SupabaseException", e.toString())
+            Toast.makeText(context, "Sign in failed with Supabase", Toast.LENGTH_SHORT).show()
         }
 
     }
