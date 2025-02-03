@@ -11,8 +11,6 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import ke.don.common_datasource.domain.repositories.ProfileRepository
 import ke.don.shared_domain.BuildConfig
-import java.security.MessageDigest
-import java.util.UUID
 
 class GoogleSignInClient(
     private val context: Context,

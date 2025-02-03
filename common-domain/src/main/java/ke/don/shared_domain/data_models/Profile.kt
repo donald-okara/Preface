@@ -8,6 +8,8 @@ data class Profile(
     val id: String,
     val name : String = "",
 
+    @SerialName("auth_id")
+    val authId : String,
     @SerialName("avatar_url")
     val avatarUrl : String = ""
 )
