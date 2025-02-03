@@ -11,13 +11,22 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DatasourceModule {
+    @Provides
+    @Singleton
+    fun provideUserManager(): UserManager = UserManager()
+
+    @Provides
+    @Singleton
+    fun provideSupabaseClient(): SupabaseClient = SupabaseClient
 
     @Provides
     @Singleton
     fun provideProfileRepository(
-        supabaseClient: SupabaseClient
+        supabaseClient: SupabaseClient,
+        userManager: UserManager
     ): ProfileRepository = ProfileRepositoryImpl(
-        supabaseClient = supabaseClient
+        supabaseClient = supabaseClient,
+        userProfile = userManager
     )
 
 }

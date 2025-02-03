@@ -101,6 +101,7 @@ dependencies {
 
     implementation(project(":common-navigation"))
     implementation(project(":common-domain"))
+    implementation(project(":common-datasource"))
 
 
     testImplementation(libs.junit)

@@ -17,20 +17,22 @@ import ke.don.feature_authentication.presentation.OnboardingScreen
 fun NavGraph(
     modifier: Modifier = Modifier,
     navController: NavHostController,
-    //searchViewModel: SearchViewModel = hiltViewModel()
+    startDestinationScreen: String,
+    navViewModel: NavViewModel = hiltViewModel()
 ){
+
+    //val isSignedIn = navViewModel.isSignedIn
 
     NavHost(
         modifier = modifier,
         navController = navController,
         startDestination = Screens.Splash.route
     ) {
-        val startDestinationScreen = Screens.OnBoarding.route
 
         composable(Screens.Splash.route) {
             PrefaceSplashScreen(
                 onNavigateToMain = {
-                    navController.navigate(startDestinationScreen){
+                    navController.navigate(startDestinationScreen) {
                         // Clear splash screen from back stack
                         popUpTo(Screens.Splash.route) { inclusive = true }
                     }
@@ -38,8 +40,14 @@ fun NavGraph(
             )
         }
 
-        composable(Screens.OnBoarding.route){
-            OnboardingScreen()
+        composable(Screens.OnBoarding.route) {
+            OnboardingScreen(
+                onSuccessfulSignIn = {
+//                    navController.navigate(Screens.Search.route) {
+//                        popUpTo(Screens.OnBoarding.route) { inclusive = true }
+//                    }
+                }
+            )
         }
 
 

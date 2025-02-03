@@ -24,6 +24,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
 import com.don.preface.ui.theme.PrefaceTheme
 import dagger.hilt.android.AndroidEntryPoint
+import ke.don.common_datasource.data.di.UserManager
+import ke.don.shared_domain.values.Screens
 import ke.don.shared_navigation.NavGraph
 import kotlinx.coroutines.delay
 
@@ -31,6 +33,10 @@ import kotlinx.coroutines.delay
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        //val userProfile = UserManager.userProfile
+
+        val startDestinationScreen = Screens.OnBoarding.route
+
         enableEdgeToEdge()
         setContent {
             PrefaceTheme {
@@ -39,6 +45,7 @@ class MainActivity : ComponentActivity() {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     NavGraph(
                         navController = navController,
+                        startDestinationScreen = startDestinationScreen
                     )
 
                 }

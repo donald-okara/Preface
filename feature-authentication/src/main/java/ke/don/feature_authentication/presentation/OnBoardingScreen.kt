@@ -49,7 +49,8 @@ import ke.don.feature_authentication.data.titles
 @Composable
 fun OnboardingScreen(
     modifier: Modifier = Modifier,
-    viewModel: SignInViewModel = hiltViewModel()
+    viewModel: SignInViewModel = hiltViewModel(),
+    onSuccessfulSignIn : () -> Unit
 ) {
     val pagerState = rememberPagerState(
         pageCount = { animations.size }
@@ -124,7 +125,10 @@ fun OnboardingScreen(
                 ) {
                     GoogleSignInButton(
                         modifier = modifier,
-                        onClickAction = { viewModel.onSignInWithGoogle() }
+                        onClickAction = {
+                            viewModel.onSignInWithGoogle()
+                            onSuccessfulSignIn()
+                        }
                     )
                 }
             }
@@ -172,5 +176,8 @@ fun IndicatorSingleDot(
 @Preview
 @Composable
 fun OnboardingScreenPreview() {
-    OnboardingScreen()
+    OnboardingScreen(
+        onSuccessfulSignIn = {}
+
+    )
 }

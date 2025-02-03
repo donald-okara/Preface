@@ -6,19 +6,20 @@ import io.github.jan.supabase.auth.providers.Google
 import io.github.jan.supabase.auth.providers.builtin.IDToken
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
+import ke.don.common_datasource.data.di.SupabaseClient
+import ke.don.common_datasource.data.di.UserManager
 import ke.don.common_datasource.domain.getters.generateNonce
 import ke.don.common_datasource.domain.repositories.ProfileRepository
 import ke.don.shared_domain.data_models.Profile
 
 class ProfileRepositoryImpl(
-    supabaseClient: ke.don.common_datasource.data.di.SupabaseClient
+    private val supabaseClient: SupabaseClient,
+    private val userProfile : UserManager
 ): ProfileRepository {
     override val rawNonce: String
     override val hashedNonce: String
 
     private val supabase = supabaseClient.supabase
-
-    override val isSignedIn = supabase.auth.currentSessionOrNull() != null
 
     init {
         val (raw, hashed) = generateNonce()
@@ -26,59 +27,62 @@ class ProfileRepositoryImpl(
         hashedNonce = hashed
     }
 
-    override suspend fun signInAndCheckProfile(idToken: String, displayName: String?, profilePictureUri: String?) {
-        try {
-            // Step 1: Sign in with Supabase using the Google ID token
-            supabase.auth.signInWith(IDToken){
-                this.idToken = idToken
-                provider = Google
-                nonce = rawNonce
-            }
+    override suspend fun signInAndCheckProfile(
+        idToken: String,
+        displayName: String?,
+        profilePictureUri: String?
+    ) {
+        // Step 1: Sign in with Supabase using Google ID token
+        supabase.auth.signInWith(IDToken) {
+            this.idToken = idToken
+            provider = Google
+            nonce = rawNonce
+        }
 
-            // Step 2: Check if a profile exists for the user
-            val userId = supabase.auth.currentUserOrNull()?.id
-            if (userId == null) {
-                throw IllegalStateException("User ID is null after sign-in")
-            }
+            val user = supabase.auth.currentUserOrNull()
 
-            val existingProfile = supabase
-                .from("profiles")
-                .select(columns = Columns.list("id")) {
+            userProfile.onAuthStateChange()
+            val result = if (user != null) {
+                supabase.from("profiles")
+                    .select() {
                     filter {
-                        eq("id", userId)
+                        Profile::authId eq user.id
+                        //or
+                        eq("name", "The Shire")
                     }
                 }
-                .decodeSingleOrNull<Profile>()
+                    .decodeSingle<Profile>()
 
-            if (existingProfile == null) {
-                // Step 3: If no profile exists, create a new one
-                createUserProfile(userId, displayName, profilePictureUri)
-                Log.d("ProfileCreation", "New profile created for user: $userId")
             } else {
-                Log.d("ProfileCreation", "Profile already exists for user: $userId")
+                null
             }
-        } catch (e: Exception) {
-            Log.e("ProfileCreation", "Error during sign-in or profile creation: ${e.message}")
-            throw e
-        }
+
+        Log.d("ProfileRepositoryImpl", "signInAndCheckProfile: $result")
+
+        val isProfilePresent = result == null
+
+        Log.d("ProfileRepositoryImpl", "Profile is present? : $isProfilePresent")
+
+//                // Step 2: Check if the user already has a profile photo
+//                if (existingProfilePhoto.isNullOrEmpty()) {
+//                    updateProfilePhoto(supabase, profilePictureUri)
+//                }
+//            }
+
     }
 
-    private suspend fun createUserProfile(userId: String, displayName: String?, profilePictureUri: String?) {
-        try {
-            // Create a new profile for the user
-            val profile = Profile(
-                id = userId,
-                name = displayName ?: "Unknown",
-                avatarUrl = profilePictureUri ?: ""
-            )
+    private suspend fun updateProfilePhoto() {
+//        val response = supabase.auth.updateUserMetadata(
+//            userMetadata = mapOf("profile_photo" to photoUrl)
+//        )
+//        if (response.isSuccess) {
+//            println("Profile photo updated successfully!")
+//        } else {
+//            println("Error updating profile photo: ${response.error?.message}")
+//        }
+//
+//    }
 
-            // Insert the profile into the 'profiles' table
-            supabase.from("profiles").insert(profile)
-            Log.d("ProfileCreation", "New profile created for user: $userId")
-        } catch (e: Exception) {
-            Log.e("ProfileCreation", "Error creating profile: ${e.message}")
-            throw e
-        }
+
     }
-
 }

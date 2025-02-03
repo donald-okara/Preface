@@ -6,8 +6,11 @@ import kotlinx.coroutines.flow.StateFlow
 interface ProfileRepository {
     val rawNonce: String
     val hashedNonce: String
-    val isSignedIn : Boolean
 
-    suspend fun signInAndCheckProfile(idToken: String, displayName: String?, profilePictureUri: String?)
+    suspend fun signInAndCheckProfile(
+        idToken: String,
+        displayName: String?,
+        profilePictureUri: String?
+    )
 
 }
