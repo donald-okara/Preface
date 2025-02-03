@@ -20,11 +20,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
 import com.don.preface.ui.theme.PrefaceTheme
 import dagger.hilt.android.AndroidEntryPoint
-import ke.don.common_datasource.data.di.UserManager
 import ke.don.shared_domain.values.Screens
 import ke.don.shared_navigation.NavGraph
 import kotlinx.coroutines.delay

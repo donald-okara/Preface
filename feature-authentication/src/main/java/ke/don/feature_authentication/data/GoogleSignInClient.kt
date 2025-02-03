@@ -9,7 +9,7 @@ import androidx.credentials.exceptions.GetCredentialException
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
-import ke.don.common_datasource.domain.repositories.ProfileRepository
+import ke.don.common_datasource.remote.domain.repositories.ProfileRepository
 import ke.don.shared_domain.BuildConfig
 
 class GoogleSignInClient(
@@ -50,7 +50,11 @@ class GoogleSignInClient(
             val displayName = googleIdTokenCredential.displayName
             val profilePictureUri = googleIdTokenCredential.profilePictureUri?.toString()
 
-            profileRepository.signInAndCheckProfile(googleIdToken, displayName, profilePictureUri)
+            if (displayName != null) {
+                if (profilePictureUri != null) {
+                    profileRepository.signInAndUpsertProfile(googleIdToken, displayName, profilePictureUri)
+                }
+            }
 
 
             Log.d("GoogleIDToken", googleIdToken)
