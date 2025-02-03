@@ -1,4 +1,4 @@
-package ke.don.common_datasource.domain.getters
+package ke.don.common_datasource.remote.domain.getters
 
 import java.security.MessageDigest
 import java.util.UUID

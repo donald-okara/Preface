@@ -1,4 +1,4 @@
-package ke.don.common_datasource.data.di
+package ke.don.common_datasource.remote.data.di
 
 import io.github.jan.supabase.auth.Auth
 import io.github.jan.supabase.createSupabaseClient
