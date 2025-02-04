@@ -70,8 +70,15 @@ dependencies {
     implementation(libs.supabase.auth.kt)
     implementation(libs.supabase.realtime.kt)
 
+    //Ktor
     implementation(libs.ktor.client.android)
 
+    //Datastore
+    implementation(libs.androidx.datastore)
+    implementation(libs.kotlinx.collections.immutable)
+
+
+    //Project
     implementation(project(":common-domain"))
 
 
