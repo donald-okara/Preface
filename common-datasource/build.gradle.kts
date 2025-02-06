@@ -65,6 +65,10 @@ dependencies {
 
     implementation(libs.kotlinx.serialization.json)
 
+    //Datastore
+    implementation(libs.androidx.datastore)
+
+
     implementation(platform(libs.supabase.bom))
     implementation(libs.supabase.postgrest.kt)
     implementation(libs.supabase.auth.kt)

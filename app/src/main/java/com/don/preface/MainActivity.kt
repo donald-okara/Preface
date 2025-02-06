@@ -33,7 +33,6 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         //val userProfile = UserManager.userProfile
 
-        val startDestinationScreen = Screens.OnBoarding.route
 
         enableEdgeToEdge()
         setContent {
@@ -43,7 +42,6 @@ class MainActivity : ComponentActivity() {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     NavGraph(
                         navController = navController,
-                        startDestinationScreen = startDestinationScreen
                     )
 
                 }

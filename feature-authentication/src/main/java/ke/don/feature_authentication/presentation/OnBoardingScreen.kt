@@ -24,8 +24,11 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -52,6 +55,14 @@ fun OnboardingScreen(
     viewModel: SignInViewModel = hiltViewModel(),
     onSuccessfulSignIn : () -> Unit
 ) {
+    val isSignInSuccessful by viewModel.isSignInSuccessful.collectAsState()
+
+
+    // Navigate if sign-in is successful without using SideEffect or LaunchedEffect
+    if (isSignInSuccessful) {
+        onSuccessfulSignIn() // Call this directly when sign-in is successful
+    }
+
     val pagerState = rememberPagerState(
         pageCount = { animations.size }
     )
@@ -127,7 +138,6 @@ fun OnboardingScreen(
                         modifier = modifier,
                         onClickAction = {
                             viewModel.onSignInWithGoogle()
-                            onSuccessfulSignIn()
                         }
                     )
                 }
@@ -168,7 +178,7 @@ fun IndicatorSingleDot(
         .height(15.dp)
         .width(width.value)
         .clip(CircleShape)
-        .background(if (isSelected) Color(0xFFE92F1E) else Color(0x25E92F1E))
+        .background(if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.primaryContainer)
     )
 }
 

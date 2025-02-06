@@ -1,9 +1,13 @@
 package ke.don.common_datasource.remote.data.di
 
+import android.content.Context
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import ke.don.common_datasource.local.datastore.ProfileDataStoreManager
+import ke.don.common_datasource.local.datastore.TokenDatastoreManager
 import ke.don.common_datasource.remote.data.network.ProfileNetworkClass
 import ke.don.common_datasource.remote.data.repositoryImpl.ProfileRepositoryImpl
 import ke.don.common_datasource.remote.domain.repositories.ProfileRepository
@@ -20,17 +24,23 @@ object DatasourceModule {
     @Provides
     @Singleton
     fun provideProfileNetworkClass(
-        supabaseClient: SupabaseClient
+        supabaseClient: SupabaseClient,
+        tokenDatastoreManager: TokenDatastoreManager,
+        @ApplicationContext context : Context
     ): ProfileNetworkClass = ProfileNetworkClass(
-        supabaseClient = supabaseClient
+        supabaseClient = supabaseClient,
+        tokenDatastore = tokenDatastoreManager,
+        context = context
     )
 
     @Provides
     @Singleton
     fun provideProfileRepository(
-        profileNetworkClass: ProfileNetworkClass
+        profileNetworkClass: ProfileNetworkClass,
+        profileDataStoreManager: ProfileDataStoreManager
     ): ProfileRepository = ProfileRepositoryImpl(
-        profileNetworkClass = profileNetworkClass
+        profileNetworkClass = profileNetworkClass,
+        profileDataStoreManager = profileDataStoreManager
     )
 
 }

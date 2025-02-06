@@ -1,6 +1,12 @@
 package ke.don.shared_navigation
 
+import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
@@ -17,11 +23,14 @@ import ke.don.feature_authentication.presentation.OnboardingScreen
 fun NavGraph(
     modifier: Modifier = Modifier,
     navController: NavHostController,
-    startDestinationScreen: String,
     navViewModel: NavViewModel = hiltViewModel()
-){
+) {
+    val isUserSignedIn by navViewModel.isSignedIn.collectAsState()
 
-    //val isSignedIn = navViewModel.isSignedIn
+    val startDestinationScreen = Screens.Splash.route
+
+
+    Log.d("NavGraph", "Start destination: $startDestinationScreen")
 
     NavHost(
         modifier = modifier,
@@ -32,20 +41,24 @@ fun NavGraph(
         composable(Screens.Splash.route) {
             PrefaceSplashScreen(
                 onNavigateToMain = {
-                    navController.navigate(startDestinationScreen) {
-                        // Clear splash screen from back stack
-                        popUpTo(Screens.Splash.route) { inclusive = true }
+                    if (isUserSignedIn) {
+                        navController.navigate(Screens.Search.route) {
+                            popUpTo(Screens.Splash.route) { inclusive = true }
+                        }
+                    } else {
+                        navController.navigate(Screens.OnBoarding.route) {
+                            popUpTo(Screens.Splash.route) { inclusive = true }
+                        }
                     }
                 }
             )
         }
-
         composable(Screens.OnBoarding.route) {
             OnboardingScreen(
                 onSuccessfulSignIn = {
-//                    navController.navigate(Screens.Search.route) {
-//                        popUpTo(Screens.OnBoarding.route) { inclusive = true }
-//                    }
+                    navController.navigate(Screens.Search.route) {
+                        popUpTo(Screens.OnBoarding.route) { inclusive = true }
+                    }
                 }
             )
         }
