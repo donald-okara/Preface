@@ -58,9 +58,8 @@ fun OnboardingScreen(
     val isSignInSuccessful by viewModel.isSignInSuccessful.collectAsState()
 
 
-    // Navigate if sign-in is successful without using SideEffect or LaunchedEffect
     if (isSignInSuccessful) {
-        onSuccessfulSignIn() // Call this directly when sign-in is successful
+        onSuccessfulSignIn()
     }
 
     val pagerState = rememberPagerState(

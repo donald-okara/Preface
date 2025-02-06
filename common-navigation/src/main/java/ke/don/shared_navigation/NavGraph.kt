@@ -31,6 +31,7 @@ fun NavGraph(
 
 
     Log.d("NavGraph", "Start destination: $startDestinationScreen")
+    Log.d("NavGraph", "Is user signed in? $isUserSignedIn")
 
     NavHost(
         modifier = modifier,
