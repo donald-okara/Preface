@@ -25,61 +25,7 @@ import ke.don.feature_book_details.R
 import ke.don.feature_book_details.data.model.VolumeInfoDet
 import ke.don.feature_book_details.presentation.screens.book_details.search
 
-@Composable
-fun AcquireVolume(
-    modifier: Modifier = Modifier,
-    volumeInfo: VolumeInfoDet,
-){
-    val context = LocalContext.current
-    val volumeName = volumeInfo.title
-    val amazonSearchUrl = "https://www.amazon.com/s?k=$volumeName&i=stripbooks"
-    val somanamiUrl = "https://www.somanami.co.ke/search-results?q=$volumeName"
-    val prestigeUrl = "https://prestigebookshop.com/?s=$volumeName&post_type=product"
-
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = modifier
-            .padding(8.dp)
-            .fillMaxSize()
-    ) {
-
-        AcquireBookItem(
-            image = R.drawable.somanamilogo,
-            contentDescription = "Soma nami",
-            text = "Search for \"${volumeInfo.title}\" in Soma nami",
-            onClick = {
-                search(
-                    url = somanamiUrl,
-                    context = context
-                )
-            }
-        )
-        AcquireBookItem(
-            image = R.drawable.prestigelogo,
-            contentDescription = "Prestige bookstore",
-            text = "Search for \"${volumeInfo.title}\" in Prestige",
-            onClick = {
-                search(
-                    url = prestigeUrl,
-                    context = context
-                )
-            }
-        )
-        AcquireBookItem(
-            image = R.drawable.amazon_buy_logo,
-            contentDescription = "Amazon",
-            text = "Search for \"${volumeInfo.title}\" in Amazon",
-            onClick = {
-                search(
-                    url = amazonSearchUrl,
-                    context = context
-                )
-            }
-        )
-    }
-
-}
-
+//Tab to be implemented once rights are secured
 @Composable
 fun AcquireBookItem(
     modifier: Modifier = Modifier,

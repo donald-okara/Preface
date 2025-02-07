@@ -66,6 +66,11 @@ dependencies {
     implementation(libs.androidx.foundation)
     implementation(libs.androidx.navigation.runtime.ktx)
 
+    //Voyager Experimenting for now
+    implementation(libs.voyager.navigator) // Core navigation
+    implementation(libs.voyager.androidx) // Jetpack Compose support
+
+
     implementation(project(":common-domain"))
     implementation(project(":feature-book-details"))
     implementation(project(":feature-authentication"))

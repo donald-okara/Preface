@@ -11,6 +11,8 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import ke.don.common_datasource.remote.domain.repositories.ProfileRepository
 import ke.don.shared_domain.BuildConfig
+import ke.don.shared_domain.values.MAX_RETRIES
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -39,38 +41,44 @@ class GoogleSignInClient(
 
 
 
-    suspend fun signInWithGoogle(){
-        try {
-            val result = credentialManager.getCredential(
-                request = request,
-                context = context
-            )
+    suspend fun signInWithGoogle() {
+        val maxRetries = MAX_RETRIES
+        var attempt = 0
 
-            val credential = result.credential
+        while (attempt < maxRetries) {
+            try {
+                val result = credentialManager.getCredential(
+                    request = request,
+                    context = context
+                )
 
-            val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+                val credential = result.credential
+                val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
+                val googleIdToken = googleIdTokenCredential.idToken
 
-            val googleIdToken = googleIdTokenCredential.idToken
+                val displayName = googleIdTokenCredential.displayName
+                val profilePictureUri = googleIdTokenCredential.profilePictureUri?.toString()
 
-            // Extract necessary data from GoogleIdTokenCredential
-            val displayName = googleIdTokenCredential.displayName
-            val profilePictureUri = googleIdTokenCredential.profilePictureUri?.toString()
-
-            if (displayName != null) {
-                if (profilePictureUri != null) {
+                if (displayName != null && profilePictureUri != null) {
                     profileRepository.signInAndInsertProfile(googleIdToken, displayName, profilePictureUri)
                 }
+
+                _isSignInSuccessful.value = true
+                Toast.makeText(context, "Welcome to Preface", Toast.LENGTH_SHORT).show()
+                return  // Exit the function after successful sign-in
+
+            } catch (e: Exception) {
+                Log.d("GoogleSignInClient", "Attempt ${attempt + 1} failed: ${e.message}")
+                attempt++
+
+                if (attempt < maxRetries) {
+                    delay(2000) // Wait 2 seconds before retrying
+                } else {
+                    Log.d("GoogleSignInClient", "Max retries reached. Sign in failed.")
+                    Toast.makeText(context, "Sign in failed. Please try again later", Toast.LENGTH_SHORT).show()
+                }
             }
-
-            _isSignInSuccessful.value = true
-
-            Toast.makeText(context, "Welcome to Preface", Toast.LENGTH_SHORT).show()
-
-        }  catch (e: Exception) {
-            Log.d("GoogleSignInClient", e.toString())
-            Toast.makeText(context, "Sign in failed. Please try again later", Toast.LENGTH_SHORT).show()
         }
-
     }
 
 }

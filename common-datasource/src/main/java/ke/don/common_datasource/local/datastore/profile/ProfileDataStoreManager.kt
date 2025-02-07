@@ -1,4 +1,4 @@
-package ke.don.common_datasource.local.datastore
+package ke.don.common_datasource.local.datastore.profile
 
 import android.content.Context
 import ke.don.shared_domain.data_models.Profile

@@ -38,6 +38,7 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -51,11 +52,9 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
-import ke.don.feature_book_details.domain.states.ResultState
 import ke.don.feature_book_details.data.utils.getDominantColor
+import ke.don.feature_book_details.domain.states.ResultState
 import ke.don.feature_book_details.presentation.screens.book_details.components.AboutVolume
-import ke.don.feature_book_details.presentation.screens.book_details.components.AcquireVolume
 import ke.don.feature_book_details.presentation.screens.book_details.components.BookCoverPreview
 import ke.don.feature_book_details.presentation.screens.book_details.components.PublishDetails
 import ke.don.feature_book_details.presentation.screens.book_details.components.TitleHeader
@@ -67,6 +66,7 @@ import kotlinx.coroutines.launch
 fun BookDetailsScreen(
     modifier: Modifier = Modifier,
     onNavigateToSearch: () -> Unit,
+    volumeId: String,
     bookDetailsViewModel: BookDetailsViewModel = hiltViewModel(),
     onBackPressed: () -> Unit
 ){
@@ -77,7 +77,9 @@ fun BookDetailsScreen(
     val colorPallet = bookUiState.value.colorPallet
     val dominantColor = getDominantColor(colorPallet, isDarkTheme = isSystemInDarkTheme())
 
-
+    LaunchedEffect(volumeId){
+        bookDetailsViewModel.onVolumeIdPassed(volumeId)
+    }
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -122,11 +124,11 @@ fun BookDetailsScreen(
                 isGradientVisible = bookUiState.value.resultState == ResultState.Success
             )
 
-            if (bookUiState.value.resultState != ke.don.feature_book_details.domain.states.ResultState.Success) {
+            if (bookUiState.value.resultState != ResultState.Success) {
                 DetailsLoadingScreen(
                     modifier = modifier
                         .padding(16.dp),
-                    text = if(bookUiState.value.resultState == ResultState.Loading) loadingJoke else "Failed to load your book. Please try again",
+                    text = if(bookUiState.value.resultState != ResultState.Error()) loadingJoke else "Failed to load your book. Please try again",
                     onRetryAction = bookDetailsViewModel::refreshAction,
                     textColor = if(bookUiState.value.resultState == ResultState.Loading) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onTertiaryContainer
                 )
@@ -149,7 +151,7 @@ fun BookDetailsContent(
     isGradientVisible: Boolean,
     onSearchAuthor: (String) -> Unit
 ) {
-    val tabs = listOf("About", "Get book", "Publish details")
+    val tabs = listOf("About", "Publish details")
     val scrollState = rememberScrollState()
 
     val showPreview = remember{ mutableStateOf(false) }
@@ -211,6 +213,7 @@ fun BookDetailsContent(
             ScrollableTabRow(
                 selectedTabIndex = pagerState.currentPage,
                 modifier = modifier
+                    .align(Alignment.CenterHorizontally)
                     .fillMaxWidth(),
                 containerColor = Color.Transparent,
                 contentColor = dominantColor,
@@ -243,13 +246,14 @@ fun BookDetailsContent(
                     0 -> AboutVolume(
                         textColor = dominantColor,
                         volumeInfo = volumeInfo,
+                        modifier = modifier
+                            .align(Alignment.CenterHorizontally)
                     )
-                    1 -> AcquireVolume(
+
+                    1 -> PublishDetails(
                         volumeInfo = volumeInfo,
-                        modifier = modifier.fillMaxSize()
-                    )
-                    2 -> PublishDetails(
-                        volumeInfo = volumeInfo,
+                        modifier = modifier
+                            .align(Alignment.CenterHorizontally)
                     )
                 }
             }

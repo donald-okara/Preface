@@ -6,8 +6,8 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import ke.don.common_datasource.local.datastore.ProfileDataStoreManager
-import ke.don.common_datasource.local.datastore.TokenDatastoreManager
+import ke.don.common_datasource.local.datastore.profile.ProfileDataStoreManager
+import ke.don.common_datasource.local.datastore.token.TokenDatastoreManager
 import javax.inject.Singleton
 
 @Module

@@ -23,12 +23,13 @@ import ke.don.shared_domain.utils.formatting_utils.formatHtmlToAnnotatedString
 
 @Composable
 fun AboutVolume(
+    modifier: Modifier = Modifier,
     volumeInfo: VolumeInfoDet,
     textColor: Color = MaterialTheme.colorScheme.onTertiaryContainer
 ){
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier
+        modifier = modifier
             .padding(8.dp)
     ) {
         DescriptionColumn(
@@ -40,6 +41,7 @@ fun AboutVolume(
 
 @Composable
 fun DescriptionColumn(
+    modifier: Modifier = Modifier,
     description: String,
     textColor: Color = MaterialTheme.colorScheme.onTertiaryContainer,
     maxLinesCollapsed: Int = 3 // You can set the number of lines to show when collapsed
@@ -68,7 +70,7 @@ fun DescriptionColumn(
                 text = "Show More",
                 color = textColor,
                 style = TextStyle(fontWeight = FontWeight.Bold),
-                modifier = Modifier
+                modifier = modifier
                     .clickable { isExpanded = true }
                     .padding(top = 4.dp)
             )
@@ -77,7 +79,7 @@ fun DescriptionColumn(
                 text = "Show Less",
                 color = textColor,
                 style = TextStyle(fontWeight = FontWeight.Bold),
-                modifier = Modifier
+                modifier = modifier
                     .clickable { isExpanded = false }
                     .padding(top = 4.dp)
             )

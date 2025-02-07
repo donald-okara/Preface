@@ -1,4 +1,4 @@
-package ke.don.common_datasource.local.datastore
+package ke.don.common_datasource.local.datastore.token
 
 import android.content.Context
 import kotlinx.coroutines.flow.first

@@ -3,46 +3,65 @@ package ke.don.feature_book_details.presentation.screens.book_details
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import ke.don.shared_domain.values.Screens
+import ke.don.feature_book_details.domain.repositories.BooksRepository
 import ke.don.feature_book_details.domain.states.BookUiState
 import ke.don.feature_book_details.domain.usecase.BooksUseCases
 import ke.don.shared_domain.logger.Logger
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 import kotlin.random.Random
 
 @HiltViewModel
 class BookDetailsViewModel @Inject constructor(
-    private val repository: ke.don.feature_book_details.domain.repositories.BooksRepository,
+    private val repository: BooksRepository,
     private val logger : Logger,
-    private val booksUseCases : BooksUseCases,
-    savedStateHandle: SavedStateHandle
+    private val booksUseCases : BooksUseCases
 ) : ViewModel() {
 
-    private val volumeId = savedStateHandle.get<String>(Screens.BookDetails.volumeIdNavigationArgument)
+    private val _volumeId = MutableStateFlow<String?>(null)
+    val volumeId: StateFlow<String?> = _volumeId
 
-    val bookState: StateFlow<BookUiState> = repository.bookUiState
+    private val _bookState = MutableStateFlow(BookUiState())
+    val bookState: StateFlow<BookUiState> = _bookState
 
     var loadingJoke: String by mutableStateOf("")
         private set
 
     init {
         onLoading()
+        observeVolumeId()
+    }
 
+    private fun observeVolumeId() {
         viewModelScope.launch {
-            volumeId?.let {
-                repository.getBookDetails(it)
+            _volumeId.filterNotNull().collectLatest { id ->
+                booksUseCases.getBookDetails(id)
+                repository.bookUiState.collectLatest { state ->
+                    _bookState.update {
+                        state
+                    }
+                }
             }
         }
     }
 
+
+    fun onVolumeIdPassed(passedVolumeId: String) {
+        _volumeId.update {
+            passedVolumeId
+        }
+    }
+
     fun refreshAction() = viewModelScope.launch {
-        volumeId?.let {
+        volumeId.value?.let {
             booksUseCases.getBookDetails(it)
         }
         onLoading()
@@ -62,9 +81,21 @@ class BookDetailsViewModel @Inject constructor(
     }
 
 
+    override fun onCleared() {
+        super.onCleared()
+        _volumeId.update {
+            null
+        }
+        _bookState.update {
+            BookUiState()
+        }
+        logger.logDebug(TAG, "ViewModel cleared")
+    }
+
     companion object {
         const val TAG = "BookDetailsViewModel"
     }
+
 }
 
 

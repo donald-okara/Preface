@@ -1,8 +1,8 @@
-package ke.don.common_datasource.remote.data.repositoryImpl
+package ke.don.common_datasource.remote.data.profile.repositoryImpl
 
 import android.util.Log
-import ke.don.common_datasource.local.datastore.ProfileDataStoreManager
-import ke.don.common_datasource.remote.data.network.ProfileNetworkClass
+import ke.don.common_datasource.local.datastore.profile.ProfileDataStoreManager
+import ke.don.common_datasource.remote.data.profile.network.ProfileNetworkClass
 import ke.don.common_datasource.remote.domain.getters.generateNonce
 import ke.don.common_datasource.remote.domain.repositories.ProfileRepository
 import ke.don.shared_domain.data_models.Profile

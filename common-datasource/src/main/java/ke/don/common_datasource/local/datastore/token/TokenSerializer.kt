@@ -1,23 +1,23 @@
-package ke.don.common_datasource.local.datastore
+package ke.don.common_datasource.local.datastore.token
 
 import android.content.Context
 import androidx.datastore.core.Serializer
 import androidx.datastore.dataStore
-import ke.don.shared_domain.data_models.Profile
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import java.io.InputStream
 import java.io.OutputStream
 
 @Suppress("BlockingMethodInNonBlockingContext")
-object ProfileSerializer : Serializer<Profile>{
-    override val defaultValue: Profile
-        get() = Profile()
+object TokenSerializer : Serializer<TokenData>{
+    override val defaultValue: TokenData
+        get() = TokenData()
 
-    override suspend fun readFrom(input: InputStream): Profile {
+    override suspend fun readFrom(input: InputStream): TokenData {
         return try {
             Json.decodeFromString(
-                deserializer = Profile.serializer(),
+                deserializer = TokenData.serializer(),
                 string = input.readBytes().decodeToString()
             )
         }catch (e: SerializationException){
@@ -26,14 +26,20 @@ object ProfileSerializer : Serializer<Profile>{
         }
     }
 
-    override suspend fun writeTo(t: Profile, output: OutputStream) {
+    override suspend fun writeTo(t: TokenData, output: OutputStream) {
         output.write(
             Json.encodeToString(
-                serializer = Profile.serializer(),
+                serializer = TokenData.serializer(),
                 value = t
             ).encodeToByteArray()
         )
     }
 }
 
-val Context.profileDataStore by dataStore("profile.json", ProfileSerializer)
+val Context.tokenDatastore by dataStore("token.json", TokenSerializer)
+
+
+@Serializable
+data class TokenData(
+    val token: String? = null
+)

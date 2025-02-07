@@ -1,4 +1,4 @@
-package ke.don.common_datasource.remote.data.network
+package ke.don.common_datasource.remote.data.profile.network
 
 import android.content.Context
 import android.util.Log
@@ -8,12 +8,14 @@ import io.github.jan.supabase.auth.providers.Google
 import io.github.jan.supabase.auth.providers.builtin.IDToken
 import io.github.jan.supabase.auth.user.UserInfo
 import io.github.jan.supabase.postgrest.from
-import ke.don.common_datasource.local.datastore.TokenData
-import ke.don.common_datasource.local.datastore.TokenDatastoreManager
-import ke.don.common_datasource.local.datastore.profileDataStore
-import ke.don.common_datasource.local.datastore.tokenDatastore
+import ke.don.common_datasource.local.datastore.token.TokenData
+import ke.don.common_datasource.local.datastore.token.TokenDatastoreManager
+import ke.don.common_datasource.local.datastore.profile.profileDataStore
+import ke.don.common_datasource.local.datastore.token.tokenDatastore
 import ke.don.common_datasource.remote.data.di.SupabaseClient
 import ke.don.shared_domain.data_models.Profile
+import ke.don.shared_domain.values.MAX_RETRIES
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
@@ -133,39 +135,47 @@ suspend fun Context.reloadSession(
     supabaseClient: SupabaseClient
 ): Boolean {
     val TAG = "Context"
+    val maxRetries = MAX_RETRIES
+    var attempt = 0
 
-    return try {
-        val token = tokenDatastore.data.first().token
-        Log.d(TAG, "Token: $token")
+    while (attempt < maxRetries) {
+        try {
+            val token = tokenDatastore.data.first().token
+            Log.d(TAG, "Attempt ${attempt + 1} - Token: $token")
 
-        if (!token.isNullOrEmpty()) {
-            supabaseClient.supabase.auth.refreshCurrentSession()
+            if (!token.isNullOrEmpty()) {
+                supabaseClient.supabase.auth.refreshCurrentSession()
 
-            val newAccessToken = supabaseClient.supabase.auth.currentAccessTokenOrNull()
-            Log.d(TAG, "New token present : ${!newAccessToken.isNullOrEmpty()}")
+                val newAccessToken = supabaseClient.supabase.auth.currentAccessTokenOrNull()
+                Log.d(TAG, "New token present : ${!newAccessToken.isNullOrEmpty()}")
 
-            if (newAccessToken.isNullOrEmpty()) {
-                Log.d(TAG, "Failed to refresh token, forcing re-authentication")
-                // Sign out the user completely
-                supabaseClient.supabase.auth.signOut()
+                if (!newAccessToken.isNullOrEmpty()) {
+                    tokenDatastore.updateData {
+                        it.copy(token = newAccessToken)
+                    }
+                    return true
+                }
 
-                // Clear stored token
-                tokenDatastore.updateData { TokenData() }
-                profileDataStore.updateData { Profile() }
+                Log.d(TAG, "Failed to refresh token, retrying...")
+            } else {
+                Log.d(TAG, "Token is null or empty")
                 return false
             }
-
-            tokenDatastore.updateData {
-                it.copy(token = newAccessToken)
-            }
-
-            true
-        } else {
-            Log.d(TAG, "Token is null or empty")
-            false
+        } catch (e: Exception) {
+            Log.e(TAG, "Error reloading session on attempt ${attempt + 1}", e)
         }
-    } catch (e: Exception) {
-        Log.e(TAG , "Error reloading session", e)
-        false
+
+        attempt++
+        delay(2000) // Wait for 2 seconds before retrying
     }
+
+    // If all retries fail, sign out the user
+    Log.d(TAG, "Max retries reached, forcing re-authentication")
+    supabaseClient.supabase.auth.signOut()
+
+    // Clear stored token
+    tokenDatastore.updateData { TokenData() }
+    profileDataStore.updateData { Profile() }
+
+    return false
 }

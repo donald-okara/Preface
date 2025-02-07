@@ -16,10 +16,11 @@ import ke.don.feature_book_details.data.model.VolumeInfoDet
 
 @Composable
 fun PublishDetails(
-    volumeInfo: ke.don.feature_book_details.data.model.VolumeInfoDet,
+    modifier: Modifier = Modifier,
+    volumeInfo: VolumeInfoDet,
 ){
     OutlinedCard(
-        modifier = Modifier
+        modifier = modifier
             .padding(8.dp)
             .fillMaxWidth(
                 fraction = 0.9f
@@ -30,7 +31,7 @@ fun PublishDetails(
     ){
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.padding(8.dp)
+            modifier = modifier.padding(8.dp)
         ) {
             // Publisher Information
             Text(
@@ -66,7 +67,7 @@ fun PublishDetails(
                 Text(text = "Categories:")
                 Text(
                     text = processedCategories.joinToString(", "),
-                    modifier = Modifier.padding(start = 16.dp) // Indent the categories
+                    modifier = modifier.padding(start = 16.dp) // Indent the categories
                 )
             }
         }
