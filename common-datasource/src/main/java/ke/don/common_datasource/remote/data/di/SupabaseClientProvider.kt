@@ -5,7 +5,7 @@ import io.github.jan.supabase.createSupabaseClient
 import io.github.jan.supabase.postgrest.Postgrest
 import ke.don.shared_domain.BuildConfig
 
-object SupabaseClient {
+object SupabaseClientProvider {
     val supabase = createSupabaseClient(
         supabaseUrl = BuildConfig.SUPABASE_URL,
         supabaseKey = BuildConfig.SUPABASE_KEY

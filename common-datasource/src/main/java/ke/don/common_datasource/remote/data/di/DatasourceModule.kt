@@ -6,6 +6,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import io.github.jan.supabase.SupabaseClient
 import ke.don.common_datasource.local.datastore.profile.ProfileDataStoreManager
 import ke.don.common_datasource.local.datastore.token.TokenDatastoreManager
 import ke.don.common_datasource.remote.data.profile.network.ProfileNetworkClass
@@ -19,7 +20,7 @@ object DatasourceModule {
 
     @Provides
     @Singleton
-    fun provideSupabaseClient(): SupabaseClient = SupabaseClient
+    fun provideSupabaseClient(): SupabaseClient = SupabaseClientProvider.supabase
 
     @Provides
     @Singleton
@@ -28,7 +29,7 @@ object DatasourceModule {
         tokenDatastoreManager: TokenDatastoreManager,
         @ApplicationContext context : Context
     ): ProfileNetworkClass = ProfileNetworkClass(
-        supabaseClient = supabaseClient,
+        supabase = supabaseClient,
         tokenDatastore = tokenDatastoreManager,
         context = context
     )

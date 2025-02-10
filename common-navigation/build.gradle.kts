@@ -69,6 +69,8 @@ dependencies {
     //Voyager Experimenting for now
     implementation(libs.voyager.navigator) // Core navigation
     implementation(libs.voyager.androidx) // Jetpack Compose support
+    implementation(libs.voyager.tab.navigator)
+
 
 
     implementation(project(":common-domain"))
