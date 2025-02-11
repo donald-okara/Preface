@@ -75,24 +75,11 @@
     fun AppNavigation() {
         Log.d("NavGraph", "Start destination: ${Screens.Splash.route}")
 
-        Navigator(SplashVoyagerScreen) { navigator ->
-            when (val currentScreen = navigator.lastItemOrNull) {
-                is SearchVoyagerScreen -> {
-                    // Screens that require bottom navigation should be inside TabNavigator
-                    TabNavigator(SearchTab) {
-                        Scaffold(
-                            modifier = Modifier.fillMaxSize(),
-                            bottomBar = { MainBottomAppBar() },
-                            containerColor = MaterialTheme.colorScheme.primary
-                        ) {
-                            CurrentTab()
-                        }
-                    }
-                }
-                else -> {
-                    // For all other screens (like Book Details), just show their content without TabNavigator
-                    currentScreen?.Content()
-                }
+        Navigator(SplashVoyagerScreen)
+        {
+            TabNavigator(SearchTab) {
+                CurrentTab()
+
             }
         }
     }

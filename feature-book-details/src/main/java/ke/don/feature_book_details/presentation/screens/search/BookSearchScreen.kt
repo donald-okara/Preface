@@ -1,36 +1,33 @@
 package ke.don.feature_book_details.presentation.screens.search
 
-import android.util.Log
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.CenterAlignedTopAppBar
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import ke.don.feature_book_details.presentation.screens.search.components.BookSearchBar
 import ke.don.feature_book_details.presentation.screens.search.components.BooksGridScreen
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookSearchScreen(
     modifier: Modifier = Modifier,
+    paddingValues: PaddingValues,
     viewModel: SearchViewModel = hiltViewModel(),
     onNavigateToBookItem: (String) -> Unit
 ) {
@@ -41,76 +38,73 @@ fun BookSearchScreen(
     val suggestedBook by viewModel.suggestedBook.collectAsState()
     val isSearchPopulated by viewModel.isSearchPopulated.collectAsState()
 
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                title = {
-                    Text(
-                        text = "Search",
-                        modifier = modifier.padding(8.dp),
-                        maxLines = 1
-                    )
-                }
-            )
-        }
-    ) { innerPadding->
-        Column(
-            modifier = modifier
-                .padding(innerPadding)
-                .animateContentSize(animationSpec = tween(3000))
-                .fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            BookSearchBar(
-                bookSearch = searchQuery,
-                onBookSearchChange = viewModel::onSearchQueryChange,
-                suggestedBook = suggestedBook,
-                isSearchPopulated = isSearchPopulated,
-                onShuffle = viewModel::shuffleBook,
-                onClear = viewModel::clearSearch,
-                onSearch = viewModel::onSearch,
-                shape = RoundedCornerShape(16.dp),
-                modifier = modifier.padding(8.dp)
-            )
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+    ){
+        LookaheadScope{
+            Column(
+                modifier = modifier
+                    .padding(8.dp)
+                    .animateContentSize(animationSpec = tween(1000)),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                BookSearchBar(
+                    bookSearch = searchQuery,
+                    onBookSearchChange = viewModel::onSearchQueryChange,
+                    suggestedBook = suggestedBook,
+                    isSearchPopulated = isSearchPopulated,
+                    onShuffle = viewModel::shuffleBook,
+                    onClear = viewModel::clearSearch,
+                    onSearch = viewModel::onSearch,
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = modifier
+                        .padding(8.dp)
+                )
 
-            Spacer(modifier = modifier.height(16.dp))
+                Spacer(modifier = modifier.padding(8.dp))
+                when (searchState) {
+                    is SearchState.Success -> {
+                        if ((searchState as SearchState.Success).data.isEmpty()) {
+                            Text(text = "No books found. Try searching for something else.")
+                        } else {
+                            BooksGridScreen(
+                                books = (searchState as SearchState.Success).data,
+                                onNavigateToBookItem = onNavigateToBookItem
+                            )
+                        }
 
-            when (searchState) {
-                is SearchState.Success -> {
-                    if ((searchState as SearchState.Success).data.isEmpty()) {
-                        Text(text = "No books found. Try searching for something else.")
-                    }else{
-                        BooksGridScreen(
-                            books = (searchState as SearchState.Success).data,
-                            onNavigateToBookItem = onNavigateToBookItem
+                    }
+
+                    is SearchState.Error -> {
+                        SearchErrorScreen(
+                            text = (searchState as SearchState.Error).message,
+                            onRefresh = viewModel::onSearch
+
                         )
                     }
 
+                    is SearchState.Loading -> {
+                        SearchLoadingScreen(
+                            text = searchMessage
+                        )
+                    }
 
-                }
-                is SearchState.Error ->{
-                    SearchErrorScreen(
-                        text = (searchState as SearchState.Error).message,
-                        onRefresh = viewModel::onSearch
-
-                    )
+                    is SearchState.Empty -> {
+                        Text(text = "Hit the shuffle button for a new suggestion")
+                    }
                 }
 
-                is SearchState.Loading -> {
-                    SearchLoadingScreen(
-                      text = searchMessage
-                    )
-                }
-                is SearchState.Empty -> {
-                    Text(text = "Hit the shuffle button for a new suggestion")
-                }
             }
-
         }
     }
 
+
 }
+
 
 @Composable
 fun SearchErrorScreen(
