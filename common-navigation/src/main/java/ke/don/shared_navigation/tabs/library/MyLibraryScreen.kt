@@ -1,4 +1,4 @@
-package ke.don.shared_navigation.tabs.search
+package ke.don.shared_navigation.tabs.library
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -10,13 +10,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.navigator.LocalNavigator
-import ke.don.feature_book_details.presentation.screens.book_details.BookDetailsScreen
-import ke.don.feature_book_details.presentation.screens.search.BookSearchScreen
-import ke.don.shared_domain.values.Screens
+import ke.don.feature_bookshelf.presentation.screens.add_bookshelf.AddBookshelfRoute
+import ke.don.feature_bookshelf.presentation.screens.user_library.UserLibraryScreen
 import ke.don.shared_navigation.MainBottomAppBar
 
-object SearchVoyagerScreen : AndroidScreen() {
-    private fun readResolve(): Any = SearchVoyagerScreen
+object MyLibraryScreen : AndroidScreen() {
+    private fun readResolve(): Any = MyLibraryScreen
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
@@ -27,7 +26,7 @@ object SearchVoyagerScreen : AndroidScreen() {
                 CenterAlignedTopAppBar(
                     title = {
                         Text(
-                            text = "Search",
+                            text = "My library",
                             modifier = Modifier.padding(8.dp),
                             maxLines = 1
                         )
@@ -37,25 +36,42 @@ object SearchVoyagerScreen : AndroidScreen() {
 
             bottomBar = { MainBottomAppBar() },
         ){innerPadding->
-            BookSearchScreen(
+            UserLibraryScreen(
                 paddingValues = innerPadding,
-                onNavigateToBookItem = { bookId ->
-                    navigator?.push(BookDetailsVoyagerScreen(bookId))
+                onAddBookshelf = {
+                    navigator?.push(AddBookshelfVoyagerScreen)
                 }
             )
         }
     }
 }
 
-// Voyager Screens
-class BookDetailsVoyagerScreen(private val volumeId: String) : AndroidScreen() {
+object AddBookshelfVoyagerScreen : AndroidScreen() {
+    private fun readResolve(): Any = AddBookshelfVoyagerScreen
+
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.current
-        BookDetailsScreen(
-            onNavigateToSearch = { navigator?.pop() },
-            volumeId = volumeId,
-            onBackPressed = { navigator?.pop() }
-        )
+        Scaffold(
+            topBar = {
+                CenterAlignedTopAppBar(
+                    title = {
+                        Text(
+                            text = "Add Bookshelf"
+                        )
+                    }
+
+                )
+            }
+        ) { innerPadding ->
+            AddBookshelfRoute(
+                modifier = Modifier.padding(innerPadding),
+                paddingValues = innerPadding,
+                onNavigateBack = { navigator?.pop()  }
+            )
+        }
     }
+
 }
+

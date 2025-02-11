@@ -7,7 +7,7 @@ import ke.don.shared_domain.data_models.SupabaseBookshelf
 import ke.don.shared_domain.values.BOOKSHELFTABLE
 
 class BookshelfNetworkClass(
-    private val supabase: SupabaseClient
+    private val supabaseClient: SupabaseClient
 ) {
 
     /**
@@ -17,7 +17,7 @@ class BookshelfNetworkClass(
         bookshelf :SupabaseBookshelf
     ){
         try {
-            supabase.from(BOOKSHELFTABLE).insert(bookshelf)
+            supabaseClient.from(BOOKSHELFTABLE).insert(bookshelf)
             Log.d(TAG, "Bookshelf inserted successfully")
 
         }catch (e: Exception){
@@ -33,7 +33,7 @@ class BookshelfNetworkClass(
         userId: String
     ): List<SupabaseBookshelf> {
         return try {
-            supabase.from(BOOKSHELFTABLE)
+            supabaseClient.from(BOOKSHELFTABLE)
                 .select{
                     filter {
                         SupabaseBookshelf::userId eq userId
@@ -50,7 +50,7 @@ class BookshelfNetworkClass(
         bookshelfId: Int
     ): SupabaseBookshelf?{
         return try {
-            supabase.from(BOOKSHELFTABLE)
+            supabaseClient.from(BOOKSHELFTABLE)
                 .select {
                     filter {
                         SupabaseBookshelf::id eq bookshelfId

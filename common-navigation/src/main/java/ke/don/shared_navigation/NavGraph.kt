@@ -32,9 +32,10 @@
     import ke.don.shared_domain.values.Screens
     import cafe.adriel.voyager.navigator.tab.Tab
     import cafe.adriel.voyager.navigator.tab.TabNavigator
-    import ke.don.shared_navigation.tabs.search.MyLibraryTab
-    import ke.don.shared_navigation.tabs.search.ProfileTab
-    import ke.don.shared_navigation.tabs.search.SearchTab
+    import ke.don.shared_navigation.tabs.MyLibraryTab
+    import ke.don.shared_navigation.tabs.ProfileTab
+    import ke.don.shared_navigation.tabs.SearchTab
+    import ke.don.shared_navigation.tabs.library.MyLibraryScreen
     import ke.don.shared_navigation.tabs.search.SearchVoyagerScreen
 
 
@@ -75,15 +76,27 @@
     fun AppNavigation() {
         Log.d("NavGraph", "Start destination: ${Screens.Splash.route}")
 
-        Navigator(SplashVoyagerScreen)
-        {
-            TabNavigator(SearchTab) {
-                CurrentTab()
+        Navigator(SplashVoyagerScreen) { navigator ->
+            when (val currentScreen = navigator.lastItemOrNull) {
+                is SplashVoyagerScreen, is OnBoardingVoyagerScreen -> {
+                    // Show Splash or Onboarding without TabNavigator
+                    currentScreen.Content()
+                }
+                is SearchVoyagerScreen, is MyLibraryScreen -> {
+                    // Screens that require bottom navigation should be inside TabNavigator
+                    TabNavigator(MyLibraryTab) {
 
+                            CurrentTab()
+
+                    }
+                }
+                else -> {
+                    // For all other screens (like Book Details), just show their content without TabNavigator
+                    currentScreen?.Content()
+                }
             }
         }
     }
-
 
 
     @Composable
