@@ -3,18 +3,19 @@ package ke.don.common_datasource.remote.data.profile.network
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.Google
 import io.github.jan.supabase.auth.providers.builtin.IDToken
 import io.github.jan.supabase.auth.user.UserInfo
 import io.github.jan.supabase.postgrest.from
+import ke.don.common_datasource.local.datastore.profile.profileDataStore
 import ke.don.common_datasource.local.datastore.token.TokenData
 import ke.don.common_datasource.local.datastore.token.TokenDatastoreManager
-import ke.don.common_datasource.local.datastore.profile.profileDataStore
 import ke.don.common_datasource.local.datastore.token.tokenDatastore
-import ke.don.common_datasource.remote.data.di.SupabaseClient
 import ke.don.shared_domain.data_models.Profile
 import ke.don.shared_domain.values.MAX_RETRIES
+import ke.don.shared_domain.values.PROFILESTABLE
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -24,14 +25,15 @@ import kotlinx.coroutines.flow.update
 
 class ProfileNetworkClass(
     private val context: Context,
-    private val supabaseClient: SupabaseClient,
+    private val supabase: SupabaseClient,
     private val tokenDatastore: TokenDatastoreManager
 ) {
-    private val supabase = supabaseClient.supabase
-
     private val _userInfo = MutableStateFlow<UserInfo?>(null)
     private val userInfo:StateFlow<UserInfo?> = _userInfo
 
+    /**
+     * CREATE
+     */
     suspend fun signIn(
         idToken: String,
         rawNonce: String
@@ -59,6 +61,21 @@ class ProfileNetworkClass(
 
     }
 
+    suspend fun insertUserProfile(
+        profile : Profile
+    ){
+        try {
+            supabase.from(PROFILESTABLE).insert(profile)
+            Log.d(TAG, "Profile inserted successfully")
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Toast.makeText(context, "Failed to create profile. Please try again later", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    /**
+     * READ
+     */
     suspend fun checkIfProfileIsPresent(): Boolean{
         return try {
             if (userInfo.value == null) {
@@ -68,12 +85,12 @@ class ProfileNetworkClass(
 
             val response = supabase.from("profiles")
                 .select {
-                filter {
-                    Profile::authId eq userInfo.value!!.id
-                    //or
-                    eq("auth_id", userInfo.value!!.id)
+                    filter {
+                        Profile::authId eq userInfo.value!!.id
+                        //or
+                        eq("auth_id", userInfo.value!!.id)
+                    }
                 }
-            }
                 .decodeSingleOrNull<Profile>()
 
             response != null
@@ -83,17 +100,6 @@ class ProfileNetworkClass(
             false
         }
 
-    }
-
-    suspend fun insertUserProfile(
-        profile : Profile
-    ){
-        try {
-            supabase.from("profiles").insert(profile)
-            Log.d(TAG, "Profile inserted successfully")
-        } catch (e: Exception) {
-            Toast.makeText(context, "Failed to create profile. Please try again later", Toast.LENGTH_SHORT).show()
-        }
     }
 
     suspend fun fetchUserProfile(): Profile? {
@@ -118,12 +124,21 @@ class ProfileNetworkClass(
 
     suspend fun checkSignedInStatus(): Boolean {
 
-        val signInStatus = context.reloadSession(supabaseClient)
+        val signInStatus = context.reloadSession(supabase)
         Log.d("ProfileRepositoryImpl", "User is logged in: $signInStatus")
 
         return signInStatus
 
     }
+
+    /**
+     * UPDATE
+     */
+
+    /**
+     * DELETE
+     */
+
 
     companion object {
         private const val TAG = "ProfileNetworkClass"
@@ -132,7 +147,7 @@ class ProfileNetworkClass(
 }
 
 suspend fun Context.reloadSession(
-    supabaseClient: SupabaseClient
+    supabase: SupabaseClient
 ): Boolean {
     val TAG = "Context"
     val maxRetries = MAX_RETRIES
@@ -144,9 +159,9 @@ suspend fun Context.reloadSession(
             Log.d(TAG, "Attempt ${attempt + 1} - Token: $token")
 
             if (!token.isNullOrEmpty()) {
-                supabaseClient.supabase.auth.refreshCurrentSession()
+                supabase.auth.refreshCurrentSession()
 
-                val newAccessToken = supabaseClient.supabase.auth.currentAccessTokenOrNull()
+                val newAccessToken = supabase.auth.currentAccessTokenOrNull()
                 Log.d(TAG, "New token present : ${!newAccessToken.isNullOrEmpty()}")
 
                 if (!newAccessToken.isNullOrEmpty()) {
@@ -171,7 +186,7 @@ suspend fun Context.reloadSession(
 
     // If all retries fail, sign out the user
     Log.d(TAG, "Max retries reached, forcing re-authentication")
-    supabaseClient.supabase.auth.signOut()
+    supabase.auth.signOut()
 
     // Clear stored token
     tokenDatastore.updateData { TokenData() }
