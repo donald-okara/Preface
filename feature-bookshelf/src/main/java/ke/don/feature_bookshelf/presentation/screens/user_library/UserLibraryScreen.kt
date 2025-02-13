@@ -60,11 +60,20 @@ fun UserLibraryScreen(
             verticalArrangement = Arrangement.spacedBy(4.dp),
             horizontalArrangement = Arrangement.spacedBy(4.dp)
         ) {
+
             item {
-                AddBookshelfButton(
-                    onAddBookshelf = onAddBookshelf,
-                    modifier = modifier
-                        )
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .aspectRatio(0.7f), // Maintain consistent height across items
+                    contentAlignment = Alignment.Center // Centers the AddBookshelfButton
+                ) {
+                    AddBookshelfButton(
+                        onAddBookshelf = onAddBookshelf,
+                        modifier = modifier
+                    )
+                }
+
             }
             items(items = uniqueBookshelves, key = { bookShelf -> bookShelf.id }) { shelfItem ->
                 BookshelfItem(
