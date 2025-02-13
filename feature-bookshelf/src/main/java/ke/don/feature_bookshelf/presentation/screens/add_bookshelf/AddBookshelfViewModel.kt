@@ -4,13 +4,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
-import ke.don.feature_bookshelf.domain.AddBookshelfState
-import ke.don.feature_bookshelf.domain.SuccessState
-import ke.don.feature_bookshelf.domain.toBookshelf
+import ke.don.shared_domain.states.AddBookshelfState
+import ke.don.shared_domain.states.toBookshelf
 import ke.don.shared_domain.data_models.BookshelfType
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -18,61 +15,21 @@ import javax.inject.Inject
 class AddBookshelfViewModel @Inject constructor(
     private val bookshelfRepository: BookshelfRepository
 ): ViewModel() {
-    private val _addBookshelfState = MutableStateFlow(AddBookshelfState())
-    val addBookshelfState: StateFlow<AddBookshelfState> = _addBookshelfState
+    val addBookshelfState: StateFlow<AddBookshelfState> = bookshelfRepository.addBookshelfState
 
-    fun onNameChange(name: String){
-        _addBookshelfState.update {
-            it.copy(
-                name = name
-            )
-        }
-
-    }
+    fun onNameChange(name: String) = bookshelfRepository.onNameChange(name)
 
     fun isAddButtonEnabled(): Boolean{
         return addBookshelfState.value.name.isNotEmpty()
     }
 
-    fun onDescriptionChange(description: String){
-        _addBookshelfState.update {
-            it.copy(
-                description = description
-            )
-        }
-    }
+    fun onDescriptionChange(description: String) = bookshelfRepository.onDescriptionChange(description)
 
-    fun onBookshelfTypeChange(bookshelfType: BookshelfType){
-        _addBookshelfState.update {
-            it.copy(
-                bookshelfType = bookshelfType
-            )
-        }
-    }
+    fun onBookshelfTypeChange(bookshelfType: BookshelfType) = bookshelfRepository.onBookshelfTypeChange(bookshelfType)
 
     fun onAddBookshelf(){
-        try {
-            viewModelScope.launch {
-                _addBookshelfState.update {
-                    it.copy(
-                        successState = SuccessState.LOADING
-                    )
-                }
-                bookshelfRepository.createBookshelf(addBookshelfState.value.toBookshelf())
-                _addBookshelfState.update {
-                    it.copy(
-                        successState = SuccessState.SUCCESS
-                    )
-                }
-
-            }
-        } catch (e: Exception) {
-            _addBookshelfState.update {
-                it.copy(
-                    successState = SuccessState.ERROR
-                )
-            }
-            e.printStackTrace()
+        viewModelScope.launch {
+            bookshelfRepository.createBookshelf(addBookshelfState.value.toBookshelf())
         }
     }
 

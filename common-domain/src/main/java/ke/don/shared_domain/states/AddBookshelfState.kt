@@ -1,4 +1,4 @@
-package ke.don.feature_bookshelf.domain
+package ke.don.shared_domain.states
 
 import ke.don.shared_domain.data_models.BookshelfType
 import ke.don.shared_domain.data_models.SupabaseBookshelf

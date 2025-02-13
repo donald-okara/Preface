@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.core.Serializer
 import androidx.datastore.dataStore
 import ke.don.shared_domain.data_models.Profile
+import kotlinx.coroutines.flow.first
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
 import java.io.InputStream
@@ -37,3 +38,7 @@ object ProfileSerializer : Serializer<Profile>{
 }
 
 val Context.profileDataStore by dataStore("profile.json", ProfileSerializer)
+
+suspend fun Context.fetchUser(): Profile {
+    return profileDataStore.data.first()
+}

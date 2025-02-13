@@ -50,13 +50,17 @@ object DatasourceModule {
     @Provides
     @Singleton
     fun provideBookshelfNetworkClass(
-        supabaseClient: SupabaseClient
+        supabaseClient: SupabaseClient,
     ): BookshelfNetworkClass  = BookshelfNetworkClass(supabaseClient)
 
     @Provides
     @Singleton
     fun provideBookshelfRepository(
-        bookshelfNetworkClass: BookshelfNetworkClass
-    ): BookshelfRepository = BookshelfRepositoryImpl(bookshelfNetworkClass)
+        bookshelfNetworkClass: BookshelfNetworkClass,
+        @ApplicationContext context: Context
+    ): BookshelfRepository = BookshelfRepositoryImpl(
+        bookshelfNetworkClass,
+        context
+    )
 
 }

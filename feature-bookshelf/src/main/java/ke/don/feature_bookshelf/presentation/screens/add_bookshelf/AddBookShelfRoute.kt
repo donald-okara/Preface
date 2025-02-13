@@ -1,11 +1,19 @@
 package ke.don.feature_bookshelf.presentation.screens.add_bookshelf
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.LibraryBooks
 import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -14,7 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import ke.don.feature_bookshelf.domain.SuccessState
+import ke.don.shared_domain.states.SuccessState
 import ke.don.shared_domain.data_models.BookshelfType
 
 @Composable
@@ -29,26 +37,34 @@ fun AddBookshelfRoute(
     if (state.value.successState == SuccessState.SUCCESS){
         onNavigateBack()
     }
+    //TODO: Error handling
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+            .padding(paddingValues)
+            .fillMaxSize()
+    ){
+        BookshelfForm(
+            name = state.value.name,
+            onNameChange = {
+                addBookshelfViewModel.onNameChange(it)
+            },
+            description = state.value.description,
+            onDescriptionChange = {
+                addBookshelfViewModel.onDescriptionChange(it)
+            },
+            onAddBookshelf = {
+                addBookshelfViewModel.onAddBookshelf()
+            },
+            bookshelfType = state.value.bookshelfType,
+            onBookshelfTypeChange = {
+                addBookshelfViewModel.onBookshelfTypeChange(it)
+            },
+            isAddButtonEnabled = addBookshelfViewModel.isAddButtonEnabled()
+        )
+    }
 
-    BookshelfForm(
-        modifier = modifier.padding(paddingValues),
-        name = state.value.name,
-        onNameChange = {
-            addBookshelfViewModel.onNameChange(it)
-        },
-        description = state.value.description,
-        onDescriptionChange = {
-            addBookshelfViewModel.onDescriptionChange(it)
-        },
-        onAddBookshelf = {
-            addBookshelfViewModel.onAddBookshelf()
-        },
-        bookshelfType = state.value.bookshelfType,
-        onBookshelfTypeChange = {
-            addBookshelfViewModel.onBookshelfTypeChange(it)
-        },
-        isAddButtonEnabled = addBookshelfViewModel.isAddButtonEnabled()
-    )
+
 
 }
 
@@ -67,34 +83,68 @@ fun BookshelfForm(
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier.fillMaxWidth()
+        modifier = modifier
+            .fillMaxSize()
+            .padding(8.dp)
     ) {
-        TextField(
+        FormTextField(
             value = name,
             onValueChange = {
                 onNameChange(it)
             },
-            label = {
-                Text(text = "Name")
-            }
+            label = ("Name"),
+
         )
-        TextField(
+        FormTextField(
             value = description,
             onValueChange = {
                 onDescriptionChange(it)
             },
-            label ={
-                Text(text = "Description")
-            }
+            label = "Description",
+
         )
+
+        Spacer(modifier = modifier.padding(24.dp))
 
         Button(
             enabled = isAddButtonEnabled,
             onClick = {onAddBookshelf()},
             modifier = modifier.fillMaxWidth()
         ){
-            Text(text = "Add Bookshelf")
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.LibraryBooks,
+                    contentDescription = "Add Bookshelf"
+                )
+
+                Text(text = "Add Bookshelf")
+            }
+
 
         }
     }
+}
+
+@Composable
+fun FormTextField(
+    modifier: Modifier = Modifier,
+    value: String,
+    onValueChange: (String) -> Unit,
+    label: String
+){
+    TextField(
+        value = value,
+        onValueChange = {
+            onValueChange(it)
+        },
+        label = {
+            Text(text = label)
+        },
+        shape = RoundedCornerShape(8.dp),
+        modifier = modifier
+            .fillMaxWidth()
+    )
 }

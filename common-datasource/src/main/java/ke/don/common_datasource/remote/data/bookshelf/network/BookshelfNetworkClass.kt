@@ -7,10 +7,9 @@ import ke.don.shared_domain.data_models.SupabaseBookshelf
 import ke.don.shared_domain.values.BOOKSHELFTABLE
 
 class BookshelfNetworkClass(
-    private val supabaseClient: SupabaseClient
+    private val supabaseClient: SupabaseClient,
 ) {
-
-    /**
+   /**
      * CREATE
      */
     suspend fun createBookshelf(
