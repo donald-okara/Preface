@@ -52,8 +52,9 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import ke.don.feature_book_details.data.utils.getDominantColor
-import ke.don.feature_book_details.domain.states.ResultState
+import ke.don.common_datasource.remote.domain.utils.getDominantColor
+import ke.don.common_datasource.remote.domain.states.ResultState
+import ke.don.common_datasource.remote.domain.model.VolumeInfoDet
 import ke.don.feature_book_details.presentation.screens.book_details.components.AboutVolume
 import ke.don.feature_book_details.presentation.screens.book_details.components.BookCoverPreview
 import ke.don.feature_book_details.presentation.screens.book_details.components.PublishDetails
@@ -75,7 +76,11 @@ fun BookDetailsScreen(
     val imageUrl = bookUiState.value.highestImageUrl
 
     val colorPallet = bookUiState.value.colorPallet
-    val dominantColor = getDominantColor(colorPallet, isDarkTheme = isSystemInDarkTheme())
+    val dominantColor =
+        getDominantColor(
+            colorPallet,
+            isDarkTheme = isSystemInDarkTheme()
+        )
 
     LaunchedEffect(volumeId){
         bookDetailsViewModel.onVolumeIdPassed(volumeId)
@@ -145,7 +150,7 @@ fun BookDetailsScreen(
 @Composable
 fun BookDetailsContent(
     modifier: Modifier = Modifier,
-    volumeInfo: ke.don.feature_book_details.data.model.VolumeInfoDet,
+    volumeInfo: VolumeInfoDet,
     dominantColor : Color,
     imageUrl: String? = null,
     isGradientVisible: Boolean,

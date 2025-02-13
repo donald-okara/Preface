@@ -5,6 +5,7 @@ plugins {
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.kotlin.serialization)
     id("kotlin-kapt")
+    id("kotlin-parcelize")
 }
 
 android {
@@ -63,8 +64,6 @@ dependencies {
     kapt(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
 
-    implementation(libs.kotlinx.serialization.json)
-
     //Datastore
     implementation(libs.androidx.datastore)
 
@@ -73,6 +72,16 @@ dependencies {
     implementation(libs.supabase.postgrest.kt)
     implementation(libs.supabase.auth.kt)
     implementation(libs.supabase.realtime.kt)
+
+    // Retrofit with Kotlin serialization Converter
+    implementation(libs.retrofit2.kotlinx.serialization.converter)
+    implementation(libs.retrofit)
+    implementation(libs.okhttp)
+    implementation(libs.kotlinx.serialization.json)
+    implementation (libs.converter.gson)
+
+    implementation(libs.androidx.palette.ktx)
+
 
     //Ktor
     implementation(libs.ktor.client.android)

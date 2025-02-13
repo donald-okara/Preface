@@ -1,17 +1,15 @@
 package ke.don.feature_book_details.tests.repositories
 
-import ke.don.feature_book_details.data.repositoryImpl.BooksRepositoryImpl
-import ke.don.shared_domain.logger.Logger
-import ke.don.feature_book_details.domain.repositories.BooksRepository
-import ke.don.feature_book_details.domain.states.ResultState
+import ke.don.common_datasource.remote.data.book_details.repositoryImpl.BooksRepositoryImpl
+import ke.don.common_datasource.remote.domain.repositories.BooksRepository
+import ke.don.common_datasource.remote.domain.states.ResultState
+import ke.don.common_datasource.remote.domain.states.SearchState
 import ke.don.feature_book_details.fake.contracts.FakeColorPaletteExtractor
-import ke.don.feature_book_details.fake.data.FakeBookUiState.fakeBookUiStateError
 import ke.don.feature_book_details.fake.data.FakeBookUiState.fakeBookUiStateSuccess
-import ke.don.feature_book_details.fake.data.FakeBooksDataSource
 import ke.don.feature_book_details.fake.data.FakeBooksDataSource.fakeSearchSuccessState
 import ke.don.feature_book_details.fake.network.FakeBookApiService
-import ke.don.feature_book_details.presentation.screens.search.SearchState
 import ke.don.feature_book_details.rules.TestDispatcherRule
+import ke.don.shared_domain.logger.Logger
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.runTest

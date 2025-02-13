@@ -1,8 +1,8 @@
-package ke.don.feature_book_details.data.di
+package ke.don.common_datasource.remote.data.book_details.data.di
 
 import ke.don.shared_domain.logger.Logger
 import ke.don.shared_domain.logger.LoggerImpl
-import ke.don.feature_book_details.network.GoogleBooksApi
+import ke.don.common_datasource.remote.data.book_details.network.GoogleBooksApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn

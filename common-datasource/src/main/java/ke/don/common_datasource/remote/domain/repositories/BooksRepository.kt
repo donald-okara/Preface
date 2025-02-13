@@ -1,7 +1,7 @@
-package ke.don.feature_book_details.domain.repositories
+package ke.don.common_datasource.remote.domain.repositories
 
-import ke.don.feature_book_details.domain.states.BookUiState
-import ke.don.feature_book_details.presentation.screens.search.SearchState
+import ke.don.common_datasource.remote.domain.states.BookUiState
+import ke.don.common_datasource.remote.domain.states.SearchState
 import kotlinx.coroutines.flow.StateFlow
 
 interface BooksRepository {

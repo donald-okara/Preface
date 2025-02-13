@@ -1,4 +1,4 @@
-package ke.don.feature_book_details.data.utils
+package ke.don.common_datasource.remote.domain.utils
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable

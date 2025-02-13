@@ -6,9 +6,10 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import ke.don.feature_book_details.domain.repositories.BooksRepository
-import ke.don.feature_book_details.domain.states.BookUiState
-import ke.don.feature_book_details.domain.usecase.BooksUseCases
+import ke.don.common_datasource.remote.domain.states.loadingBookJokes
+import ke.don.common_datasource.remote.domain.repositories.BooksRepository
+import ke.don.common_datasource.remote.domain.states.BookUiState
+import ke.don.common_datasource.remote.domain.usecases.BooksUseCases
 import ke.don.shared_domain.logger.Logger
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

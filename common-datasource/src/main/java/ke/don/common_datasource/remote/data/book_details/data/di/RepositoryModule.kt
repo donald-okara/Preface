@@ -1,4 +1,4 @@
-package ke.don.feature_book_details.data.di
+package ke.don.common_datasource.remote.data.book_details.data.di
 
 import android.content.Context
 import dagger.Module
@@ -6,10 +6,10 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import ke.don.feature_book_details.data.repositoryImpl.BooksRepositoryImpl
-import ke.don.feature_book_details.domain.repositories.BooksRepository
-import ke.don.feature_book_details.domain.usecase.BooksUseCases
-import ke.don.feature_book_details.network.GoogleBooksApi
+import ke.don.common_datasource.remote.data.book_details.repositoryImpl.BooksRepositoryImpl
+import ke.don.common_datasource.remote.domain.repositories.BooksRepository
+import ke.don.common_datasource.remote.domain.usecases.BooksUseCases
+import ke.don.common_datasource.remote.data.book_details.network.GoogleBooksApi
 import ke.don.shared_domain.BuildConfig
 import ke.don.shared_domain.logger.Logger
 import ke.don.shared_domain.utils.color_utils.DefaultColorPaletteExtractor

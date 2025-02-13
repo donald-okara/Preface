@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import ke.don.feature_book_details.R
-import ke.don.feature_book_details.data.model.VolumeInfoDet
+import ke.don.common_datasource.remote.domain.model.VolumeInfoDet
 
 @Composable
 fun TitleHeader(

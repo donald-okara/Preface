@@ -1,4 +1,4 @@
-package ke.don.feature_book_details.presentation.screens.book_details
+package ke.don.common_datasource.remote.domain.states
 
 val loadingBookJokes = listOf(
     "Knock knock! Who’s there? Page. Page who? Just turning the page to load your book!",

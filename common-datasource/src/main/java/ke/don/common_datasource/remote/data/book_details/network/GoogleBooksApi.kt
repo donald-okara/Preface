@@ -1,7 +1,7 @@
-package ke.don.feature_book_details.network
+package ke.don.common_datasource.remote.data.book_details.network
 
-import ke.don.feature_book_details.data.model.BookDetailsResponse
-import ke.don.feature_book_details.data.model.BookListItemResponse
+import ke.don.common_datasource.remote.domain.model.BookDetailsResponse
+import ke.don.common_datasource.remote.domain.model.BookListItemResponse
 import retrofit2.Response
 import retrofit2.http.GET
 import retrofit2.http.Path

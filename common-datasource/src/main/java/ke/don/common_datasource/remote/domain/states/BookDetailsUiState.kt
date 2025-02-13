@@ -1,6 +1,6 @@
-package ke.don.feature_book_details.domain.states
+package ke.don.common_datasource.remote.domain.states
 
-import ke.don.feature_book_details.data.model.BookDetailsResponse
+import ke.don.common_datasource.remote.domain.model.BookDetailsResponse
 import ke.don.shared_domain.utils.color_utils.model.ColorPallet
 
 data class BookUiState(

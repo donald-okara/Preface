@@ -1,7 +1,7 @@
 package ke.don.feature_book_details.fake.data
 
-import ke.don.feature_book_details.domain.states.BookUiState
-import ke.don.feature_book_details.domain.states.ResultState
+import ke.don.common_datasource.remote.domain.states.BookUiState
+import ke.don.common_datasource.remote.domain.states.ResultState
 import ke.don.shared_domain.utils.color_utils.model.ColorPallet
 import ke.don.feature_book_details.fake.data.FakeBookDetailsDataSource.fakeBookDetailsResponse
 
@@ -16,6 +16,8 @@ object FakeBookUiState {
         )
     val fakeBookUiStateError: BookUiState =
         BookUiState(
-            resultState = ResultState.Error("Error message")
+            resultState = ResultState.Error(
+                "Error message"
+            )
         )
 }

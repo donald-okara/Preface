@@ -3,8 +3,9 @@ package ke.don.feature_book_details.presentation.screens.search
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import ke.don.feature_book_details.domain.repositories.BooksRepository
-import ke.don.feature_book_details.domain.usecase.BooksUseCases
+import ke.don.common_datasource.remote.domain.repositories.BooksRepository
+import ke.don.common_datasource.remote.domain.states.SearchState
+import ke.don.common_datasource.remote.domain.usecases.BooksUseCases
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
@@ -50,9 +51,3 @@ class SearchViewModel @Inject constructor(
     }
 }
 
-sealed interface SearchState{
-    data class Success(val data: List<ke.don.feature_book_details.data.model.BookItem>): SearchState
-    data class Error(val message : String = "An error occurred"): SearchState
-    data object Loading: SearchState
-    data object Empty: SearchState
-}

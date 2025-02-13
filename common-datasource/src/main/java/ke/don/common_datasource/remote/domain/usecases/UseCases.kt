@@ -1,6 +1,6 @@
-package ke.don.feature_book_details.domain.usecase
+package ke.don.common_datasource.remote.domain.usecases
 
-import ke.don.feature_book_details.domain.repositories.BooksRepository
+import ke.don.common_datasource.remote.domain.repositories.BooksRepository
 
 class BooksUseCases(
     private val booksRepository: BooksRepository,

@@ -68,7 +68,6 @@ dependencies {
     //Dagger Hilt
     implementation(libs.hilt.android)
     implementation(libs.androidx.runtime.livedata)
-    implementation(libs.androidx.palette.ktx)
     implementation(libs.androidx.lifecycle.process)
     kapt(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
@@ -96,6 +95,7 @@ dependencies {
     kapt(libs.compiler)
 
     implementation(project(":common-domain"))
+    implementation(project(":common-datasource"))
 
     testImplementation(libs.junit)
     testImplementation(libs.mockito.kotlin)

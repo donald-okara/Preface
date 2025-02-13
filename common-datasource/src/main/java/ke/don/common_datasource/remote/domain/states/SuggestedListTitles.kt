@@ -1,4 +1,4 @@
-package ke.don.feature_book_details.presentation.screens.search
+package ke.don.common_datasource.remote.domain.states
 
 val suggestedBookTitles = listOf(
     "The Great Gatsby by F. Scott Fitzgerald",

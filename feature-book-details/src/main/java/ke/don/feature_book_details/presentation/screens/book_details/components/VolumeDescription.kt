@@ -18,7 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import ke.don.feature_book_details.data.model.VolumeInfoDet
+import ke.don.common_datasource.remote.domain.model.VolumeInfoDet
 import ke.don.shared_domain.utils.formatting_utils.formatHtmlToAnnotatedString
 
 @Composable

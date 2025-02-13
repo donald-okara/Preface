@@ -1,4 +1,4 @@
-package ke.don.feature_book_details.data.model
+package ke.don.common_datasource.remote.domain.model
 
 import android.os.Parcelable
 import androidx.compose.runtime.Stable

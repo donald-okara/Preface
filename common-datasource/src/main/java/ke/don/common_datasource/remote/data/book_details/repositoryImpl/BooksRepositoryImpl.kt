@@ -1,13 +1,13 @@
-package ke.don.feature_book_details.data.repositoryImpl
+package ke.don.common_datasource.remote.data.book_details.repositoryImpl
 
-import ke.don.feature_book_details.data.model.BookDetailsResponse
-import ke.don.feature_book_details.domain.repositories.BooksRepository
-import ke.don.feature_book_details.domain.states.BookUiState
-import ke.don.feature_book_details.domain.states.ResultState
-import ke.don.feature_book_details.network.GoogleBooksApi
-import ke.don.feature_book_details.presentation.screens.search.SearchState
-import ke.don.feature_book_details.presentation.screens.search.searchMessages
-import ke.don.feature_book_details.presentation.screens.search.suggestedBookTitles
+import ke.don.common_datasource.remote.domain.model.BookDetailsResponse
+import ke.don.common_datasource.remote.domain.repositories.BooksRepository
+import ke.don.common_datasource.remote.domain.states.BookUiState
+import ke.don.common_datasource.remote.domain.states.ResultState
+import ke.don.common_datasource.remote.domain.states.SearchState
+import ke.don.common_datasource.remote.domain.states.searchMessages
+import ke.don.common_datasource.remote.domain.states.suggestedBookTitles
+import ke.don.common_datasource.remote.data.book_details.network.GoogleBooksApi
 import ke.don.shared_domain.logger.Logger
 import ke.don.shared_domain.utils.color_utils.ColorPaletteExtractor
 import ke.don.shared_domain.utils.color_utils.model.ColorPallet

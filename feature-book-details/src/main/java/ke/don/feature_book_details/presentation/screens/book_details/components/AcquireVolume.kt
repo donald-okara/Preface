@@ -22,7 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import ke.don.feature_book_details.R
-import ke.don.feature_book_details.data.model.VolumeInfoDet
+import ke.don.common_datasource.remote.domain.model.VolumeInfoDet
 import ke.don.feature_book_details.presentation.screens.book_details.search
 
 //Tab to be implemented once rights are secured

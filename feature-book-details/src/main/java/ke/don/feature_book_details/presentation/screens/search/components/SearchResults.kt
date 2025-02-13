@@ -28,11 +28,12 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import ke.don.common_datasource.remote.domain.model.BookItem
 import ke.don.feature_book_details.R
 
 @Composable
 fun BooksGridScreen(
-    books: List<ke.don.feature_book_details.data.model.BookItem>,
+    books: List<BookItem>,
     modifier: Modifier = Modifier,
     onNavigateToBookItem: (String) -> Unit
 
@@ -58,7 +59,7 @@ fun BooksGridScreen(
 @Composable
 fun BookItem(
     modifier: Modifier = Modifier,
-    book : ke.don.feature_book_details.data.model.BookItem,
+    book : BookItem,
     onNavigateToBookItem: (String) -> Unit
 ) {
     Card(
@@ -76,7 +77,7 @@ fun BookItem(
             if (book.volumeInfo.imageLinks?.thumbnail != null) {
                 AsyncImage(
                     model = ImageRequest.Builder(context = LocalContext.current)
-                        .data(book.volumeInfo.imageLinks.thumbnail.replace("http://", "https://")) // Replacing "http" with "https"
+                        .data(book.volumeInfo.imageLinks!!.thumbnail!!.replace("http://", "https://")) // Replacing "http" with "https"
                         .crossfade(true)
                         .build(),
                     contentDescription = stringResource(R.string.book_cover, book.volumeInfo.title),
