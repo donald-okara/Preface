@@ -1,5 +1,6 @@
 package ke.don.common_datasource.remote.domain.repositories
 
+import ke.don.shared_domain.data_models.AddBookToBookshelf
 import ke.don.shared_domain.states.AddBookshelfState
 import ke.don.shared_domain.data_models.BookshelfType
 import ke.don.shared_domain.data_models.SupabaseBookshelf
@@ -18,4 +19,5 @@ interface BookshelfRepository {
     suspend fun fetchUserBookshelves(userId: String)
     suspend fun fetchBookshelfById(bookshelfId: Int): SupabaseBookshelf?
 
+    suspend fun addBookToBookshelf(addBookToBookshelf: AddBookToBookshelf)
 }

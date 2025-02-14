@@ -6,10 +6,15 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.LibraryBooks
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -88,12 +93,34 @@ fun TitleHeader(
         }
 
         // Display the book published date, if available
-        Text(
-            text = volumeInfo.publishedDate,
-            style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.Center,
-            modifier = Modifier.graphicsLayer(alpha = 0.8f)
-        )
+        if(volumeInfo.publishedDate.isNotEmpty()){
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = modifier
+                    .padding(bottom = 4.dp)
+                    .fillMaxWidth()
+            ) {
+                Text(
+                    text = volumeInfo.publishedDate,
+                    style = MaterialTheme.typography.bodyMedium,
+                    textAlign = TextAlign.Center,
+                    modifier = modifier.graphicsLayer(alpha = 0.8f)
+                )
+
+                IconButton(
+                    onClick = {
+
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Default.LibraryBooks,
+                        contentDescription = "Add to library",
+                        tint = textColor
+                    )
+                }
+            }
+        }
     }
 }
 
@@ -124,7 +151,7 @@ fun BookImage(
                 .crossfade(true)
                 .build(),
             contentDescription = stringResource(R.string.book_cover),
-            contentScale = ContentScale.FillHeight,
+            contentScale = ContentScale.FillBounds,
             placeholder = painterResource(R.drawable.undraw_writer_q06d),
             modifier = modifier
                 .clip(RoundedCornerShape(16.dp))
@@ -135,6 +162,7 @@ fun BookImage(
     }
 
 }
+
 
 @Composable
 fun BookCoverPreview(

@@ -5,6 +5,7 @@ import android.widget.Toast
 import ke.don.common_datasource.local.datastore.profile.profileDataStore
 import ke.don.common_datasource.remote.data.bookshelf.network.BookshelfNetworkClass
 import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
+import ke.don.shared_domain.data_models.AddBookToBookshelf
 import ke.don.shared_domain.states.AddBookshelfState
 import ke.don.shared_domain.data_models.BookshelfType
 import ke.don.shared_domain.states.SuccessState
@@ -102,5 +103,14 @@ class BookshelfRepositoryImpl(
 
     override suspend fun fetchBookshelfById(bookshelfId: Int): SupabaseBookshelf? {
         return bookshelfNetworkClass.fetchBookshelfById(bookshelfId)
+    }
+
+    override suspend fun addBookToBookshelf(addBookToBookshelf: AddBookToBookshelf) {
+        try {
+            bookshelfNetworkClass.addBookToBookshelf(addBookToBookshelf)
+        }catch (e: Exception){
+            e.printStackTrace()
+
+        }
     }
 }

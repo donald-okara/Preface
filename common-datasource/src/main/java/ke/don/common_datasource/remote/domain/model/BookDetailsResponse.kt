@@ -3,7 +3,7 @@ package ke.don.common_datasource.remote.domain.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class BookDetailsResponse(
+data class BookDetailsResponse( // Google book api
     val kind: String = "",
     val id: String = "",
     val etag: String = "",

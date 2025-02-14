@@ -3,7 +3,9 @@ package ke.don.common_datasource.remote.data.bookshelf.network
 import android.util.Log
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
+import ke.don.shared_domain.data_models.AddBookToBookshelf
 import ke.don.shared_domain.data_models.SupabaseBookshelf
+import ke.don.shared_domain.values.ADDBOOKSTOBOOKSHELF
 import ke.don.shared_domain.values.BOOKSHELFTABLE
 
 class BookshelfNetworkClass(
@@ -65,6 +67,17 @@ class BookshelfNetworkClass(
     /**
      * UPDATE
      */
+    suspend fun addBookToBookshelf(
+        addBookToBookshelf: AddBookToBookshelf
+    ){
+        try {
+            supabaseClient.from(
+                ADDBOOKSTOBOOKSHELF
+            ).insert(addBookToBookshelf)
+        }catch (e: Exception){
+            e.printStackTrace()
+        }
+    }
 
     /**
      * DELETE
