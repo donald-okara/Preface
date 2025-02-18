@@ -1,4 +1,4 @@
-package ke.don.common_datasource.remote.domain.model
+package ke.don.shared_domain.data_models
 
 import android.os.Parcelable
 import androidx.compose.runtime.Stable

@@ -10,6 +10,7 @@ import ke.don.common_datasource.remote.data.book_details.repositoryImpl.BooksRep
 import ke.don.common_datasource.remote.domain.repositories.BooksRepository
 import ke.don.common_datasource.remote.domain.usecases.BooksUseCases
 import ke.don.common_datasource.remote.data.book_details.network.GoogleBooksApi
+import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
 import ke.don.shared_domain.BuildConfig
 import ke.don.shared_domain.logger.Logger
 import ke.don.shared_domain.utils.color_utils.DefaultColorPaletteExtractor
@@ -22,6 +23,7 @@ object RepositoryModule {
     @Singleton
     fun provideBooksRepository(
         googleBooksApi: GoogleBooksApi,
+        bookshelfRepository: BookshelfRepository,
         @ApplicationContext context: Context,
         logger : Logger
     ): BooksRepository {
@@ -29,6 +31,7 @@ object RepositoryModule {
             googleBooksApi = googleBooksApi,
             apiKey = BuildConfig.GOOGLE_API_KEY,
             logger = logger,
+            bookshelfRepository = bookshelfRepository,
             colorPaletteExtractor = DefaultColorPaletteExtractor()
         )
     }
@@ -36,9 +39,13 @@ object RepositoryModule {
     @Provides
     @Singleton
     fun provideBooksUseCases(
-        booksRepository: BooksRepository
+        booksRepository: BooksRepository,
+        bookshelfRepository: BookshelfRepository
     ): BooksUseCases {
-        return BooksUseCases(booksRepository)
+        return BooksUseCases(
+            booksRepository = booksRepository,
+            bookshelfRepository = bookshelfRepository
+        )
     }
 
 }

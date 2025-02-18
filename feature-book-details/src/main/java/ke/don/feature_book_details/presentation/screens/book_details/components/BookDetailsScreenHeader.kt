@@ -6,19 +6,18 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.LibraryBooks
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,7 +33,8 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import ke.don.feature_book_details.R
-import ke.don.common_datasource.remote.domain.model.VolumeInfoDet
+import ke.don.shared_domain.data_models.VolumeInfoDet
+import ke.don.shared_domain.states.BookshelfBookDetailsState
 
 @Composable
 fun TitleHeader(
@@ -42,9 +42,23 @@ fun TitleHeader(
     onImageClick: () -> Unit,
     volumeInfo: VolumeInfoDet,
     imageUrl: String? = null,
+    onConfirm: () -> Unit,
+    isLoading: Boolean = true,
+    onBookshelfClicked: (Int) -> Unit,
     onSearchAuthor: (String) -> Unit,
+    uniqueBookshelves: List<BookshelfBookDetailsState>,
     textColor: Color = MaterialTheme.colorScheme.onTertiaryContainer
 ) {
+    var expanded by remember { mutableStateOf(false) }
+
+    LaunchedEffect(
+        uniqueBookshelves
+    ) {
+        Log.d("ScreenHeader", "Bookstate : ${uniqueBookshelves}")
+
+    }
+
+
     Column(
         modifier = modifier
             .wrapContentHeight(),
@@ -66,6 +80,17 @@ fun TitleHeader(
             style = MaterialTheme.typography.headlineSmall,
             modifier = modifier.padding(bottom = 4.dp) // Minor padding if needed
         )
+
+        if(!isLoading){
+            BookshelfDropdownMenu(
+                uniqueBookshelves = uniqueBookshelves,
+                defaultColor = textColor,
+                onExpandToggle = { expanded = !expanded },
+                onItemClick = onBookshelfClicked,
+                expanded = expanded,
+                onConfirm = onConfirm
+            )
+        }
 
         // Display the book authors, if available
         volumeInfo.authors.let { authors ->
@@ -93,34 +118,25 @@ fun TitleHeader(
         }
 
         // Display the book published date, if available
-        if(volumeInfo.publishedDate.isNotEmpty()){
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = modifier
-                    .padding(bottom = 4.dp)
-                    .fillMaxWidth()
-            ) {
-                Text(
-                    text = volumeInfo.publishedDate,
-                    style = MaterialTheme.typography.bodyMedium,
-                    textAlign = TextAlign.Center,
-                    modifier = modifier.graphicsLayer(alpha = 0.8f)
-                )
+        if (volumeInfo.publishedDate.isNotEmpty()) {
 
-                IconButton(
-                    onClick = {
+            Text(
+                text = volumeInfo.publishedDate,
+                style = MaterialTheme.typography.bodyMedium,
+                textAlign = TextAlign.Center,
+                modifier = modifier.graphicsLayer(alpha = 0.8f)
+            )
 
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Default.LibraryBooks,
-                        contentDescription = "Add to library",
-                        tint = textColor
-                    )
-                }
-            }
+//                BookshelfDropdownMenu(
+//                    uniqueBookshelves = uniqueBookshelves,
+//                    textColor = textColor,
+//                    onExpandToggle = { expanded = !expanded },
+//                    onItemClick = {},
+//                    expanded = expanded,
+//                    modifier = modifier
+//                )
         }
+
     }
 }
 
@@ -139,7 +155,7 @@ fun BookImage(
         Image(
             painter = painterResource(R.drawable.undraw_writer_q06d),
             contentDescription = stringResource(R.string.book_cover),
-            contentScale = ContentScale.FillBounds,
+            contentScale = ContentScale.FillHeight,
             modifier = modifier
                 .clip(RoundedCornerShape(16.dp))
 
@@ -151,7 +167,7 @@ fun BookImage(
                 .crossfade(true)
                 .build(),
             contentDescription = stringResource(R.string.book_cover),
-            contentScale = ContentScale.FillBounds,
+            contentScale = ContentScale.FillHeight,
             placeholder = painterResource(R.drawable.undraw_writer_q06d),
             modifier = modifier
                 .clip(RoundedCornerShape(16.dp))

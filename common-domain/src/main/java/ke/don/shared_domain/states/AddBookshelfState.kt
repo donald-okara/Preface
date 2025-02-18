@@ -1,7 +1,7 @@
 package ke.don.shared_domain.states
 
 import ke.don.shared_domain.data_models.BookshelfType
-import ke.don.shared_domain.data_models.SupabaseBookshelf
+import ke.don.shared_domain.data_models.BookshelfRef
 
 data class AddBookshelfState(
     val name: String = "",
@@ -17,10 +17,11 @@ enum class SuccessState{
     IDLE
 }
 
-fun AddBookshelfState.toBookshelf(): SupabaseBookshelf {
-    return SupabaseBookshelf(
+fun AddBookshelfState.toBookshelf(): BookshelfRef {
+    return BookshelfRef(
         name = name,
         description = description,
         bookshelfType = bookshelfType.name
     )
 }
+

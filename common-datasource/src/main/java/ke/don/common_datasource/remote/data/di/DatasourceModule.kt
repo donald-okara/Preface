@@ -41,10 +41,12 @@ object DatasourceModule {
     @Singleton
     fun provideProfileRepository(
         profileNetworkClass: ProfileNetworkClass,
-        profileDataStoreManager: ProfileDataStoreManager
+        profileDataStoreManager: ProfileDataStoreManager,
+        @ApplicationContext context: Context,
     ): ProfileRepository = ProfileRepositoryImpl(
         profileNetworkClass = profileNetworkClass,
-        profileDataStoreManager = profileDataStoreManager
+        profileDataStoreManager = profileDataStoreManager,
+        context = context,
     )
 
     @Provides
@@ -57,10 +59,12 @@ object DatasourceModule {
     @Singleton
     fun provideBookshelfRepository(
         bookshelfNetworkClass: BookshelfNetworkClass,
-        @ApplicationContext context: Context
+        @ApplicationContext context: Context,
+        profileRepository: ProfileRepository
     ): BookshelfRepository = BookshelfRepositoryImpl(
-        bookshelfNetworkClass,
-        context
+        bookshelfNetworkClass = bookshelfNetworkClass,
+        context = context,
+        profileRepository = profileRepository
     )
 
 }

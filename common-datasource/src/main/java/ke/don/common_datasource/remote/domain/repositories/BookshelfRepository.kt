@@ -1,9 +1,9 @@
 package ke.don.common_datasource.remote.domain.repositories
 
 import ke.don.shared_domain.data_models.AddBookToBookshelf
-import ke.don.shared_domain.states.AddBookshelfState
+import ke.don.shared_domain.data_models.BookshelfRef
 import ke.don.shared_domain.data_models.BookshelfType
-import ke.don.shared_domain.data_models.SupabaseBookshelf
+import ke.don.shared_domain.states.AddBookshelfState
 import ke.don.shared_domain.states.UserLibraryState
 import kotlinx.coroutines.flow.StateFlow
 
@@ -15,9 +15,9 @@ interface BookshelfRepository {
     fun onDescriptionChange(description: String)
     fun onBookshelfTypeChange(bookshelfType: BookshelfType)
 
-    suspend fun createBookshelf(bookshelf: SupabaseBookshelf)
-    suspend fun fetchUserBookshelves(userId: String)
-    suspend fun fetchBookshelfById(bookshelfId: Int): SupabaseBookshelf?
-
+    suspend fun createBookshelf(bookshelf: BookshelfRef)
+    suspend fun fetchBookshelfById(bookshelfId: Int): BookshelfRef?
+    suspend fun fetchUserBookShelves()
     suspend fun addBookToBookshelf(addBookToBookshelf: AddBookToBookshelf)
+    suspend fun removeBookFromBookshelf(bookId: String, bookshelfId: Int)
 }

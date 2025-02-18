@@ -28,7 +28,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import ke.don.common_datasource.remote.domain.model.BookItem
+import ke.don.shared_domain.data_models.BookItem
 import ke.don.feature_book_details.R
 
 @Composable

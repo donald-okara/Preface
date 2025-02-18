@@ -13,7 +13,14 @@ import ke.don.common_datasource.local.datastore.profile.profileDataStore
 import ke.don.common_datasource.local.datastore.token.TokenData
 import ke.don.common_datasource.local.datastore.token.TokenDatastoreManager
 import ke.don.common_datasource.local.datastore.token.tokenDatastore
+import ke.don.shared_domain.data_models.BookShelf
+import ke.don.shared_domain.data_models.BookshelfCatalog
+import ke.don.shared_domain.data_models.BookshelfRef
 import ke.don.shared_domain.data_models.Profile
+import ke.don.shared_domain.data_models.SupabaseBook
+import ke.don.shared_domain.values.BOOKS
+import ke.don.shared_domain.values.BOOKSHELFCATALOG
+import ke.don.shared_domain.values.BOOKSHELFTABLE
 import ke.don.shared_domain.values.MAX_RETRIES
 import ke.don.shared_domain.values.PROFILESTABLE
 import kotlinx.coroutines.delay
@@ -122,10 +129,78 @@ class ProfileNetworkClass(
         }
     }
 
+    suspend fun fetchUserBookshelves(
+        userId: String
+    ): List<BookShelf> {
+        try {
+            Log.d(TAG, "Attempting to fetch bookshelf")
+
+            // Fetch bookshelf references for the user
+            val bookshelfRefs = supabase.from(BOOKSHELFTABLE)
+                .select {
+                    filter {
+                        BookshelfRef::userId eq userId
+                    }
+                }
+                .decodeList<BookshelfRef>()
+
+            Log.d(TAG, "Fetched bookshelfRefs: $bookshelfRefs")
+
+            // Fetch all catalogs for the bookshelves in a single query
+            Log.d(TAG, "Attempting to fetch bookshelf catalogs")
+            val bookshelfCatalogs = supabase.from(BOOKSHELFCATALOG)
+                .select {
+                    filter {
+                        BookshelfCatalog::bookshelfId isIn bookshelfRefs.map { it.id }
+                    }
+                }
+                .decodeList<BookshelfCatalog>()
+
+            Log.d(TAG, "Fetched bookshelf catalogs: $bookshelfCatalogs")
+
+            // Get the list of bookIds from the catalogs
+            val bookIds = bookshelfCatalogs.map { it.bookId }
+
+            // Fetch all books associated with these bookIds in a single query
+            val books = supabase.from(BOOKS)
+                .select {
+                    filter {
+                        SupabaseBook::bookId isIn bookIds
+                    }
+                }
+                .decodeList<SupabaseBook>()
+            Log.d(TAG, "Fetched books: $books")
+
+            // Organize catalogs and books by bookshelfId
+            val bookshelvesDetailed = bookshelfRefs.map { bookshelfRef ->
+                // Filter catalogs and books for the current bookshelf
+                val currentCatalogs = bookshelfCatalogs.filter { it.bookshelfId == bookshelfRef.id }
+                val currentBooks = books.filter { book ->
+                    currentCatalogs.any { catalog -> catalog.bookId == book.bookId }
+                }
+
+                // Return a detailed BookShelf object
+                Log.d(TAG, "Bookshelves fetched successfully: $bookshelfRef, $currentCatalogs, $currentBooks")
+                BookShelf(
+                    supabaseBookShelf = bookshelfRef,
+                    catalog = currentCatalogs,
+                    books = currentBooks
+                )
+            }
+
+            // Return the list of bookshelves with their catalogs and books
+            return bookshelvesDetailed
+        } catch (e: Exception) {
+            e.printStackTrace()
+            return emptyList() // Handle errors by returning an empty list
+        }
+    }
+
+
     suspend fun checkSignedInStatus(): Boolean {
 
         val signInStatus = context.reloadSession(supabase)
-        Log.d("ProfileRepositoryImpl", "User is logged in: $signInStatus")
+        Log.d(TAG, "User is logged in: $signInStatus")
 
         return signInStatus
 

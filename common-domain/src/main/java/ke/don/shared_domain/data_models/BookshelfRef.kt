@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class SupabaseBookshelf(
+data class BookshelfRef(
     val id: Int = 0,
     val name : String = "",
     val description : String = "",
@@ -16,4 +16,8 @@ data class SupabaseBookshelf(
     val userId : String = ""
 )
 
-
+data class BookShelf(
+    val supabaseBookShelf: BookshelfRef = BookshelfRef(),
+    val catalog: List<BookshelfCatalog> = emptyList(),
+    val books : List<SupabaseBook> = emptyList()
+)

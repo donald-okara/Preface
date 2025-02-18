@@ -18,3 +18,17 @@ data class AddBookToBookshelf(
     val lowestImageUrl : String? = null,
     val source : BookSource = BookSource.Google,
 )
+
+@Serializable
+data class SupabaseBook(
+    val id : Int = 0,
+    @SerialName("book_id")
+    val bookId : String = "",
+    val title : String = "",
+    val description : String = "",
+    @SerialName("highest_image_url")
+    val highestImageUrl : String? = null,
+    @SerialName("lowest_image_url")
+    val lowestImageUrl : String? = null,
+    val source : BookSource = BookSource.Google,
+)

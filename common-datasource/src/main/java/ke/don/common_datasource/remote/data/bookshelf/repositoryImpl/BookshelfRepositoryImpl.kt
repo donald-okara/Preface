@@ -1,43 +1,36 @@
 package ke.don.common_datasource.remote.data.bookshelf.repositoryImpl
 
 import android.content.Context
+import android.util.Log
 import android.widget.Toast
-import ke.don.common_datasource.local.datastore.profile.profileDataStore
 import ke.don.common_datasource.remote.data.bookshelf.network.BookshelfNetworkClass
 import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
+import ke.don.common_datasource.remote.domain.repositories.ProfileRepository
 import ke.don.shared_domain.data_models.AddBookToBookshelf
-import ke.don.shared_domain.states.AddBookshelfState
+import ke.don.shared_domain.data_models.BookshelfRef
 import ke.don.shared_domain.data_models.BookshelfType
+import ke.don.shared_domain.states.AddBookshelfState
 import ke.don.shared_domain.states.SuccessState
-import ke.don.shared_domain.data_models.SupabaseBookshelf
-import ke.don.shared_domain.states.UserLibraryState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
 class BookshelfRepositoryImpl(
     private val bookshelfNetworkClass: BookshelfNetworkClass,
+    private val profileRepository: ProfileRepository,
     private val context : Context
 ): BookshelfRepository {
     private val _addBookshelfState = MutableStateFlow(AddBookshelfState())
     override val addBookshelfState: StateFlow<AddBookshelfState> = _addBookshelfState
-
-    private val _userLibraryState = MutableStateFlow(UserLibraryState())
-    override val userLibraryState: StateFlow<UserLibraryState> = _userLibraryState
-
-    private val userId = MutableStateFlow<String?>(null)
+    override val userLibraryState = profileRepository.userLibraryState
 
     init {
         CoroutineScope(Dispatchers.IO).launch{
-            val profile = context.profileDataStore.data.first()
-            userId.value = profile.authId
-
-            userId.value?.let {
-                fetchUserBookshelves(userId.value!!)
+            profileRepository.userId.value?.let {
+                profileRepository.fetchUserBookshelves()
             }
         }
     }
@@ -58,15 +51,15 @@ class BookshelfRepositoryImpl(
         }
     }
 
-    override suspend fun createBookshelf(bookshelf: SupabaseBookshelf) {
+    override suspend fun createBookshelf(bookshelf: BookshelfRef) {
         try {
             _addBookshelfState.update {
                 it.copy(successState = SuccessState.LOADING)
             }
             bookshelfNetworkClass.createBookshelf(bookshelf)
 
-            userId.value?.let {
-                fetchUserBookshelves(it)
+            profileRepository.userId.value?.let {
+                profileRepository.fetchUserBookshelves()
             }
             _addBookshelfState.update {
                 it.copy(successState = SuccessState.SUCCESS)
@@ -82,35 +75,31 @@ class BookshelfRepositoryImpl(
         }
     }
 
-    override suspend fun fetchUserBookshelves(userId: String) {
-        _userLibraryState.update{
-            it.copy(successState = SuccessState.LOADING)
-        }
-        try {
-            _userLibraryState.update {
-                it.copy(
-                    userBookshelves = bookshelfNetworkClass.fetchUserBookshelves(userId),
-                    successState = SuccessState.SUCCESS
-                )
-            }
-        }catch (e: Exception){
-            e.printStackTrace()
-            _userLibraryState.update{
-                it.copy(successState = SuccessState.ERROR)
-            }
-        }
-    }
+    override suspend fun fetchUserBookShelves() = profileRepository.fetchUserBookshelves()
 
-    override suspend fun fetchBookshelfById(bookshelfId: Int): SupabaseBookshelf? {
+    override suspend fun fetchBookshelfById(bookshelfId: Int): BookshelfRef? {
         return bookshelfNetworkClass.fetchBookshelfById(bookshelfId)
     }
 
     override suspend fun addBookToBookshelf(addBookToBookshelf: AddBookToBookshelf) {
         try {
+            Log.d(TAG, "Attempting to add book")
+
             bookshelfNetworkClass.addBookToBookshelf(addBookToBookshelf)
         }catch (e: Exception){
             e.printStackTrace()
-
         }
+    }
+
+    override suspend fun removeBookFromBookshelf(bookId: String, bookshelfId: Int) {
+        try {
+            bookshelfNetworkClass.removeBookFromBookshelf(bookId, bookshelfId)
+        }catch (e: Exception){
+            e.printStackTrace()
+        }
+    }
+
+    companion object {
+        const val TAG = "BookshelfRepositoryImpl"
     }
 }

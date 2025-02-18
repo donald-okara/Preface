@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -53,12 +54,14 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import ke.don.common_datasource.remote.domain.utils.getDominantColor
-import ke.don.common_datasource.remote.domain.states.ResultState
-import ke.don.common_datasource.remote.domain.model.VolumeInfoDet
+import ke.don.feature_book_details.presentation.screens.book_details.BookDetailsViewModel.Companion.TAG
+import ke.don.shared_domain.states.ResultState
+import ke.don.shared_domain.data_models.VolumeInfoDet
 import ke.don.feature_book_details.presentation.screens.book_details.components.AboutVolume
 import ke.don.feature_book_details.presentation.screens.book_details.components.BookCoverPreview
 import ke.don.feature_book_details.presentation.screens.book_details.components.PublishDetails
 import ke.don.feature_book_details.presentation.screens.book_details.components.TitleHeader
+import ke.don.shared_domain.states.BookshelfBookDetailsState
 import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -75,6 +78,8 @@ fun BookDetailsScreen(
     val loadingJoke = bookDetailsViewModel.loadingJoke
     val imageUrl = bookUiState.value.highestImageUrl
 
+    val bookshelfList = bookUiState.value.bookshelvesState.bookshelves
+
     val colorPallet = bookUiState.value.colorPallet
     val dominantColor =
         getDominantColor(
@@ -85,6 +90,7 @@ fun BookDetailsScreen(
     LaunchedEffect(volumeId){
         bookDetailsViewModel.onVolumeIdPassed(volumeId)
     }
+
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -124,9 +130,15 @@ fun BookDetailsScreen(
                     bookDetailsViewModel.onSearchAuthor(author = author)
                     onNavigateToSearch()
                 },
+                isLoading = bookUiState.value.resultState != ResultState.Success,
                 imageUrl = imageUrl,
                 dominantColor = dominantColor,
-                isGradientVisible = bookUiState.value.resultState == ResultState.Success
+                isGradientVisible = bookUiState.value.resultState == ResultState.Success,
+                uniqueBookshelves = bookshelfList,
+                onBookshelfClicked = {bookshelfId->
+                    bookDetailsViewModel.onSelectBookshelf(bookshelfId)
+                },
+                onConfirm = bookDetailsViewModel::onPushEditedBookshelfBooks
             )
 
             if (bookUiState.value.resultState != ResultState.Success) {
@@ -151,15 +163,25 @@ fun BookDetailsScreen(
 fun BookDetailsContent(
     modifier: Modifier = Modifier,
     volumeInfo: VolumeInfoDet,
+    onBookshelfClicked: (Int) -> Unit,
     dominantColor : Color,
     imageUrl: String? = null,
+    isLoading: Boolean = true,
+    onConfirm: () -> Unit,
     isGradientVisible: Boolean,
-    onSearchAuthor: (String) -> Unit
+    onSearchAuthor: (String) -> Unit,
+    uniqueBookshelves: List<BookshelfBookDetailsState>
 ) {
     val tabs = listOf("About", "Publish details")
     val scrollState = rememberScrollState()
 
     val showPreview = remember{ mutableStateOf(false) }
+    LaunchedEffect(
+        uniqueBookshelves
+    ) {
+        Log.d("BookDetailsContent", "Bookstate : $uniqueBookshelves")
+
+    }
 
    Box(
         modifier = modifier
@@ -207,6 +229,10 @@ fun BookDetailsContent(
                 onImageClick = {
                     showPreview.value = true
                 },
+                isLoading = isLoading,
+                uniqueBookshelves = uniqueBookshelves,
+                onBookshelfClicked = onBookshelfClicked,
+                onConfirm = onConfirm,
                 modifier = modifier
                     .padding(8.dp)
             )
@@ -375,6 +401,8 @@ fun search(url : String, context: Context) {
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     ContextCompat.startActivity(context, intent, null)
 }
+
+
 
 
 

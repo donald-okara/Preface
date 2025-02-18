@@ -1,10 +1,10 @@
 package ke.don.feature_book_details.fake.data
 
-import ke.don.common_datasource.remote.domain.model.BookItem
-import ke.don.common_datasource.remote.domain.model.BookListItemResponse
-import ke.don.common_datasource.remote.domain.model.ImageLinks
-import ke.don.common_datasource.remote.domain.model.VolumeInfo
-import ke.don.common_datasource.remote.domain.states.SearchState
+import ke.don.shared_domain.data_models.BookItem
+import ke.don.shared_domain.data_models.BookListItemResponse
+import ke.don.shared_domain.data_models.ImageLinks
+import ke.don.shared_domain.data_models.VolumeInfo
+import ke.don.shared_domain.states.SearchState
 import retrofit2.Response
 
 object FakeBooksDataSource {

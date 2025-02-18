@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ke.don.common_datasource.remote.domain.repositories.BooksRepository
-import ke.don.common_datasource.remote.domain.states.SearchState
+import ke.don.shared_domain.states.SearchState
 import ke.don.common_datasource.remote.domain.usecases.BooksUseCases
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow

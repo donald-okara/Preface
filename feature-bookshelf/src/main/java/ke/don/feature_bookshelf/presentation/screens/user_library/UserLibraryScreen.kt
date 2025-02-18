@@ -1,7 +1,6 @@
 package ke.don.feature_bookshelf.presentation.screens.user_library
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -33,7 +32,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import ke.don.feature_bookshelf.R
-import ke.don.shared_domain.data_models.SupabaseBookshelf
+import ke.don.shared_domain.data_models.BookshelfRef
 
 @Composable
 fun UserLibraryScreen(
@@ -44,7 +43,7 @@ fun UserLibraryScreen(
 ){
     val userLibraryState by userLibraryViewModel.userLibraryState.collectAsState()
 
-    val uniqueBookshelves = userLibraryState.userBookshelves.distinctBy { it.id } // Ensure uniqueness
+    val uniqueBookshelves = userLibraryState.userBookshelves.distinctBy { it.supabaseBookShelf.id } // Ensure uniqueness
 
     Box(
         contentAlignment = Alignment.Center,
@@ -75,9 +74,9 @@ fun UserLibraryScreen(
                 }
 
             }
-            items(items = uniqueBookshelves, key = { bookShelf -> bookShelf.id }) { shelfItem ->
+            items(items = uniqueBookshelves, key = { bookShelf -> bookShelf.supabaseBookShelf.id }) { shelfItem ->
                 BookshelfItem(
-                    bookshelf = shelfItem,
+                    bookshelf = shelfItem.supabaseBookShelf,
                     onNavigateToBookItem = {}
                 )
             }
@@ -127,7 +126,7 @@ fun AddBookshelfButton(
 @Composable
 fun BookshelfItem(
     modifier: Modifier= Modifier,
-    bookshelf: SupabaseBookshelf,
+    bookshelf: BookshelfRef,
     onNavigateToBookItem: (Int) -> Unit
 ){
     Card(

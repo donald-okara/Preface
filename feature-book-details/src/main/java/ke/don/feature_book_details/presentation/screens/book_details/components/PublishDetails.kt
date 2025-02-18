@@ -11,8 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import ke.don.common_datasource.remote.domain.model.BookDetailsResponse
-import ke.don.common_datasource.remote.domain.model.VolumeInfoDet
+import ke.don.shared_domain.data_models.VolumeInfoDet
 
 @Composable
 fun PublishDetails(

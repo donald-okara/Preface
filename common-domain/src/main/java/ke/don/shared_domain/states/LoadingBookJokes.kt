@@ -1,4 +1,4 @@
-package ke.don.common_datasource.remote.domain.states
+package ke.don.shared_domain.states
 
 val loadingBookJokes = listOf(
     "Knock knock! Who’s there? Page. Page who? Just turning the page to load your book!",

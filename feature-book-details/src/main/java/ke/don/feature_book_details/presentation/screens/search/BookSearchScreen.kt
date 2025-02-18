@@ -21,7 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import ke.don.common_datasource.remote.domain.states.SearchState
+import ke.don.shared_domain.states.SearchState
 import ke.don.feature_book_details.presentation.screens.search.components.BookSearchBar
 import ke.don.feature_book_details.presentation.screens.search.components.BooksGridScreen
 

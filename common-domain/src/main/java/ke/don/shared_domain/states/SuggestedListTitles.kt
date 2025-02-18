@@ -1,4 +1,4 @@
-package ke.don.common_datasource.remote.domain.states
+package ke.don.shared_domain.states
 
 val suggestedBookTitles = listOf(
     "The Great Gatsby by F. Scott Fitzgerald",

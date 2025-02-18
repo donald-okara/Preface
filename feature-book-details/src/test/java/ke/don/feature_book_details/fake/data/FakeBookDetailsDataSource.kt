@@ -1,16 +1,16 @@
 package ke.don.feature_book_details.fake.data
 
-import ke.don.common_datasource.remote.domain.model.AccessInfo
-import ke.don.common_datasource.remote.domain.model.BookDetailsResponse
-import ke.don.common_datasource.remote.domain.model.Dimensions
-import ke.don.common_datasource.remote.domain.model.Epub
-import ke.don.common_datasource.remote.domain.model.ImageLinks
-import ke.don.common_datasource.remote.domain.model.IndustryIdentifier
-import ke.don.common_datasource.remote.domain.model.PanelizationSummary
-import ke.don.common_datasource.remote.domain.model.Pdf
-import ke.don.common_datasource.remote.domain.model.ReadingModes
-import ke.don.common_datasource.remote.domain.model.SaleInfo
-import ke.don.common_datasource.remote.domain.model.VolumeInfoDet
+import ke.don.shared_domain.data_models.AccessInfo
+import ke.don.shared_domain.data_models.BookDetailsResponse
+import ke.don.shared_domain.data_models.Dimensions
+import ke.don.shared_domain.data_models.Epub
+import ke.don.shared_domain.data_models.ImageLinks
+import ke.don.shared_domain.data_models.IndustryIdentifier
+import ke.don.shared_domain.data_models.PanelizationSummary
+import ke.don.shared_domain.data_models.Pdf
+import ke.don.shared_domain.data_models.ReadingModes
+import ke.don.shared_domain.data_models.SaleInfo
+import ke.don.shared_domain.data_models.VolumeInfoDet
 import retrofit2.Response
 
 object FakeBookDetailsDataSource {

@@ -1,9 +1,11 @@
 package ke.don.feature_book_details.tests.repositories
 
 import ke.don.common_datasource.remote.data.book_details.repositoryImpl.BooksRepositoryImpl
+import ke.don.common_datasource.remote.data.bookshelf.repositoryImpl.BookshelfRepositoryImpl
 import ke.don.common_datasource.remote.domain.repositories.BooksRepository
-import ke.don.common_datasource.remote.domain.states.ResultState
-import ke.don.common_datasource.remote.domain.states.SearchState
+import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
+import ke.don.shared_domain.states.ResultState
+import ke.don.shared_domain.states.SearchState
 import ke.don.feature_book_details.fake.contracts.FakeColorPaletteExtractor
 import ke.don.feature_book_details.fake.data.FakeBookUiState.fakeBookUiStateSuccess
 import ke.don.feature_book_details.fake.data.FakeBooksDataSource.fakeSearchSuccessState
@@ -21,13 +23,15 @@ import org.mockito.kotlin.mock
 
 class BooksRepositoryTest {
     private val mockLogger: Logger = mock()
+    private val bookshelfRepository : BookshelfRepository = mock()
 
     private val repository: BooksRepository =
         BooksRepositoryImpl(
             googleBooksApi = FakeBookApiService(),
             apiKey = "fake_api_key",
             logger = mockLogger,
-            colorPaletteExtractor = FakeColorPaletteExtractor()
+            colorPaletteExtractor = FakeColorPaletteExtractor(),
+            bookshelfRepository = bookshelfRepository
         )
 
     @get:Rule
