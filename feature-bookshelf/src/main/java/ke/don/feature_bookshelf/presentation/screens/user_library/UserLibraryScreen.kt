@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
@@ -29,6 +30,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import ke.don.feature_bookshelf.R
@@ -40,19 +43,20 @@ fun UserLibraryScreen(
     paddingValues: PaddingValues,
     userLibraryViewModel: UserLibraryViewModel = hiltViewModel(),
     onAddBookshelf: () -> Unit,
-){
+) {
     val userLibraryState by userLibraryViewModel.userLibraryState.collectAsState()
 
-    val uniqueBookshelves = userLibraryState.userBookshelves.distinctBy { it.supabaseBookShelf.id } // Ensure uniqueness
+    val uniqueBookshelves =
+        userLibraryState.userBookshelves.distinctBy { it.supabaseBookShelf.id } // Ensure uniqueness
 
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
             .fillMaxSize()
             .padding(paddingValues)
-    ){
+    ) {
         LazyVerticalGrid(
-        columns = GridCells.Adaptive(150.dp),
+            columns = GridCells.Adaptive(150.dp),
             modifier = modifier
                 .padding(8.dp)
                 .align(Alignment.Center),
@@ -62,9 +66,9 @@ fun UserLibraryScreen(
 
             item {
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(0.7f), // Maintain consistent height across items
+                    modifier = modifier
+                        .size(200.dp)
+                        .fillMaxWidth(),
                     contentAlignment = Alignment.Center // Centers the AddBookshelfButton
                 ) {
                     AddBookshelfButton(
@@ -74,10 +78,14 @@ fun UserLibraryScreen(
                 }
 
             }
-            items(items = uniqueBookshelves, key = { bookShelf -> bookShelf.supabaseBookShelf.id }) { shelfItem ->
+            items(
+                items = uniqueBookshelves,
+                key = { bookShelf -> bookShelf.supabaseBookShelf.id }) { shelfItem ->
                 BookshelfItem(
-                    bookshelf = shelfItem.supabaseBookShelf,
-                    onNavigateToBookItem = {}
+                    onNavigateToBookItem = {},
+                    bookshelfTitle = shelfItem.supabaseBookShelf.name,
+                    bookshelfSize = "${shelfItem.books.size} + books",
+                    bookshelfId = shelfItem.supabaseBookShelf.id
                 )
             }
 
@@ -99,7 +107,7 @@ fun AddBookshelfButton(
         ),
         modifier = modifier
             .padding(8.dp)
-            .size(200.dp)
+            .size(150.dp)
     ) {
         Column(
             verticalArrangement = Arrangement.Center,
@@ -126,40 +134,48 @@ fun AddBookshelfButton(
 @Composable
 fun BookshelfItem(
     modifier: Modifier= Modifier,
-    bookshelf: BookshelfRef,
+    bookshelfTitle: String = "",
+    bookshelfSize: String = "",
+    bookshelfId: Int = 0,
     onNavigateToBookItem: (Int) -> Unit
 ){
-    Card(
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.Start,
         modifier = modifier
-            .padding(4.dp)
-            .aspectRatio(0.7f)
-            .fillMaxWidth()
-            .size(250.dp)
+            .size(height = 250.dp, width = 200.dp)
             .clickable {
-                onNavigateToBookItem(bookshelf.id)
-            },
-        shape = RoundedCornerShape(16.dp),
-        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                onNavigateToBookItem(bookshelfId)
+            }
     ) {
-        Column(
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
+        Card(
             modifier = modifier
-                .fillMaxSize()
+                .padding(4.dp)
         ) {
             Image(
                 painter = painterResource(R.drawable.bookshelf_placeholder),
                 contentDescription = "Bookshelf item",
-                modifier = modifier.padding(8.dp)
-
+                modifier = modifier
+                    .fillMaxWidth()
+                    .height(175.dp)
             )
-
-            Spacer(modifier = modifier.weight(1f))
-            Text(
-                text = bookshelf.name
-            )
-
         }
+
+        Spacer(modifier = modifier.height(8.dp)) // Space between the image and the text
+
+
+        Text(
+            text = bookshelfTitle,
+            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.bodyLarge, // Or any style you prefer
+            modifier = modifier.padding(horizontal = 8.dp) // Optional padding for text
+        )
+
+        Text(
+            text = bookshelfSize,
+            style = MaterialTheme.typography.bodySmall, // Or any style you prefer
+            modifier = modifier.padding(horizontal = 8.dp) // Optional padding for text
+        )
     }
 
 }
