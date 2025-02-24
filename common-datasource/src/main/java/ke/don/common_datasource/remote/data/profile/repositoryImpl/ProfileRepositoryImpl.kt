@@ -20,7 +20,8 @@ import kotlinx.coroutines.launch
 
 class ProfileRepositoryImpl(
     private val profileNetworkClass: ProfileNetworkClass,
-    private val context : Context,
+    private val context: Context,
+    private val profile: Profile?,
     private val profileDataStoreManager: ProfileDataStoreManager
 ): ProfileRepository {
     override val rawNonce: String
@@ -85,6 +86,7 @@ class ProfileRepositoryImpl(
         }
     }
 
+    //TODO: Move this to bookshelf repo
     override suspend fun fetchUserBookshelves() {
         _userLibraryState.update{
             it.copy(successState = SuccessState.LOADING)

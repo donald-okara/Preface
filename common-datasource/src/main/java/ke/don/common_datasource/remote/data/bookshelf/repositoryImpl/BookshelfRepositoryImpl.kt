@@ -10,6 +10,8 @@ import ke.don.shared_domain.data_models.AddBookToBookshelf
 import ke.don.shared_domain.data_models.BookshelfRef
 import ke.don.shared_domain.data_models.BookshelfType
 import ke.don.shared_domain.states.AddBookshelfState
+import ke.don.shared_domain.states.BookshelfUiState
+import ke.don.shared_domain.states.ResultState
 import ke.don.shared_domain.states.SuccessState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -26,6 +28,9 @@ class BookshelfRepositoryImpl(
     private val _addBookshelfState = MutableStateFlow(AddBookshelfState())
     override val addBookshelfState: StateFlow<AddBookshelfState> = _addBookshelfState
     override val userLibraryState = profileRepository.userLibraryState
+
+    private val _bookshelfUiState = MutableStateFlow(BookshelfUiState())
+    override val bookshelfUiState: StateFlow<BookshelfUiState> = _bookshelfUiState
 
     init {
         CoroutineScope(Dispatchers.IO).launch{
@@ -77,8 +82,34 @@ class BookshelfRepositoryImpl(
 
     override suspend fun fetchUserBookShelves() = profileRepository.fetchUserBookshelves()
 
-    override suspend fun fetchBookshelfById(bookshelfId: Int): BookshelfRef? {
-        return bookshelfNetworkClass.fetchBookshelfById(bookshelfId)
+    override suspend fun fetchBookshelfById(bookshelfId: Int) {
+        try {
+            _bookshelfUiState.update {
+                it.copy(resultState = ResultState.Loading)
+            }
+
+            val bookshelf = bookshelfNetworkClass.fetchBookshelfById(bookshelfId)
+            if (bookshelf!=null){
+                _bookshelfUiState.update {
+                    it.copy(
+                        bookShelf = bookshelf,
+                        resultState = ResultState.Success
+
+                    )
+                }
+            }else{
+                _bookshelfUiState.update {
+                    it.copy(resultState = ResultState.Error())
+                }
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            _bookshelfUiState.update {
+                it.copy(resultState = ResultState.Error())
+            }
+        }
+
+
     }
 
     override suspend fun addBookToBookshelf(addBookToBookshelf: AddBookToBookshelf) {

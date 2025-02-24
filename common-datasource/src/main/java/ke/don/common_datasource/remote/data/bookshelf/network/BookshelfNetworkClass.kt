@@ -3,13 +3,16 @@ package ke.don.common_datasource.remote.data.bookshelf.network
 import android.util.Log
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.query.Columns
 import ke.don.common_datasource.remote.data.bookshelf.repositoryImpl.BookshelfRepositoryImpl
 import ke.don.common_datasource.remote.data.bookshelf.repositoryImpl.BookshelfRepositoryImpl.Companion
 import ke.don.shared_domain.data_models.AddBookToBookshelf
+import ke.don.shared_domain.data_models.BookShelf
 import ke.don.shared_domain.data_models.BookshelfCatalog
 import ke.don.shared_domain.data_models.BookshelfRef
 import ke.don.shared_domain.data_models.SupabaseBook
 import ke.don.shared_domain.values.ADDBOOKSTOBOOKSHELF
+import ke.don.shared_domain.values.BOOKS
 import ke.don.shared_domain.values.BOOKSHELFCATALOG
 import ke.don.shared_domain.values.BOOKSHELFTABLE
 import kotlinx.coroutines.Dispatchers
@@ -37,55 +40,63 @@ class BookshelfNetworkClass(
      * READ
      */
 
-    suspend fun fetchBookshelfById(
-        bookshelfId: Int
-    ): BookshelfRef?{
+    suspend fun fetchBookshelfById(bookshelfId: Int): BookShelf? {
         return try {
-            supabaseClient.from(BOOKSHELFTABLE)
-                .select {
-                    filter {
-                        BookshelfRef::id eq bookshelfId
-                    }
+            Log.d(TAG, "Attempting to fetch bookshelf with ID: $bookshelfId")
+
+            // Fetch the bookshelf reference
+            val bookshelfRef = supabaseClient.from(BOOKSHELFTABLE)
+                .select(){
+                   filter { BookshelfRef::id eq bookshelfId }
+
                 }
-                .decodeSingleOrNull<BookshelfRef>()
-                }catch (e: Exception){
-                    e.printStackTrace()
-                    null
-                }
-        }
+                .decodeSingleOrNull<BookshelfRef>() // Get a single bookshelf reference or null
 
-
-    suspend fun fetchBooksFromBookshelf(supabaseClient: SupabaseClient, bookshelfId: Long): List<SupabaseBook> {
-        return withContext(Dispatchers.IO) {
-            try {
-                // Step 1: Fetch book IDs from bookshelf_catalog
-                val bookIds = supabaseClient.from("bookshelf_catalog")
-                    .select{
-                        filter { BookshelfCatalog::bookshelfId eq bookshelfId }
-
-                    }
-                    .decodeList<BookshelfCatalog>()
-                    .map { it.bookId }
-
-                if (bookIds.isEmpty()) {
-                    return@withContext emptyList()
-                }
-
-                // Step 2: Fetch books from books table where book_id is in bookIds list
-                val books = supabaseClient.from("books")
-                    .select(){
-                        filter { SupabaseBook::bookId isIn(bookIds) }
-
-                    }
-                    .decodeList<SupabaseBook>()
-
-                books
-            } catch (e: Exception) {
-                e.printStackTrace()
-                emptyList()
+            if (bookshelfRef == null) {
+                Log.d(TAG, "No bookshelf found with ID: $bookshelfId")
+                return null
             }
+
+            Log.d(TAG, "Fetched bookshelfRef: $bookshelfRef")
+
+            // Fetch bookshelf catalogs
+            val bookshelfCatalogs = supabaseClient.from(BOOKSHELFCATALOG)
+                .select{
+                    filter { BookshelfCatalog::bookshelfId eq bookshelfId }
+
+                }
+                .decodeList<BookshelfCatalog>()
+
+            Log.d(TAG, "Fetched bookshelf catalogs: $bookshelfCatalogs")
+
+            // Get the list of bookIds from the catalogs
+            val bookIds = bookshelfCatalogs.map { it.bookId }
+
+            val books = supabaseClient.from(BOOKS)
+                .select(columns = Columns.list("*", "bookshelf_catalog!inner(book_id)")) {
+                    filter {
+                        eq("bookshelf_catalog.bookshelf_id", bookshelfId) // Filter by bookshelf_id
+                    }
+                }
+                .decodeList<SupabaseBook>() // Decode into SupabaseBook objects
+
+            Log.d(TAG, "Fetched books: $books")
+
+            // Return the detailed BookShelf object
+            Log.d(TAG, "Bookshelf fetched successfully: $bookshelfRef, $bookshelfCatalogs, $books")
+            BookShelf(
+                supabaseBookShelf = bookshelfRef,
+                catalog = bookshelfCatalogs,
+                books = books
+            )
+        } catch (e: Exception) {
+            e.printStackTrace()
+            Log.e(TAG, "Error fetching bookshelf with ID: $bookshelfId", e)
+            null // Return null on failure
         }
     }
+
+
 
 
     /**

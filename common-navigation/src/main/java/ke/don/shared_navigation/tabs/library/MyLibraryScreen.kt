@@ -1,5 +1,6 @@
 package ke.don.shared_navigation.tabs.library
 
+import android.util.Log
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -10,7 +11,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.navigator.LocalNavigator
+import ke.don.feature_book_details.presentation.screens.book_details.BookDetailsScreen
 import ke.don.feature_bookshelf.presentation.screens.add_bookshelf.AddBookshelfRoute
+import ke.don.feature_bookshelf.presentation.screens.bookshelf_details.BookshelfDetailsRoute
 import ke.don.feature_bookshelf.presentation.screens.user_library.UserLibraryScreen
 import ke.don.shared_navigation.MainBottomAppBar
 
@@ -38,6 +41,11 @@ object MyLibraryScreen : AndroidScreen() {
         ){innerPadding->
             UserLibraryScreen(
                 paddingValues = innerPadding,
+                onNavigateToBookshefItem = {bookshelfId->
+                    Log.d("UserLibraryScreenNav", bookshelfId.toString())
+                    navigator?.push(BookshelfDetailsScreen(bookshelfId))
+
+                },
                 onAddBookshelf = {
                     navigator?.push(AddBookshelfVoyagerScreen)
                 }
@@ -75,3 +83,13 @@ object AddBookshelfVoyagerScreen : AndroidScreen() {
 
 }
 
+class BookshelfDetailsScreen(private val bookshelfId: Int) : AndroidScreen() {
+    @Composable
+    override fun Content() {
+        val navigator = LocalNavigator.current
+        BookshelfDetailsRoute(
+            bookshelfId = bookshelfId,
+            navigateBack = { navigator?.pop() }
+        )
+    }
+}
