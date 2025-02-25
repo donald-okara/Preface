@@ -47,9 +47,11 @@ fun BookshelfDetailsRoute(
     modifier: Modifier = Modifier,
     bookshelfId : Int,
     bookshelfDetailsViewModel: BookshelfDetailsViewModel = hiltViewModel(),
-    navigateBack : () -> Unit
+    navigateBack : () -> Unit,
+    onItemClick: (String) -> Unit
 ){
     val bookshelfUiState by bookshelfDetailsViewModel.bookshelfUiState.collectAsState()
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     LaunchedEffect(bookshelfId) {
         bookshelfDetailsViewModel.onBookshelfIdPassed(bookshelfId)
@@ -58,6 +60,7 @@ fun BookshelfDetailsRoute(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
+                scrollBehavior = scrollBehavior,
                 title = {
                     Text(
                         ""
@@ -90,9 +93,11 @@ fun BookshelfDetailsRoute(
         ){
             when (bookshelfUiState.resultState) {
                 is ResultState.Success -> {
-                    BookshelfDetailsContent(
-                        bookshelfInfo = bookshelfUiState.bookShelf,
-                        modifier = modifier
+                    BookList(
+                        bookShelf = bookshelfUiState.bookShelf,
+                        modifier = modifier,
+                        scrollBehavior = scrollBehavior,
+                        onItemClick = onItemClick
                     )
                 }
                 is ResultState.Error -> {
@@ -115,13 +120,5 @@ fun BookshelfDetailsRoute(
 
 }
 
-@Composable
-fun BookshelfDetailsContent(
-    modifier: Modifier = Modifier,
-    bookshelfInfo: BookShelf
-){
-    BookList(
-        bookShelf = bookshelfInfo
-    )
-}
+
 
