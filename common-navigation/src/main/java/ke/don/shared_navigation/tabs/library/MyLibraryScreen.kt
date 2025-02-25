@@ -16,6 +16,7 @@ import ke.don.feature_bookshelf.presentation.screens.add_bookshelf.AddBookshelfR
 import ke.don.feature_bookshelf.presentation.screens.bookshelf_details.BookshelfDetailsRoute
 import ke.don.feature_bookshelf.presentation.screens.user_library.UserLibraryScreen
 import ke.don.shared_navigation.MainBottomAppBar
+import ke.don.shared_navigation.tabs.search.BookDetailsVoyagerScreen
 
 object MyLibraryScreen : AndroidScreen() {
     private fun readResolve(): Any = MyLibraryScreen
@@ -89,7 +90,10 @@ class BookshelfDetailsScreen(private val bookshelfId: Int) : AndroidScreen() {
         val navigator = LocalNavigator.current
         BookshelfDetailsRoute(
             bookshelfId = bookshelfId,
-            navigateBack = { navigator?.pop() }
+            navigateBack = { navigator?.pop() },
+            onItemClick = { bookId ->
+                navigator?.push(BookDetailsVoyagerScreen(bookId))
+            }
         )
     }
 }
