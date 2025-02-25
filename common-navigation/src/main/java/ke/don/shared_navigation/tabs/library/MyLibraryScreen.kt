@@ -1,4 +1,4 @@
-package ke.don.shared_navigation.bottom_navigation.tabs.library
+package ke.don.shared_navigation.tabs.library
 
 import android.util.Log
 import androidx.compose.foundation.layout.padding
@@ -11,22 +11,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.navigator.LocalNavigator
-import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
+import ke.don.feature_book_details.presentation.screens.book_details.BookDetailsScreen
 import ke.don.feature_bookshelf.presentation.screens.add_bookshelf.AddBookshelfRoute
 import ke.don.feature_bookshelf.presentation.screens.bookshelf_details.BookshelfDetailsRoute
 import ke.don.feature_bookshelf.presentation.screens.user_library.UserLibraryScreen
-import ke.don.shared_navigation.BottomNavigationBar
-import ke.don.shared_navigation.bottom_navigation.tabs.MyLibraryTab
-import ke.don.shared_navigation.bottom_navigation.tabs.search.BookDetailsVoyagerScreen
+import ke.don.shared_navigation.MainBottomAppBar
+import ke.don.shared_navigation.tabs.search.BookDetailsVoyagerScreen
 
 object MyLibraryScreen : AndroidScreen() {
     private fun readResolve(): Any = MyLibraryScreen
 
-
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
-        val tabNavigator = LocalTabNavigator.current
         val navigator = LocalNavigator.current
         Scaffold(
             topBar = {
@@ -41,16 +38,11 @@ object MyLibraryScreen : AndroidScreen() {
                 )
             },
 
-            bottomBar = {
-                BottomNavigationBar(
-                    selectedTab = tabNavigator.current,
-                    onTabSelected = { tabNavigator.current = it }
-                )
-            },
-        ) { innerPadding ->
+            bottomBar = { MainBottomAppBar() },
+        ){innerPadding->
             UserLibraryScreen(
                 paddingValues = innerPadding,
-                onNavigateToBookshefItem = { bookshelfId ->
+                onNavigateToBookshefItem = {bookshelfId->
                     Log.d("UserLibraryScreenNav", bookshelfId.toString())
                     navigator?.push(BookshelfDetailsScreen(bookshelfId))
 
@@ -85,7 +77,7 @@ object AddBookshelfVoyagerScreen : AndroidScreen() {
             AddBookshelfRoute(
                 modifier = Modifier.padding(innerPadding),
                 paddingValues = innerPadding,
-                onNavigateBack = { navigator?.pop() }
+                onNavigateBack = { navigator?.pop()  }
             )
         }
     }

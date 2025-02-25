@@ -1,4 +1,4 @@
-package ke.don.shared_navigation.bottom_navigation.tabs
+package ke.don.shared_navigation.tabs
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.LibraryBooks
@@ -10,8 +10,8 @@ import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
-import ke.don.shared_navigation.bottom_navigation.tabs.library.MyLibraryScreen
-import ke.don.shared_navigation.bottom_navigation.tabs.search.SearchVoyagerScreen
+import ke.don.shared_navigation.tabs.library.MyLibraryScreen
+import ke.don.shared_navigation.tabs.search.SearchVoyagerScreen
 
 object MyLibraryTab : Tab {
     private fun readResolve(): Any = MyLibraryTab
