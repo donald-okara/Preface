@@ -1,6 +1,7 @@
 package ke.don.common_datasource.remote.data.di
 
 import android.content.Context
+import android.util.Log
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -29,8 +30,9 @@ object DatasourceModule {
 
     @Provides
     @Singleton
-    fun provideUserProfile(profileNetworkClass: ProfileNetworkClass): Profile? = runBlocking {
-        profileNetworkClass.fetchUserProfile()
+    fun provideUserProfile(profileDataStoreManager: ProfileDataStoreManager): Profile = runBlocking {
+        Log.d("DatasourceModule", "Fetching User profile")
+        profileDataStoreManager.getProfileFromDatastore()
     }
 
 
@@ -71,11 +73,13 @@ object DatasourceModule {
     fun provideBookshelfRepository(
         bookshelfNetworkClass: BookshelfNetworkClass,
         @ApplicationContext context: Context,
-        profileRepository: ProfileRepository
+        profileRepository: ProfileRepository,
+        userProfile: Profile?
     ): BookshelfRepository = BookshelfRepositoryImpl(
         bookshelfNetworkClass = bookshelfNetworkClass,
         context = context,
-        profileRepository = profileRepository
+        profileRepository = profileRepository,
+        userProfile = userProfile
     )
 
 }

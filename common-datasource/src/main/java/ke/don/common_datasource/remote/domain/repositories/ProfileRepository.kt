@@ -9,7 +9,6 @@ interface ProfileRepository {
     val rawNonce: String
     val hashedNonce: String
     val userProfile : StateFlow<Profile?>
-    val userLibraryState: StateFlow<UserLibraryState>
     val userId : StateFlow<String?>
 
     suspend fun signInAndInsertProfile(
@@ -17,8 +16,6 @@ interface ProfileRepository {
         displayName: String?,
         profilePictureUri: String?
     )
-
-    suspend fun fetchUserBookshelves()
 
     suspend fun checkSignedInStatus(): Boolean
 }
