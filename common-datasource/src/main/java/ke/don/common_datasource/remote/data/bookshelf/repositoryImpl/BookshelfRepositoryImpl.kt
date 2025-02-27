@@ -9,10 +9,12 @@ import ke.don.common_datasource.remote.domain.repositories.ProfileRepository
 import ke.don.shared_domain.data_models.AddBookToBookshelf
 import ke.don.shared_domain.data_models.BookshelfRef
 import ke.don.shared_domain.data_models.BookshelfType
+import ke.don.shared_domain.data_models.Profile
 import ke.don.shared_domain.states.AddBookshelfState
 import ke.don.shared_domain.states.BookshelfUiState
 import ke.don.shared_domain.states.ResultState
 import ke.don.shared_domain.states.SuccessState
+import ke.don.shared_domain.states.UserLibraryState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -23,19 +25,24 @@ import kotlinx.coroutines.launch
 class BookshelfRepositoryImpl(
     private val bookshelfNetworkClass: BookshelfNetworkClass,
     private val profileRepository: ProfileRepository,
+    private val userProfile : Profile?,
     private val context : Context
 ): BookshelfRepository {
     private val _addBookshelfState = MutableStateFlow(AddBookshelfState())
     override val addBookshelfState: StateFlow<AddBookshelfState> = _addBookshelfState
-    override val userLibraryState = profileRepository.userLibraryState
+
+
+    private val _userLibraryState = MutableStateFlow(UserLibraryState())
+    override val userLibraryState: StateFlow<UserLibraryState> = _userLibraryState
 
     private val _bookshelfUiState = MutableStateFlow(BookshelfUiState())
     override val bookshelfUiState: StateFlow<BookshelfUiState> = _bookshelfUiState
 
     init {
         CoroutineScope(Dispatchers.IO).launch{
-            profileRepository.userId.value?.let {
-                profileRepository.fetchUserBookshelves()
+            Log.d(TAG, "userProfile: $userProfile")
+            userProfile?.authId?.let {
+                fetchUserBookShelves()
             }
         }
     }
@@ -64,7 +71,7 @@ class BookshelfRepositoryImpl(
             bookshelfNetworkClass.createBookshelf(bookshelf)
 
             profileRepository.userId.value?.let {
-                profileRepository.fetchUserBookshelves()
+                fetchUserBookShelves()
             }
             _addBookshelfState.update {
                 it.copy(successState = SuccessState.SUCCESS)
@@ -79,8 +86,26 @@ class BookshelfRepositoryImpl(
 
         }
     }
-
-    override suspend fun fetchUserBookShelves() = profileRepository.fetchUserBookshelves()
+    override suspend fun fetchUserBookShelves() {
+        _userLibraryState.update{
+            it.copy(successState = SuccessState.LOADING)
+        }
+        try {
+            Log.d(TAG, "Fetching user bookshelves")
+            _userLibraryState.update {
+                it.copy(
+                    userBookshelves = bookshelfNetworkClass.fetchUserBookshelves(userProfile?.authId!!),
+                    successState = SuccessState.SUCCESS
+                )
+            }
+            Log.d(TAG, "User bookshelves fetched successfully: ${userLibraryState.value.userBookshelves}")
+        }catch (e: Exception){
+            e.printStackTrace()
+            _userLibraryState.update{
+                it.copy(successState = SuccessState.ERROR)
+            }
+        }
+    }
 
     override suspend fun fetchBookshelfById(bookshelfId: Int) {
         try {

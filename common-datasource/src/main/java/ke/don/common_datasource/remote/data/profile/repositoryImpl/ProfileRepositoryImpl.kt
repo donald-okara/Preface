@@ -30,9 +30,6 @@ class ProfileRepositoryImpl(
     private val _userProfile = MutableStateFlow(Profile())
     override val userProfile: StateFlow<Profile> = _userProfile
 
-    private val _userLibraryState = MutableStateFlow(UserLibraryState())
-    override val userLibraryState: StateFlow<UserLibraryState> = _userLibraryState
-
     private val _userId = MutableStateFlow<String?>(null)
     override val userId: StateFlow<String?> = _userId
 
@@ -85,29 +82,6 @@ class ProfileRepositoryImpl(
             e.printStackTrace()
         }
     }
-
-    //TODO: Move this to bookshelf repo
-    override suspend fun fetchUserBookshelves() {
-        _userLibraryState.update{
-            it.copy(successState = SuccessState.LOADING)
-        }
-        try {
-            Log.d(TAG, "Fetching user bookshelves")
-            _userLibraryState.update {
-                it.copy(
-                    userBookshelves = profileNetworkClass.fetchUserBookshelves(userId.value!!),
-                    successState = SuccessState.SUCCESS
-                )
-            }
-            Log.d(TAG, "User bookshelves fetched successfully: ${userLibraryState.value.userBookshelves}")
-        }catch (e: Exception){
-            e.printStackTrace()
-            _userLibraryState.update{
-                it.copy(successState = SuccessState.ERROR)
-            }
-        }
-    }
-
 
     companion object {
         private const val TAG = "ProfileRepositoryImpl"
