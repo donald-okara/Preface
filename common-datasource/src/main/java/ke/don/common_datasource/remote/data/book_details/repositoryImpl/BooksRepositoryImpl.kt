@@ -133,8 +133,8 @@ class BooksRepositoryImpl(
 
         val bookshelfBookDetails = bookshelves.map { bookShelf ->
             // For each bookshelf, check if the current bookshelf contains the book
-            val isBookPresent = bookShelf.catalog.any { catalog ->
-                catalog.bookId == bookUiState.value.bookDetails.id
+            val isBookPresent = bookShelf.books.any { book ->
+                book.bookId == bookUiState.value.bookDetails.id
             }
 
             // Map each bookshelf to its details with the correct `isBookPresent` flag

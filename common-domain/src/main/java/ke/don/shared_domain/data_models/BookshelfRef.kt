@@ -13,11 +13,18 @@ data class BookshelfRef(
     val bookshelfType : String = "",
 
     @SerialName("user_id")
-    val userId : String = ""
+    val userId : String = "",
+
+    val books : List<BookJson> = emptyList()
+)
+
+@Serializable
+data class BookJson(
+    @SerialName("book_id")
+    val bookId : String = ""
 )
 
 data class BookShelf(
     val supabaseBookShelf: BookshelfRef = BookshelfRef(),
-    val catalog: List<BookshelfCatalog> = emptyList(),
     val books : List<SupabaseBook> = emptyList()
 )
