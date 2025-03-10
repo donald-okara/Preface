@@ -15,7 +15,7 @@ interface ProfileRepository {
         idToken: String,
         displayName: String?,
         profilePictureUri: String?
-    )
+    ):Boolean
 
     suspend fun checkSignedInStatus(): Boolean
 }

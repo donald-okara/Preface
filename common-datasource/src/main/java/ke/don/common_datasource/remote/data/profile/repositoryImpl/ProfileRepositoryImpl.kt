@@ -8,8 +8,6 @@ import ke.don.common_datasource.remote.data.profile.network.ProfileNetworkClass
 import ke.don.common_datasource.remote.domain.getters.generateNonce
 import ke.don.common_datasource.remote.domain.repositories.ProfileRepository
 import ke.don.shared_domain.data_models.Profile
-import ke.don.shared_domain.states.SuccessState
-import ke.don.shared_domain.states.UserLibraryState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -50,13 +48,13 @@ class ProfileRepositoryImpl(
         idToken: String,
         displayName: String?,
         profilePictureUri: String?
-    ) {
+    ): Boolean {
         val profile = Profile(
             name = displayName.orEmpty(),
             avatarUrl = profilePictureUri.orEmpty()
         )
 
-        try {
+        return try {
             if (profileNetworkClass.signIn(idToken, rawNonce)) {
                 val isProfilePresent = profileNetworkClass.checkIfProfileIsPresent()
 
@@ -71,15 +69,17 @@ class ProfileRepositoryImpl(
                     profileNetworkClass.fetchUserProfile()!!
                 }
 
+                Log.d(TAG, "Profile fetched from network class:: ${userProfile.value}")
                 _userProfile.value.let {
                     profileDataStoreManager.setProfileInDatastore(
                         it
                     )
                 }
             }
-
+            true
         } catch (e: Exception) {
             e.printStackTrace()
+            false
         }
     }
 

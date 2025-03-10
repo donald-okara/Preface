@@ -60,12 +60,14 @@ class GoogleSignInClient(
                 val profilePictureUri = googleIdTokenCredential.profilePictureUri?.toString()
 
                 if (displayName != null && profilePictureUri != null) {
-                    profileRepository.signInAndInsertProfile(googleIdToken, displayName, profilePictureUri)
+                    if(profileRepository.signInAndInsertProfile(googleIdToken, displayName, profilePictureUri)){
+                        _isSignInSuccessful.value = true
+                        Toast.makeText(context, "Welcome to Preface", Toast.LENGTH_SHORT).show()
+                        return  // Exit the function after successful sign-in
+                    }
                 }
 
-                _isSignInSuccessful.value = true
-                Toast.makeText(context, "Welcome to Preface", Toast.LENGTH_SHORT).show()
-                return  // Exit the function after successful sign-in
+
 
             } catch (e: Exception) {
                 Log.d("GoogleSignInClient", "Attempt ${attempt + 1} failed: ${e.message}")

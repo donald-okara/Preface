@@ -42,6 +42,6 @@ interface BooksRepository {
 
     suspend fun onSearch()
 
-    suspend fun pushEditedBookshelfBooks()
+    suspend fun pushEditedBookshelfBooks() : Boolean
 }
 

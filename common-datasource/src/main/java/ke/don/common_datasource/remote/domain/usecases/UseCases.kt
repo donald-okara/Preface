@@ -17,7 +17,7 @@ class BooksUseCases(
 
     suspend fun getBookDetails(bookId: String) = booksRepository.getBookDetails(bookId)
 
-    suspend fun onPushEditedBookshelfBooks() = booksRepository.pushEditedBookshelfBooks()
+    suspend fun onPushEditedBookshelfBooks(): Boolean = booksRepository.pushEditedBookshelfBooks()
 
     fun onSelectBookshelf(bookshelfId: Int) = booksRepository.onBookshelfSelected(bookshelfId)
 
