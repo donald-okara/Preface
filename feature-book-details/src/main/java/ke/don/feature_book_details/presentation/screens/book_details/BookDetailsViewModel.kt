@@ -93,10 +93,22 @@ class BookDetailsViewModel @Inject constructor(
 
     fun onPushEditedBookshelfBooks() = viewModelScope.launch {
         Log.d(TAG, "onPushEditedBookshelfBooks: ${_bookState.value.bookshelvesState.bookshelves}")
+        _bookState.update {
+            it.copy(
+                pushSuccess = booksUseCases.onPushEditedBookshelfBooks()
+            )
+        }
         booksUseCases.onPushEditedBookshelfBooks()
     }
 
 
+    fun resetPushSuccess() {
+        _bookState.update {
+            it.copy(
+                pushSuccess = false
+            )
+        }
+    }
     override fun onCleared() {
         super.onCleared()
         _volumeId.update {

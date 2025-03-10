@@ -136,7 +136,9 @@ fun BookDetailsScreen(
                 onBookshelfClicked = {bookshelfId->
                     bookDetailsViewModel.onSelectBookshelf(bookshelfId)
                 },
-                onConfirm = bookDetailsViewModel::onPushEditedBookshelfBooks
+                onConfirm = bookDetailsViewModel::onPushEditedBookshelfBooks,
+                uploadSuccess = bookUiState.value.pushSuccess,
+                onResetSuccess = bookDetailsViewModel::resetPushSuccess
             )
 
             if (bookUiState.value.resultState != ResultState.Success) {
@@ -164,6 +166,8 @@ fun BookDetailsContent(
     onBookshelfClicked: (Int) -> Unit,
     dominantColor : Color,
     imageUrl: String? = null,
+    onResetSuccess: () -> Unit,
+    uploadSuccess: Boolean,
     isLoading: Boolean = true,
     onConfirm: () -> Unit,
     isGradientVisible: Boolean,
@@ -225,6 +229,8 @@ fun BookDetailsContent(
                 uniqueBookshelves = uniqueBookshelves,
                 onBookshelfClicked = onBookshelfClicked,
                 onConfirm = onConfirm,
+                uploadSuccess = uploadSuccess,
+                onResetSuccess = onResetSuccess,
                 modifier = modifier
                     .padding(8.dp)
             )

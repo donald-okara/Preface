@@ -12,6 +12,7 @@ data class BookUiState(
     val highestImageUrl: String? = null,
     val bookshelvesState: BookshelvesState = BookshelvesState(),
     val resultState: ResultState = ResultState.Empty,
+    val pushSuccess: Boolean = false
 )
 
 sealed interface ResultState {

@@ -54,6 +54,7 @@ class ProfileNetworkClass(
             _userInfo.update {
                 supabase.auth.currentUserOrNull()
             }
+            Log.d(TAG, "Current user:: ${_userInfo.value}")
 
             tokenDatastore.setToken(
                 supabase.auth.currentAccessTokenOrNull()
@@ -124,6 +125,7 @@ class ProfileNetworkClass(
                 }
                 .decodeSingleOrNull<Profile>()
 
+            Log.d(TAG, "Profile fetched from supabase:: $response")
             response
 
         }

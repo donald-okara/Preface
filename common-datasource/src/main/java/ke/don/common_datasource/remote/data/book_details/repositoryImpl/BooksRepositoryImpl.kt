@@ -175,27 +175,33 @@ class BooksRepositoryImpl(
 
     }
 
-    override suspend fun pushEditedBookshelfBooks() {
-        // Iterate over the bookshelves in the current book state
-        bookUiState.value.bookshelvesState.bookshelves.forEach { currentBookshelf ->
-            // Find the corresponding bookshelf from the initial state
-            val initialBookshelf = initialBookState.bookshelvesState.bookshelves
-                .firstOrNull { it.bookshelfBookDetails.id == currentBookshelf.bookshelfBookDetails.id }
+    override suspend fun pushEditedBookshelfBooks(): Boolean {
+        return try {// Iterate over the bookshelves in the current book state
+            bookUiState.value.bookshelvesState.bookshelves.forEach { currentBookshelf ->
+                // Find the corresponding bookshelf from the initial state
+                val initialBookshelf = initialBookState.bookshelvesState.bookshelves
+                    .firstOrNull { it.bookshelfBookDetails.id == currentBookshelf.bookshelfBookDetails.id }
 
-            // If a corresponding bookshelf exists, compare isBookPresent to determine changes
-            if (initialBookshelf != null) {
-                if (currentBookshelf.isBookPresent && !initialBookshelf.isBookPresent) {
-                    Log.d(TAG, "Book is not present. Attempting to add book")
+                // If a corresponding bookshelf exists, compare isBookPresent to determine changes
+                if (initialBookshelf != null) {
+                    if (currentBookshelf.isBookPresent && !initialBookshelf.isBookPresent) {
+                        Log.d(TAG, "Book is not present. Attempting to add book")
 
-                    // Book was not present initially but is now present, add it to the bookshelf
-                    bookshelfRepository.addBookToBookshelf(bookUiState.value.toAddBookToBookshelf(bookshelfId = currentBookshelf.bookshelfBookDetails.id, bookUiState.value))
-                } else if (!currentBookshelf.isBookPresent && initialBookshelf.isBookPresent) {
-                    Log.d(TAG, "Book is present. Attempting to remove book")
+                        // Book was not present initially but is now present, add it to the bookshelf
+                        bookshelfRepository.addBookToBookshelf(bookUiState.value.toAddBookToBookshelf(bookshelfId = currentBookshelf.bookshelfBookDetails.id, bookUiState.value))
+                    } else if (!currentBookshelf.isBookPresent && initialBookshelf.isBookPresent) {
+                        Log.d(TAG, "Book is present. Attempting to remove book")
 
-                    // Book was present initially but is now removed, remove it from the bookshelf
-                    bookshelfRepository.removeBookFromBookshelf(bookshelfId = currentBookshelf.bookshelfBookDetails.id, bookId = bookUiState.value.bookDetails.id)
+                        // Book was present initially but is now removed, remove it from the bookshelf
+                        bookshelfRepository.removeBookFromBookshelf(bookshelfId = currentBookshelf.bookshelfBookDetails.id, bookId = bookUiState.value.bookDetails.id)
+                    }
                 }
+                fetchBookshelves()
             }
+            true
+        } catch (e: Exception) {
+            e.printStackTrace()
+            false
         }
     }
 

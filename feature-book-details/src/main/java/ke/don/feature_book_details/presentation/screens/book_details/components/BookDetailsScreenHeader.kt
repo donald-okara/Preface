@@ -43,9 +43,11 @@ fun TitleHeader(
     volumeInfo: VolumeInfoDet,
     imageUrl: String? = null,
     onConfirm: () -> Unit,
+    uploadSuccess: Boolean,
     isLoading: Boolean = true,
     onBookshelfClicked: (Int) -> Unit,
     onSearchAuthor: (String) -> Unit,
+    onResetSuccess: () -> Unit,
     uniqueBookshelves: List<BookshelfBookDetailsState>,
     textColor: Color = MaterialTheme.colorScheme.onTertiaryContainer
 ) {
@@ -57,7 +59,10 @@ fun TitleHeader(
         Log.d("ScreenHeader", "Bookstate : ${uniqueBookshelves}")
 
     }
-
+    if (uploadSuccess){
+        expanded = false
+        onResetSuccess()
+    }
 
     Column(
         modifier = modifier
