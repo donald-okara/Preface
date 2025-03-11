@@ -32,6 +32,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -42,7 +43,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import ke.don.feature_bookshelf.R
 import ke.don.feature_bookshelf.presentation.shared_components.BooksCoverStack
 import ke.don.feature_bookshelf.presentation.shared_components.BookshelfOptionsSheet
+import ke.don.shared_domain.states.ResultState
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -54,6 +57,7 @@ fun UserLibraryScreen(
     onAddBookshelf: () -> Unit,
 ) {
     val userLibraryState by userLibraryViewModel.userLibraryState.collectAsState()
+    val showBottomSheet by userLibraryViewModel.showOptionsSheet.collectAsState()
 
     val uniqueBookshelves =
         userLibraryState.userBookshelves.distinctBy { it.supabaseBookShelf.id } // Ensure uniqueness
@@ -109,7 +113,18 @@ fun UserLibraryScreen(
                     coverImages = shelfItem.books.mapNotNull { it.highestImageUrl?.takeIf {image->  image.isNotEmpty() } },
                     bookshelfTitle = shelfItem.supabaseBookShelf.name,
                     bookshelfSize = "${shelfItem.books.size} books",
-                    bookshelfId = shelfItem.supabaseBookShelf.id
+                    bookshelfId = shelfItem.supabaseBookShelf.id,
+                    onDeleteBookshelf = { bookshelfId ->
+                        userLibraryViewModel.deleteBookshelf(
+                            onRefreshComplete = {
+                                isRefreshing.value = false
+                            },
+                            bookshelfId = bookshelfId
+                        )
+                    },
+                    showBottomSheet = showBottomSheet,
+                    onShowBottomSheet = {userLibraryViewModel.updateShowSheet(true)},
+                    onDismissBottomSheet = {userLibraryViewModel.updateShowSheet(false)}
                 )
             }
 
@@ -168,10 +183,12 @@ fun BookshelfItem(
     coverImages: List<String> = emptyList(),
     bookshelfSize: String = "",
     bookshelfId: Int = 0,
-    onNavigateToBookshefItem: (Int) -> Unit
+    onDeleteBookshelf: (Int) -> Unit = {},
+    onNavigateToBookshefItem: (Int) -> Unit,
+    onShowBottomSheet: () -> Unit,
+    showBottomSheet: Boolean,
+    onDismissBottomSheet: () -> Unit
 ){
-    var showBottomSheet by remember { mutableStateOf(false) }
-
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.Start,
@@ -181,9 +198,7 @@ fun BookshelfItem(
                 onClick = {
                     onNavigateToBookshefItem(bookshelfId)
                 },
-                onLongClick = {
-                    showBottomSheet = true
-                }
+                onLongClick = { onShowBottomSheet() }
 
             )
     ) {
@@ -233,7 +248,9 @@ fun BookshelfItem(
         title = bookshelfTitle,
         bookshelfSize = bookshelfSize,
         showBottomSheet = showBottomSheet,
-        onDismissSheet = { showBottomSheet = false }
+        onDismissSheet = { onDismissBottomSheet() },
+        bookshelfId = bookshelfId,
+        onDeleteBookshelf = onDeleteBookshelf
     )
 
 }

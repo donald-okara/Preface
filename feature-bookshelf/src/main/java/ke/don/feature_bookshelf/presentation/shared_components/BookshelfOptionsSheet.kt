@@ -29,6 +29,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,6 +38,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ke.don.feature_bookshelf.R
+import ke.don.shared_domain.states.ResultState
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -46,10 +49,11 @@ fun BookshelfOptionsSheet(
     title: String,
     bookshelfSize: String,
     showBottomSheet: Boolean,
-    onDismissSheet: () -> Unit
+    bookshelfId: Int,
+    onDismissSheet: () -> Unit,
+    onDeleteBookshelf: (Int) -> Unit
 ){
     val sheetState = rememberModalBottomSheetState()
-
     if (showBottomSheet) {
         ModalBottomSheet(
             onDismissRequest = {
@@ -73,7 +77,9 @@ fun BookshelfOptionsSheet(
                         modifier = modifier,
                         icon = Icons.Outlined.Close,
                         title = "Delete bookshelf",
-                        onOptionClick = {}
+                        onOptionClick = {
+                            onDeleteBookshelf(bookshelfId)
+                        }
                     )
                 }
             }
