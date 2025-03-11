@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -23,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
 import ke.don.feature_bookshelf.presentation.screens.bookshelf_details.components.BookList
+import ke.don.feature_bookshelf.presentation.shared_components.BookshelfOptionsSheet
 import ke.don.shared_domain.states.ResultState
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,6 +37,7 @@ fun BookshelfDetailsRoute(
     onItemClick: (String) -> Unit
 ){
     val bookshelfUiState by bookshelfDetailsViewModel.bookshelfUiState.collectAsState()
+    val showBottomSheet by bookshelfDetailsViewModel.showOptionsSheet.collectAsState()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     LaunchedEffect(bookshelfId) {
@@ -63,6 +66,19 @@ fun BookshelfDetailsRoute(
                         )
                     }
                 },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            bookshelfDetailsViewModel.updateShowSheet(true)
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.MoreVert,
+                            contentDescription = "Options"
+
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = Color.Transparent, // Transparent background
                 )
@@ -83,6 +99,17 @@ fun BookshelfDetailsRoute(
                         scrollBehavior = scrollBehavior,
                         onItemClick = onItemClick
                     )
+
+                    BookshelfOptionsSheet(
+                        modifier = modifier,
+                        bookCovers = bookshelfUiState.bookShelf.books.mapNotNull { it.highestImageUrl?.takeIf {image->  image.isNotEmpty() } },
+                        title = bookshelfUiState.bookShelf.supabaseBookShelf.name,
+                        bookshelfSize = "${bookshelfUiState.bookShelf.books.size} books",
+                        showBottomSheet = showBottomSheet,
+                        onDismissSheet = { bookshelfDetailsViewModel.updateShowSheet(false) },
+                        bookshelfId = bookshelfId,
+                        onDeleteBookshelf = { bookshelfDetailsViewModel.deleteBookshelf(bookshelfId = bookshelfId, onNavigateBack = navigateBack) }
+                    )
                 }
                 is ResultState.Error -> {
                     Text(
@@ -98,6 +125,8 @@ fun BookshelfDetailsRoute(
             }
 
         }
+
+
 
     }
 

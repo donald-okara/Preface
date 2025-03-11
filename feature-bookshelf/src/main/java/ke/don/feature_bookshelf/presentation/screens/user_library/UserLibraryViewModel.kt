@@ -43,8 +43,6 @@ class UserLibraryViewModel @Inject constructor(
                 updateShowSheet(false)
                 refreshAction(onRefreshComplete)
             }
-
-
         }
     }
 }
