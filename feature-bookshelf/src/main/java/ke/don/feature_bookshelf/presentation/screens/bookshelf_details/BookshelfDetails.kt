@@ -1,20 +1,10 @@
 package ke.don.feature_bookshelf.presentation.screens.bookshelf_details
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,14 +21,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import ke.don.feature_bookshelf.R
 import ke.don.feature_bookshelf.presentation.screens.bookshelf_details.components.BookList
-import ke.don.feature_bookshelf.presentation.screens.bookshelf_details.components.BookshelfHeader
-import ke.don.feature_bookshelf.presentation.shared_components.BooksCoverStack
-import ke.don.shared_domain.data_models.BookShelf
 import ke.don.shared_domain.states.ResultState
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -32,6 +32,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -40,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import ke.don.feature_bookshelf.R
 import ke.don.feature_bookshelf.presentation.shared_components.BooksCoverStack
+import ke.don.feature_bookshelf.presentation.shared_components.BookshelfOptionsSheet
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -154,6 +156,8 @@ fun AddBookshelfButton(
         }
 
     }
+
+
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -166,6 +170,8 @@ fun BookshelfItem(
     bookshelfId: Int = 0,
     onNavigateToBookshefItem: (Int) -> Unit
 ){
+    var showBottomSheet by remember { mutableStateOf(false) }
+
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.Start,
@@ -176,7 +182,7 @@ fun BookshelfItem(
                     onNavigateToBookshefItem(bookshelfId)
                 },
                 onLongClick = {
-                    TODO()
+                    showBottomSheet = true
                 }
 
             )
@@ -220,6 +226,15 @@ fun BookshelfItem(
             modifier = modifier.padding(horizontal = 8.dp) // Optional padding for text
         )
     }
+
+    BookshelfOptionsSheet(
+        modifier = modifier,
+        bookCovers = coverImages,
+        title = bookshelfTitle,
+        bookshelfSize = bookshelfSize,
+        showBottomSheet = showBottomSheet,
+        onDismissSheet = { showBottomSheet = false }
+    )
 
 }
 
