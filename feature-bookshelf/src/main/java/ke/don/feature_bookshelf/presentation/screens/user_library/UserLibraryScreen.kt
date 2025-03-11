@@ -1,7 +1,9 @@
 package ke.don.feature_bookshelf.presentation.screens.user_library
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -154,6 +156,7 @@ fun AddBookshelfButton(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun BookshelfItem(
     modifier: Modifier= Modifier,
@@ -168,9 +171,15 @@ fun BookshelfItem(
         horizontalAlignment = Alignment.Start,
         modifier = modifier
             .size(height = 250.dp, width = 200.dp)
-            .clickable {
-                onNavigateToBookshefItem(bookshelfId)
-            }
+            .combinedClickable(
+                onClick = {
+                    onNavigateToBookshefItem(bookshelfId)
+                },
+                onLongClick = {
+                    TODO()
+                }
+
+            )
     ) {
         Card(
             modifier = modifier
