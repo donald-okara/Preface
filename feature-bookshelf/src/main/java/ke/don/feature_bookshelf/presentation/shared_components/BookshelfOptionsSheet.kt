@@ -14,8 +14,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -24,15 +26,22 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ke.don.feature_bookshelf.R
+import ke.don.shared_components.SinkingBox
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -47,6 +56,7 @@ fun BookshelfOptionsSheet(
     onDeleteBookshelf: (Int) -> Unit
 ){
     val sheetState = rememberModalBottomSheetState()
+    var showDeleteDialog by remember { mutableStateOf(false) }
     if (showBottomSheet) {
         ModalBottomSheet(
             onDismissRequest = {
@@ -71,7 +81,7 @@ fun BookshelfOptionsSheet(
                         icon = Icons.Outlined.Close,
                         title = "Delete bookshelf",
                         onOptionClick = {
-                            onDeleteBookshelf(bookshelfId)
+                            showDeleteDialog = true
                         }
                     )
                 }
@@ -80,6 +90,61 @@ fun BookshelfOptionsSheet(
         }
     }
 
+    if (showDeleteDialog){
+        ConfirmationDialog(
+            onDismissRequest = { showDeleteDialog = false },
+            onConfirmation = {
+                onDeleteBookshelf(bookshelfId)
+                showDeleteDialog = false
+            },
+            dialogTitle = "Delete Bookshelf",
+            dialogText = "Are you sure you want to delete this bookshelf?",
+            icon = Icons.Outlined.Close
+        )
+    }
+
+}
+
+@Composable
+fun ConfirmationDialog(
+    onDismissRequest: () -> Unit,
+    onConfirmation: () -> Unit,
+    dialogTitle: String,
+    dialogText: String,
+    icon: ImageVector,
+) {
+    AlertDialog(
+        icon = {
+            Icon(icon, contentDescription = dialogText)
+        },
+        title = {
+            Text(text = dialogTitle)
+        },
+        text = {
+            Text(text = dialogText)
+        },
+        onDismissRequest = {
+            onDismissRequest()
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    onConfirmation()
+                }
+            ) {
+                Text("Confirm")
+            }
+        },
+        dismissButton = {
+            TextButton(
+                onClick = {
+                    onDismissRequest()
+                }
+            ) {
+                Text("Dismiss")
+            }
+        }
+    )
 }
 
 @Composable
@@ -94,11 +159,10 @@ fun BookshelfSheetHeader(
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier.padding(8.dp)
+        modifier = modifier
     ) {
         Row(
-            modifier = modifier
-                .fillMaxWidth(),
+            modifier = modifier,
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
@@ -156,13 +220,13 @@ fun BookShelfOptionItem(
     icon: ImageVector,
     title: String,
     onOptionClick: () -> Unit
-){
+) {
     val textSize = 18f
-
     Row(
-        modifier = modifier.clickable {
-            onOptionClick()
-        },
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable {onOptionClick()}
+            .padding(8.dp), // Inner padding for content
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
     ) {
@@ -174,7 +238,8 @@ fun BookShelfOptionItem(
         Spacer(modifier = modifier.width(8.dp))
         Text(
             text = title,
-            style = MaterialTheme.typography.headlineMedium.copy(fontSize = textSize.sp),
+            style = MaterialTheme.typography.headlineMedium.copy(fontSize = textSize.sp)
         )
     }
+
 }
