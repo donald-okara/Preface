@@ -1,20 +1,11 @@
 package ke.don.feature_bookshelf.presentation.screens.bookshelf_details
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -31,14 +22,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import ke.don.feature_bookshelf.R
 import ke.don.feature_bookshelf.presentation.screens.bookshelf_details.components.BookList
-import ke.don.feature_bookshelf.presentation.screens.bookshelf_details.components.BookshelfHeader
-import ke.don.feature_bookshelf.presentation.shared_components.BooksCoverStack
-import ke.don.shared_domain.data_models.BookShelf
+import ke.don.feature_bookshelf.presentation.shared_components.BookshelfOptionsSheet
 import ke.don.shared_domain.states.ResultState
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -51,6 +37,7 @@ fun BookshelfDetailsRoute(
     onItemClick: (String) -> Unit
 ){
     val bookshelfUiState by bookshelfDetailsViewModel.bookshelfUiState.collectAsState()
+    val showBottomSheet by bookshelfDetailsViewModel.showOptionsSheet.collectAsState()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     LaunchedEffect(bookshelfId) {
@@ -79,6 +66,19 @@ fun BookshelfDetailsRoute(
                         )
                     }
                 },
+                actions = {
+                    IconButton(
+                        onClick = {
+                            bookshelfDetailsViewModel.updateShowSheet(true)
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.MoreVert,
+                            contentDescription = "Options"
+
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = Color.Transparent, // Transparent background
                 )
@@ -99,6 +99,17 @@ fun BookshelfDetailsRoute(
                         scrollBehavior = scrollBehavior,
                         onItemClick = onItemClick
                     )
+
+                    BookshelfOptionsSheet(
+                        modifier = modifier,
+                        bookCovers = bookshelfUiState.bookShelf.books.mapNotNull { it.highestImageUrl?.takeIf {image->  image.isNotEmpty() } },
+                        title = bookshelfUiState.bookShelf.supabaseBookShelf.name,
+                        bookshelfSize = "${bookshelfUiState.bookShelf.books.size} books",
+                        showBottomSheet = showBottomSheet,
+                        onDismissSheet = { bookshelfDetailsViewModel.updateShowSheet(false) },
+                        bookshelfId = bookshelfId,
+                        onDeleteBookshelf = { bookshelfDetailsViewModel.deleteBookshelf(bookshelfId = bookshelfId, onNavigateBack = navigateBack) }
+                    )
                 }
                 is ResultState.Error -> {
                     Text(
@@ -114,6 +125,8 @@ fun BookshelfDetailsRoute(
             }
 
         }
+
+
 
     }
 

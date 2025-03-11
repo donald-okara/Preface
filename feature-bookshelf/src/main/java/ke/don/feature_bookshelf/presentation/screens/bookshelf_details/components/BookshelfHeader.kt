@@ -40,7 +40,7 @@ fun BookshelfHeader(
     modifier: Modifier = Modifier,
     coverImages: List<String> = emptyList(),
     bookshelfName: String,
-    bookshelfDescription: String,
+    bookshelfDescription: String = "",
     bookshelfSize: String,
     scrollBehavior: TopAppBarScrollBehavior
 ) {

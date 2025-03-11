@@ -1,7 +1,9 @@
 package ke.don.feature_bookshelf.presentation.screens.user_library
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,6 +32,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
@@ -38,7 +42,10 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import ke.don.feature_bookshelf.R
 import ke.don.feature_bookshelf.presentation.shared_components.BooksCoverStack
+import ke.don.feature_bookshelf.presentation.shared_components.BookshelfOptionsSheet
+import ke.don.shared_domain.states.ResultState
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -50,6 +57,7 @@ fun UserLibraryScreen(
     onAddBookshelf: () -> Unit,
 ) {
     val userLibraryState by userLibraryViewModel.userLibraryState.collectAsState()
+    val showBottomSheet by userLibraryViewModel.showOptionsSheet.collectAsState()
 
     val uniqueBookshelves =
         userLibraryState.userBookshelves.distinctBy { it.supabaseBookShelf.id } // Ensure uniqueness
@@ -105,7 +113,18 @@ fun UserLibraryScreen(
                     coverImages = shelfItem.books.mapNotNull { it.highestImageUrl?.takeIf {image->  image.isNotEmpty() } },
                     bookshelfTitle = shelfItem.supabaseBookShelf.name,
                     bookshelfSize = "${shelfItem.books.size} books",
-                    bookshelfId = shelfItem.supabaseBookShelf.id
+                    bookshelfId = shelfItem.supabaseBookShelf.id,
+                    onDeleteBookshelf = { bookshelfId ->
+                        userLibraryViewModel.deleteBookshelf(
+                            onRefreshComplete = {
+                                isRefreshing.value = false
+                            },
+                            bookshelfId = bookshelfId
+                        )
+                    },
+                    showBottomSheet = showBottomSheet,
+                    onShowBottomSheet = {userLibraryViewModel.updateShowSheet(true)},
+                    onDismissBottomSheet = {userLibraryViewModel.updateShowSheet(false)}
                 )
             }
 
@@ -152,8 +171,11 @@ fun AddBookshelfButton(
         }
 
     }
+
+
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun BookshelfItem(
     modifier: Modifier= Modifier,
@@ -161,16 +183,24 @@ fun BookshelfItem(
     coverImages: List<String> = emptyList(),
     bookshelfSize: String = "",
     bookshelfId: Int = 0,
-    onNavigateToBookshefItem: (Int) -> Unit
+    onDeleteBookshelf: (Int) -> Unit = {},
+    onNavigateToBookshefItem: (Int) -> Unit,
+    onShowBottomSheet: () -> Unit,
+    showBottomSheet: Boolean,
+    onDismissBottomSheet: () -> Unit
 ){
     Column(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.Start,
         modifier = modifier
             .size(height = 250.dp, width = 200.dp)
-            .clickable {
-                onNavigateToBookshefItem(bookshelfId)
-            }
+            .combinedClickable(
+                onClick = {
+                    onNavigateToBookshefItem(bookshelfId)
+                },
+                onLongClick = { onShowBottomSheet() }
+
+            )
     ) {
         Card(
             modifier = modifier
@@ -211,6 +241,17 @@ fun BookshelfItem(
             modifier = modifier.padding(horizontal = 8.dp) // Optional padding for text
         )
     }
+
+    BookshelfOptionsSheet(
+        modifier = modifier,
+        bookCovers = coverImages,
+        title = bookshelfTitle,
+        bookshelfSize = bookshelfSize,
+        showBottomSheet = showBottomSheet,
+        onDismissSheet = { onDismissBottomSheet() },
+        bookshelfId = bookshelfId,
+        onDeleteBookshelf = onDeleteBookshelf
+    )
 
 }
 

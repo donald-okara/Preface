@@ -12,6 +12,7 @@ import ke.don.shared_domain.data_models.BookShelf
 import ke.don.shared_domain.data_models.BookshelfCatalog
 import ke.don.shared_domain.data_models.BookshelfRef
 import ke.don.shared_domain.data_models.SupabaseBook
+import ke.don.shared_domain.states.ResultState
 import ke.don.shared_domain.values.ADDBOOKSTOBOOKSHELF
 import ke.don.shared_domain.values.BOOKS
 import ke.don.shared_domain.values.BOOKSHELFCATALOG
@@ -182,6 +183,21 @@ class BookshelfNetworkClass(
     /**
      * DELETE
      */
+    suspend fun deleteBookshelf(
+        bookshelfId: Int
+    ): ResultState {
+        return try {
+            supabaseClient.from(BOOKSHELFTABLE).delete {
+                filter {
+                    BookshelfRef::id eq bookshelfId
+                }
+            }
+            ResultState.Success
+        } catch (e: Exception) {
+            e.printStackTrace()
+            ResultState.Error(e.message.toString())
+        }
+    }
 
     companion object {
         private const val TAG = "BookshelfNetworkClass"

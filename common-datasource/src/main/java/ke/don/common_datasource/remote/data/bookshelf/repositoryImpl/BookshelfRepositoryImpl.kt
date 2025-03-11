@@ -155,6 +155,16 @@ class BookshelfRepositoryImpl(
         }
     }
 
+    override suspend fun deleteBookshelf(bookshelfId: Int): ResultState {
+        return try {
+            bookshelfNetworkClass.deleteBookshelf(bookshelfId)
+        }catch (e: Exception) {
+            e.printStackTrace()
+            ResultState.Error(e.message.toString())
+        }
+    }
+
+
     companion object {
         const val TAG = "BookshelfRepositoryImpl"
     }

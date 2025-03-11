@@ -6,6 +6,7 @@ import ke.don.shared_domain.data_models.BookshelfRef
 import ke.don.shared_domain.data_models.BookshelfType
 import ke.don.shared_domain.states.AddBookshelfState
 import ke.don.shared_domain.states.BookshelfUiState
+import ke.don.shared_domain.states.ResultState
 import ke.don.shared_domain.states.UserLibraryState
 import kotlinx.coroutines.flow.StateFlow
 
@@ -23,4 +24,6 @@ interface BookshelfRepository {
     suspend fun fetchUserBookShelves()
     suspend fun addBookToBookshelf(addBookToBookshelf: AddBookToBookshelf)
     suspend fun removeBookFromBookshelf(bookId: String, bookshelfId: Int)
+    suspend fun deleteBookshelf(bookshelfId: Int): ResultState
+
 }
