@@ -131,15 +131,6 @@ fun TitleHeader(
                 textAlign = TextAlign.Center,
                 modifier = modifier.graphicsLayer(alpha = 0.8f)
             )
-
-//                BookshelfDropdownMenu(
-//                    uniqueBookshelves = uniqueBookshelves,
-//                    textColor = textColor,
-//                    onExpandToggle = { expanded = !expanded },
-//                    onItemClick = {},
-//                    expanded = expanded,
-//                    modifier = modifier
-//                )
         }
 
     }
