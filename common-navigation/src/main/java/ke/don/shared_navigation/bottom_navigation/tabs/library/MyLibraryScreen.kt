@@ -56,15 +56,19 @@ object MyLibraryScreen : AndroidScreen() {
 
                 },
                 onAddBookshelf = {
-                    navigator?.push(AddBookshelfVoyagerScreen)
+                    navigator?.push(AddBookshelfVoyagerScreen(null))
+                },
+                onNavigateToEdit = {bookshelfId->
+                    navigator?.push(AddBookshelfVoyagerScreen(bookshelfId))
+
                 }
             )
         }
     }
 }
 
-object AddBookshelfVoyagerScreen : AndroidScreen() {
-    private fun readResolve(): Any = AddBookshelfVoyagerScreen
+class AddBookshelfVoyagerScreen(private val bookshelfId: Int?) : AndroidScreen() {
+    private fun readResolve(): Any = AddBookshelfVoyagerScreen(bookshelfId = bookshelfId)
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
@@ -83,6 +87,7 @@ object AddBookshelfVoyagerScreen : AndroidScreen() {
             }
         ) { innerPadding ->
             AddBookshelfRoute(
+                bookshelfId = bookshelfId,
                 modifier = Modifier.padding(innerPadding),
                 paddingValues = innerPadding,
                 onNavigateBack = { navigator?.pop() }
@@ -101,6 +106,9 @@ class BookshelfDetailsScreen(private val bookshelfId: Int) : AndroidScreen() {
             navigateBack = { navigator?.pop() },
             onItemClick = { bookId ->
                 navigator?.push(BookDetailsVoyagerScreen(bookId))
+            },
+            onNavigateToEdit = { bookshelfId ->
+                navigator?.push(AddBookshelfVoyagerScreen(bookshelfId))
             }
         )
     }

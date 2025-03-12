@@ -17,6 +17,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,6 +28,7 @@ import ke.don.shared_domain.data_models.BookshelfType
 
 @Composable
 fun AddBookshelfRoute(
+    bookshelfId : Int? = null,
     modifier: Modifier = Modifier,
     paddingValues: PaddingValues,
     onNavigateBack: () -> Unit,
@@ -34,8 +36,8 @@ fun AddBookshelfRoute(
 ){
     val state = addBookshelfViewModel.addBookshelfState.collectAsState()
 
-    if (state.value.successState == SuccessState.SUCCESS){
-        onNavigateBack()
+    LaunchedEffect(bookshelfId) {
+        addBookshelfViewModel.onBookshelfIdPassed(bookshelfId)
     }
     //TODO: Error handling
     Box(
@@ -54,12 +56,13 @@ fun AddBookshelfRoute(
                 addBookshelfViewModel.onDescriptionChange(it)
             },
             onAddBookshelf = {
-                addBookshelfViewModel.onAddBookshelf()
+                addBookshelfViewModel.onAddBookshelf(onNavigateBack)
             },
             bookshelfType = state.value.bookshelfType,
             onBookshelfTypeChange = {
                 addBookshelfViewModel.onBookshelfTypeChange(it)
             },
+            bookshelfId = bookshelfId,
             isAddButtonEnabled = addBookshelfViewModel.isAddButtonEnabled()
         )
     }
@@ -72,6 +75,7 @@ fun AddBookshelfRoute(
 fun BookshelfForm(
     modifier: Modifier = Modifier,
     name: String,
+    bookshelfId: Int?,
     isAddButtonEnabled: Boolean = false,
     onNameChange: (String) -> Unit,
     description: String,
@@ -120,7 +124,7 @@ fun BookshelfForm(
                     contentDescription = "Add Bookshelf"
                 )
 
-                Text(text = "Add Bookshelf")
+                Text(text = if (bookshelfId == null) "Add Bookshelf" else "Edit Bookshelf")
             }
 
 

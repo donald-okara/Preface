@@ -52,6 +52,7 @@ import kotlinx.coroutines.launch
 fun UserLibraryScreen(
     modifier: Modifier = Modifier,
     paddingValues: PaddingValues,
+    onNavigateToEdit: (Int) -> Unit,
     onNavigateToBookshefItem: (Int) -> Unit,
     userLibraryViewModel: UserLibraryViewModel = hiltViewModel(),
     onAddBookshelf: () -> Unit,
@@ -123,6 +124,7 @@ fun UserLibraryScreen(
                         )
                     },
                     showBottomSheet = showBottomSheet,
+                    onNavigateToEdit = onNavigateToEdit,
                     onShowBottomSheet = {userLibraryViewModel.updateShowSheet(true)},
                     onDismissBottomSheet = {userLibraryViewModel.updateShowSheet(false)}
                 )
@@ -183,6 +185,7 @@ fun BookshelfItem(
     coverImages: List<String> = emptyList(),
     bookshelfSize: String = "",
     bookshelfId: Int = 0,
+    onNavigateToEdit: (Int) -> Unit,
     onDeleteBookshelf: (Int) -> Unit = {},
     onNavigateToBookshefItem: (Int) -> Unit,
     onShowBottomSheet: () -> Unit,
@@ -250,6 +253,7 @@ fun BookshelfItem(
         showBottomSheet = showBottomSheet,
         onDismissSheet = { onDismissBottomSheet() },
         bookshelfId = bookshelfId,
+        onNavigateToEdit = onNavigateToEdit,
         onDeleteBookshelf = onDeleteBookshelf
     )
 

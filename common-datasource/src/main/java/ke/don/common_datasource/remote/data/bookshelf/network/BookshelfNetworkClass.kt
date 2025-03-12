@@ -42,16 +42,24 @@ class BookshelfNetworkClass(
      * READ
      */
 
+    suspend fun fetchBookshelfRef(bookshelfId: Int): BookshelfRef?{
+        return try{
+            supabaseClient.from(BOOKSHELFTABLE)
+                .select() {
+                    filter { BookshelfRef::id eq bookshelfId }
+                }
+                .decodeSingleOrNull<BookshelfRef>()
+        }catch (e: Exception){
+            null
+        }
+    }
+
     suspend fun fetchBookshelfById(bookshelfId: Int): BookShelf? {
         return try {
             Log.d(TAG, "Attempting to fetch bookshelf with ID: $bookshelfId")
 
             // Fetch the bookshelf reference (includes books JSONB array)
-            val bookshelfRef = supabaseClient.from(BOOKSHELFTABLE)
-                .select(){
-                    filter { BookshelfRef::id eq bookshelfId }
-                }
-                .decodeSingleOrNull<BookshelfRef>() // Get a single bookshelf reference or null
+            val bookshelfRef = fetchBookshelfRef(bookshelfId)
 
             if (bookshelfRef == null) {
                 Log.d(TAG, "No bookshelf found with ID: $bookshelfId")
@@ -66,7 +74,7 @@ class BookshelfNetworkClass(
             // Fetch full book details efficiently using the indexed JSONB filter
             val books = if (bookIds.isNotEmpty()) {
                 supabaseClient.from(BOOKS)
-                    .select(){
+                    .select{
                         filter { SupabaseBook::bookId isIn  bookIds } // Uses indexing for fast lookups
 
                     }
@@ -177,6 +185,20 @@ class BookshelfNetworkClass(
 
         }catch (e: Exception){
             e.printStackTrace()
+        }
+    }
+
+    suspend fun updateBookshelf(bookshelfId: Int,bookshelf: BookshelfRef){
+        supabaseClient.from(BOOKSHELFTABLE).update(
+            {
+                BookshelfRef::name setTo bookshelf.name
+                BookshelfRef::description setTo bookshelf.description
+                BookshelfRef::bookshelfType setTo bookshelf.bookshelfType
+            }
+        ){
+            filter {
+                BookshelfRef::id eq bookshelfId
+            }
         }
     }
 

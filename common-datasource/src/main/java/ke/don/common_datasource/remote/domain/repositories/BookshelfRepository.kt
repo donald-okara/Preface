@@ -22,6 +22,8 @@ interface BookshelfRepository {
     suspend fun createBookshelf(bookshelf: BookshelfRef)
     suspend fun fetchBookshelfById(bookshelfId: Int)
     suspend fun fetchUserBookShelves()
+    suspend fun editBookshelf(bookshelfId: Int, bookshelf: BookshelfRef)
+    suspend fun fetchBookshelfRef(bookshelfId: Int)
     suspend fun addBookToBookshelf(addBookToBookshelf: AddBookToBookshelf)
     suspend fun removeBookFromBookshelf(bookId: String, bookshelfId: Int)
     suspend fun deleteBookshelf(bookshelfId: Int): ResultState
