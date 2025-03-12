@@ -18,6 +18,9 @@ class UserLibraryViewModel @Inject constructor(
 ) : ViewModel() {
     val userLibraryState = bookshelfRepository.userLibraryState
 
+    private val _selectedBookshelfId = MutableStateFlow<Int?>(null)
+    val selectedBookshelfId: StateFlow<Int?> = _selectedBookshelfId
+
     private val _showOptionsSheet = MutableStateFlow(false)
     val showOptionsSheet: StateFlow<Boolean> = _showOptionsSheet
 
@@ -29,6 +32,10 @@ class UserLibraryViewModel @Inject constructor(
                 onRefreshComplete()
             }
         }
+    }
+
+    fun updateSelectedBookshelf(bookshelfId: Int?) {
+        _selectedBookshelfId.value = bookshelfId
     }
 
     fun updateShowSheet(newState: Boolean){

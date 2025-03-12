@@ -46,7 +46,7 @@ class AddBookshelfViewModel @Inject constructor(
     fun onNameChange(name: String) = bookshelfRepository.onNameChange(name)
 
     fun isAddButtonEnabled(): Boolean{
-        return addBookshelfState.value.name.isNotEmpty()
+        return addBookshelfState.value.name.isNotEmpty() && addBookshelfState.value.successState != SuccessState.LOADING
     }
 
     fun onDescriptionChange(description: String) = bookshelfRepository.onDescriptionChange(description)
