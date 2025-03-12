@@ -52,12 +52,12 @@ import kotlinx.coroutines.launch
 fun UserLibraryScreen(
     modifier: Modifier = Modifier,
     paddingValues: PaddingValues,
+    onNavigateToEdit: (Int) -> Unit,
     onNavigateToBookshefItem: (Int) -> Unit,
     userLibraryViewModel: UserLibraryViewModel = hiltViewModel(),
     onAddBookshelf: () -> Unit,
 ) {
     val userLibraryState by userLibraryViewModel.userLibraryState.collectAsState()
-    val showBottomSheet by userLibraryViewModel.showOptionsSheet.collectAsState()
 
     val uniqueBookshelves =
         userLibraryState.userBookshelves.distinctBy { it.supabaseBookShelf.id } // Ensure uniqueness
@@ -72,6 +72,17 @@ fun UserLibraryScreen(
             isRefreshing.value = false
         }
     }
+
+    val selectedBookshelfId by userLibraryViewModel.selectedBookshelfId.collectAsState()
+
+    val onShowBottomSheet: (Int) -> Unit = { bookshelfId ->
+        userLibraryViewModel.updateSelectedBookshelf(bookshelfId)
+    }
+
+    val onDismissBottomSheet: () -> Unit = {
+        userLibraryViewModel.updateSelectedBookshelf(null)
+    }
+
 
 
     PullToRefreshBox(
@@ -110,7 +121,7 @@ fun UserLibraryScreen(
                 key = { bookShelf -> bookShelf.supabaseBookShelf.id }) { shelfItem ->
                 BookshelfItem(
                     onNavigateToBookshefItem = onNavigateToBookshefItem,
-                    coverImages = shelfItem.books.mapNotNull { it.highestImageUrl?.takeIf {image->  image.isNotEmpty() } },
+                    coverImages = shelfItem.books.mapNotNull { it.highestImageUrl?.takeIf { image -> image.isNotEmpty() } },
                     bookshelfTitle = shelfItem.supabaseBookShelf.name,
                     bookshelfSize = "${shelfItem.books.size} books",
                     bookshelfId = shelfItem.supabaseBookShelf.id,
@@ -122,9 +133,10 @@ fun UserLibraryScreen(
                             bookshelfId = bookshelfId
                         )
                     },
-                    showBottomSheet = showBottomSheet,
-                    onShowBottomSheet = {userLibraryViewModel.updateShowSheet(true)},
-                    onDismissBottomSheet = {userLibraryViewModel.updateShowSheet(false)}
+                    showBottomSheet = selectedBookshelfId == shelfItem.supabaseBookShelf.id, // Only show for selected item
+                    onNavigateToEdit = onNavigateToEdit,
+                    onShowBottomSheet = { onShowBottomSheet(shelfItem.supabaseBookShelf.id) },
+                    onDismissBottomSheet = onDismissBottomSheet
                 )
             }
 
@@ -183,6 +195,7 @@ fun BookshelfItem(
     coverImages: List<String> = emptyList(),
     bookshelfSize: String = "",
     bookshelfId: Int = 0,
+    onNavigateToEdit: (Int) -> Unit,
     onDeleteBookshelf: (Int) -> Unit = {},
     onNavigateToBookshefItem: (Int) -> Unit,
     onShowBottomSheet: () -> Unit,
@@ -250,6 +263,7 @@ fun BookshelfItem(
         showBottomSheet = showBottomSheet,
         onDismissSheet = { onDismissBottomSheet() },
         bookshelfId = bookshelfId,
+        onNavigateToEdit = onNavigateToEdit,
         onDeleteBookshelf = onDeleteBookshelf
     )
 

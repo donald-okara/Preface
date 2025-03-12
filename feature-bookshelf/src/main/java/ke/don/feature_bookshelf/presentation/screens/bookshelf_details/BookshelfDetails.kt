@@ -32,6 +32,7 @@ import ke.don.shared_domain.states.ResultState
 fun BookshelfDetailsRoute(
     modifier: Modifier = Modifier,
     bookshelfId : Int,
+    onNavigateToEdit: (Int) -> Unit,
     bookshelfDetailsViewModel: BookshelfDetailsViewModel = hiltViewModel(),
     navigateBack : () -> Unit,
     onItemClick: (String) -> Unit
@@ -108,6 +109,7 @@ fun BookshelfDetailsRoute(
                         showBottomSheet = showBottomSheet,
                         onDismissSheet = { bookshelfDetailsViewModel.updateShowSheet(false) },
                         bookshelfId = bookshelfId,
+                        onNavigateToEdit = onNavigateToEdit,
                         onDeleteBookshelf = { bookshelfDetailsViewModel.deleteBookshelf(bookshelfId = bookshelfId, onNavigateBack = navigateBack) }
                     )
                 }

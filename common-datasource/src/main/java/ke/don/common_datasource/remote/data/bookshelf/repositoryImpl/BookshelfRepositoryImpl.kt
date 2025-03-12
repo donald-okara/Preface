@@ -107,6 +107,34 @@ class BookshelfRepositoryImpl(
         }
     }
 
+    override suspend fun fetchBookshelfRef(bookshelfId: Int) {
+        bookshelfNetworkClass.fetchBookshelfRef(bookshelfId)?.let { bookshelfRef ->
+
+        _addBookshelfState.update {
+                it.copy(
+                    name = bookshelfRef.name,
+                    description = bookshelfRef.description
+                )
+            }
+
+        }
+    }
+
+    override suspend fun editBookshelf(bookshelfId: Int, bookshelf: BookshelfRef) {
+        _addBookshelfState.update {
+            it.copy(successState = SuccessState.LOADING)
+        }
+        bookshelfNetworkClass.updateBookshelf(bookshelfId =  bookshelfId, bookshelf = bookshelf)
+
+        profileRepository.userId.value?.let {
+            fetchBookshelfById(bookshelfId)
+            fetchUserBookShelves()
+        }
+        _addBookshelfState.update {
+            it.copy(successState = SuccessState.SUCCESS)
+        }
+    }
+
     override suspend fun fetchBookshelfById(bookshelfId: Int) {
         try {
             _bookshelfUiState.update {

@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -50,6 +51,7 @@ fun BookshelfOptionsSheet(
     bookCovers: List<String>,
     title: String,
     bookshelfSize: String,
+    onNavigateToEdit: (Int) -> Unit,
     showBottomSheet: Boolean,
     bookshelfId: Int,
     onDismissSheet: () -> Unit,
@@ -78,6 +80,16 @@ fun BookshelfOptionsSheet(
                 item {
                     BookShelfOptionItem(
                         modifier = modifier,
+                        icon = Icons.Outlined.Edit,
+                        title = "Edit bookshelf",
+                        onOptionClick = {
+                            onNavigateToEdit(bookshelfId)
+                        }
+                    )
+                }
+                item {
+                    BookShelfOptionItem(
+                        modifier = modifier,
                         icon = Icons.Outlined.Close,
                         title = "Delete bookshelf",
                         onOptionClick = {
@@ -86,7 +98,6 @@ fun BookshelfOptionsSheet(
                     )
                 }
             }
-
         }
     }
 
