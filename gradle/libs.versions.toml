@@ -1,8 +1,10 @@
 [versions]
 agp = "8.8.0"
+coreKtxVersion = "1.12.0"
 datastore = "1.1.2"
 ktorClientAndroid = "3.0.0-rc-1"
 kotlinx-collections-immutable = "0.3.7"
+roomRuntime = "2.6.1"
 supabase = "3.0.0"
 coilCompose = "2.4.0"
 coilGif = "2.0.0-rc02"
@@ -52,9 +54,13 @@ voyagerTabNavigator = "1.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+androidx-core-ktx-v1120 = { module = "androidx.core:core-ktx", version.ref = "coreKtxVersion" }
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 androidx-core-testing = { module = "androidx.arch.core:core-testing", version.ref = "coreTesting" }
 androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
+androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomRuntime" }
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
 kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlinx-collections-immutable" }
 androidx-credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentials" }
 androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }

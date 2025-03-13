@@ -90,6 +90,11 @@ dependencies {
     implementation(libs.androidx.datastore)
     implementation(libs.kotlinx.collections.immutable)
 
+    //Room
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.core.ktx.v1120)
+    kapt(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
 
     //Project
     implementation(project(":common-domain"))
