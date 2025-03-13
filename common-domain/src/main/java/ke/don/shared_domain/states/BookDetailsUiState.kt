@@ -69,6 +69,13 @@ fun BookUiState.toAddBookToBookshelf(
         description = bookUiState.bookDetails.volumeInfo.description,
         highestImageUrl = highestImageUrl,
         lowestImageUrl = lowestImageUrl,
+        authors = bookUiState.bookDetails.volumeInfo.authors,
+        categories = bookUiState.bookDetails.volumeInfo.categories,
+        publishedDate = bookUiState.bookDetails.volumeInfo.publishedDate,
+        publisher = bookUiState.bookDetails.volumeInfo.publisher,
+        maturityRating = bookUiState.bookDetails.volumeInfo.maturityRating,
+        language = bookUiState.bookDetails.volumeInfo.language,
+        previewLink = bookUiState.bookDetails.volumeInfo.previewLink
     )
 }
 
