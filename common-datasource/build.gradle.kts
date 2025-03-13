@@ -4,6 +4,7 @@ plugins {
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ksp)
     id("kotlin-kapt")
     id("kotlin-parcelize")
 }
@@ -90,11 +91,12 @@ dependencies {
     implementation(libs.androidx.datastore)
     implementation(libs.kotlinx.collections.immutable)
 
-    //Room
+    //Room db dependencies
     implementation(libs.androidx.room.runtime)
-    implementation(libs.androidx.core.ktx.v1120)
-    kapt(libs.androidx.room.compiler)
+    //noinspection KaptUsageInsteadOfKsp
+    ksp(libs.androidx.room.compiler)
     implementation(libs.androidx.room.ktx)
+
 
     //Project
     implementation(project(":common-domain"))
