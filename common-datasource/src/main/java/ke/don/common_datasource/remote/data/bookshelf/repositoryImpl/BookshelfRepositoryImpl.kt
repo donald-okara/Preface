@@ -6,6 +6,7 @@ import android.widget.Toast
 import ke.don.common_datasource.local.roomdb.dao.BookshelfDao
 import ke.don.common_datasource.local.roomdb.entities.toBookshelf
 import ke.don.common_datasource.remote.data.bookshelf.network.BookshelfNetworkClass
+import ke.don.common_datasource.remote.domain.BookshelfUiState
 import ke.don.common_datasource.remote.domain.UserLibraryState
 import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
 import ke.don.common_datasource.remote.domain.repositories.ProfileRepository
@@ -14,7 +15,6 @@ import ke.don.shared_domain.data_models.BookshelfRef
 import ke.don.shared_domain.data_models.BookshelfType
 import ke.don.shared_domain.data_models.Profile
 import ke.don.shared_domain.states.AddBookshelfState
-import ke.don.shared_domain.states.BookshelfUiState
 import ke.don.shared_domain.states.ResultState
 import ke.don.shared_domain.states.SuccessState
 import kotlinx.coroutines.CoroutineScope
@@ -99,9 +99,8 @@ class BookshelfRepositoryImpl(
             Log.d(TAG, "Fetching user bookshelves")
             _userLibraryState.update { libraryState ->
                 libraryState.copy(
-                    userBookshelves = bookshelfDao.getAllBookshelves().map {
-                        it.toBookshelf()
-                    },
+                    userBookshelves = bookshelfDao.getAllBookshelvesFlow()
+                        .map { list -> list.map { it.toBookshelf() } },
                     successState = SuccessState.SUCCESS
                 )
             }
@@ -148,19 +147,13 @@ class BookshelfRepositoryImpl(
                 it.copy(resultState = ResultState.Loading)
             }
 
-            val bookshelf = bookshelfNetworkClass.fetchBookshelfById(bookshelfId)
-            if (bookshelf!=null){
-                _bookshelfUiState.update {
-                    it.copy(
-                        bookShelf = bookshelf,
-                        resultState = ResultState.Success
+            val bookshelf = bookshelfDao.getBookshelfById(bookshelfId)
+            _bookshelfUiState.update {
+                it.copy(
+                    bookShelf = bookshelf,
+                    resultState = ResultState.Success
 
-                    )
-                }
-            }else{
-                _bookshelfUiState.update {
-                    it.copy(resultState = ResultState.Error())
-                }
+                )
             }
         } catch (e: Exception) {
             e.printStackTrace()

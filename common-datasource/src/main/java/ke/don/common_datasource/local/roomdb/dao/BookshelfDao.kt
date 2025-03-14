@@ -30,7 +30,7 @@ interface BookshelfDao {
 
 
     @Query("SELECT * FROM bookshelves WHERE id = :id")
-    fun getBookshelfById(id: Int): Flow<BookshelfEntity?>
+    fun getBookshelfById(id: Int): Flow<BookshelfEntity>
 
     /**
      * UPDATE

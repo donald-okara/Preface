@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
+import ke.don.common_datasource.local.roomdb.entities.BookshelfEntity
 import ke.don.feature_bookshelf.presentation.screens.bookshelf_details.components.BookList
 import ke.don.feature_bookshelf.presentation.shared_components.BookshelfOptionsSheet
 import ke.don.shared_domain.states.ResultState
@@ -38,6 +39,7 @@ fun BookshelfDetailsRoute(
     onItemClick: (String) -> Unit
 ){
     val bookshelfUiState by bookshelfDetailsViewModel.bookshelfUiState.collectAsState()
+    val bookshelf by bookshelfUiState.bookShelf.collectAsState(initial = BookshelfEntity())
     val showBottomSheet by bookshelfDetailsViewModel.showOptionsSheet.collectAsState()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
@@ -92,26 +94,29 @@ fun BookshelfDetailsRoute(
                 .fillMaxSize()
                 .padding(innerPadding)
         ){
-            when (bookshelfUiState.resultState) {
+            when (val state = bookshelfUiState.resultState) {
                 is ResultState.Success -> {
-                    BookList(
-                        bookShelf = bookshelfUiState.bookShelf,
-                        modifier = modifier,
-                        scrollBehavior = scrollBehavior,
-                        onItemClick = onItemClick
-                    )
+                    if (bookshelf.id == 0) { // Assuming id == 0 means it's still empty
+                        CircularProgressIndicator() // Keep loading state until data arrives
+                    } else {
+                        BookList(
+                            bookShelf = bookshelf,
+                            modifier = modifier,
+                            scrollBehavior = scrollBehavior,
+                            onItemClick = onItemClick
+                        )
 
-                    BookshelfOptionsSheet(
-                        modifier = modifier,
-                        bookCovers = bookshelfUiState.bookShelf.books.mapNotNull { it.highestImageUrl?.takeIf {image->  image.isNotEmpty() } },
-                        title = bookshelfUiState.bookShelf.supabaseBookShelf.name,
-                        bookshelfSize = "${bookshelfUiState.bookShelf.books.size} books",
-                        showBottomSheet = showBottomSheet,
-                        onDismissSheet = { bookshelfDetailsViewModel.updateShowSheet(false) },
-                        bookshelfId = bookshelfId,
-                        onNavigateToEdit = onNavigateToEdit,
-                        onDeleteBookshelf = { bookshelfDetailsViewModel.deleteBookshelf(bookshelfId = bookshelfId, onNavigateBack = navigateBack) }
-                    )
+                        BookshelfOptionsSheet(
+                            modifier = modifier,
+                            bookCovers = bookshelf.books.mapNotNull { it.highestImageUrl?.takeIf { image -> image.isNotEmpty() } },
+                            title = bookshelf.name,
+                            bookshelfSize = "${bookshelf.books.size} books",
+                            showBottomSheet = showBottomSheet,
+                            onDismissSheet = { bookshelfDetailsViewModel.updateShowSheet(false) },
+                            bookshelfId = bookshelfId,
+                            onNavigateToEdit = onNavigateToEdit,
+                            onDeleteBookshelf = { bookshelfDetailsViewModel.deleteBookshelf(bookshelfId = bookshelfId, onNavigateBack = navigateBack) }                        )
+                    }
                 }
                 is ResultState.Error -> {
                     Text(
@@ -119,10 +124,8 @@ fun BookshelfDetailsRoute(
                         color = MaterialTheme.colorScheme.error
                     )
                 }
-
                 else -> {
                     CircularProgressIndicator()
-
                 }
             }
 

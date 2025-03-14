@@ -27,6 +27,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import ke.don.common_datasource.local.roomdb.entities.BookshelfEntity
 import ke.don.feature_bookshelf.R
 import ke.don.shared_domain.data_models.BookShelf
 import ke.don.shared_domain.data_models.SupabaseBook
@@ -37,7 +38,7 @@ import ke.don.shared_domain.utils.formatting_utils.formatHtmlToAnnotatedString
 @Composable
 fun BookList(
     modifier: Modifier = Modifier,
-    bookShelf: BookShelf,
+    bookShelf: BookshelfEntity,
     scrollBehavior: TopAppBarScrollBehavior,
     onItemClick: (String) -> Unit
 ){
@@ -52,8 +53,8 @@ fun BookList(
         item{
             BookshelfHeader(
                 coverImages = bookShelf.books.mapNotNull { it.highestImageUrl?.takeIf {image->  image.isNotEmpty() } },
-                bookshelfName = bookShelf.supabaseBookShelf.name,
-                bookshelfDescription = bookShelf.supabaseBookShelf.description,
+                bookshelfName = bookShelf.name,
+                bookshelfDescription = bookShelf.description,
                 bookshelfSize = "${bookShelf.books.size} books",
                 scrollBehavior = scrollBehavior,
                 modifier = modifier

@@ -3,8 +3,8 @@ package ke.don.feature_bookshelf.presentation.screens.bookshelf_details
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import ke.don.common_datasource.remote.domain.BookshelfUiState
 import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
-import ke.don.shared_domain.states.BookshelfUiState
 import ke.don.shared_domain.states.ResultState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
