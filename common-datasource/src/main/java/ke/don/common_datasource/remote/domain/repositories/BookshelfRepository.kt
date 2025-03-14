@@ -1,13 +1,12 @@
 package ke.don.common_datasource.remote.domain.repositories
 
+import ke.don.common_datasource.remote.domain.UserLibraryState
 import ke.don.shared_domain.data_models.AddBookToBookshelf
-import ke.don.shared_domain.data_models.BookShelf
 import ke.don.shared_domain.data_models.BookshelfRef
 import ke.don.shared_domain.data_models.BookshelfType
 import ke.don.shared_domain.states.AddBookshelfState
 import ke.don.shared_domain.states.BookshelfUiState
 import ke.don.shared_domain.states.ResultState
-import ke.don.shared_domain.states.UserLibraryState
 import kotlinx.coroutines.flow.StateFlow
 
 interface BookshelfRepository {

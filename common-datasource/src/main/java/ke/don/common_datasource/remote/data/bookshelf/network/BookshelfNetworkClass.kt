@@ -4,6 +4,8 @@ import android.util.Log
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.query.Columns
+import ke.don.common_datasource.local.roomdb.entities.BookshelfEntity
+import ke.don.common_datasource.local.roomdb.entities.toEntity
 import ke.don.common_datasource.remote.data.bookshelf.repositoryImpl.BookshelfRepositoryImpl
 import ke.don.common_datasource.remote.data.bookshelf.repositoryImpl.BookshelfRepositoryImpl.Companion
 import ke.don.common_datasource.remote.data.profile.network.ProfileNetworkClass
@@ -98,7 +100,7 @@ class BookshelfNetworkClass(
         }
     }
 
-    suspend fun fetchUserBookshelves(userId: String): List<BookShelf> {
+    suspend fun fetchUserBookshelves(userId: String): List<BookshelfEntity> {
         return try {
             Log.d(TAG, "Attempting to fetch bookshelves for user: $userId")
 
@@ -141,7 +143,7 @@ class BookshelfNetworkClass(
                 BookShelf(
                     supabaseBookShelf = bookshelfRef,
                     books = currentBooks
-                )
+                ).toEntity()
             }
 
             return bookshelvesDetailed

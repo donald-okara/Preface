@@ -3,7 +3,10 @@ package ke.don.common_datasource.remote.data.bookshelf.repositoryImpl
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import ke.don.common_datasource.local.roomdb.dao.BookshelfDao
+import ke.don.common_datasource.local.roomdb.entities.toBookshelf
 import ke.don.common_datasource.remote.data.bookshelf.network.BookshelfNetworkClass
+import ke.don.common_datasource.remote.domain.UserLibraryState
 import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
 import ke.don.common_datasource.remote.domain.repositories.ProfileRepository
 import ke.don.shared_domain.data_models.AddBookToBookshelf
@@ -14,11 +17,11 @@ import ke.don.shared_domain.states.AddBookshelfState
 import ke.don.shared_domain.states.BookshelfUiState
 import ke.don.shared_domain.states.ResultState
 import ke.don.shared_domain.states.SuccessState
-import ke.don.shared_domain.states.UserLibraryState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -26,6 +29,7 @@ class BookshelfRepositoryImpl(
     private val bookshelfNetworkClass: BookshelfNetworkClass,
     private val profileRepository: ProfileRepository,
     private val userProfile : Profile?,
+    private val bookshelfDao: BookshelfDao,
     private val context : Context
 ): BookshelfRepository {
     private val _addBookshelfState = MutableStateFlow(AddBookshelfState())
@@ -91,10 +95,13 @@ class BookshelfRepositoryImpl(
             it.copy(successState = SuccessState.LOADING)
         }
         try {
+            bookshelfDao.insertAll(bookshelfNetworkClass.fetchUserBookshelves(userProfile?.authId!!))
             Log.d(TAG, "Fetching user bookshelves")
-            _userLibraryState.update {
-                it.copy(
-                    userBookshelves = bookshelfNetworkClass.fetchUserBookshelves(userProfile?.authId!!),
+            _userLibraryState.update { libraryState ->
+                libraryState.copy(
+                    userBookshelves = bookshelfDao.getAllBookshelves().map {
+                        it.toBookshelf()
+                    },
                     successState = SuccessState.SUCCESS
                 )
             }

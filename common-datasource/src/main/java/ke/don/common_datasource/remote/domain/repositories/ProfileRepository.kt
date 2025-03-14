@@ -1,8 +1,6 @@
 package ke.don.common_datasource.remote.domain.repositories
 
 import ke.don.shared_domain.data_models.Profile
-import ke.don.shared_domain.states.UserLibraryState
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
 interface ProfileRepository {

@@ -2,6 +2,7 @@ package ke.don.common_datasource.remote.data.di
 
 import android.content.Context
 import android.util.Log
+import androidx.room.Room
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -10,6 +11,8 @@ import dagger.hilt.components.SingletonComponent
 import io.github.jan.supabase.SupabaseClient
 import ke.don.common_datasource.local.datastore.profile.ProfileDataStoreManager
 import ke.don.common_datasource.local.datastore.token.TokenDatastoreManager
+import ke.don.common_datasource.local.roomdb.BookshelfDatabase
+import ke.don.common_datasource.local.roomdb.dao.BookshelfDao
 import ke.don.common_datasource.remote.data.bookshelf.network.BookshelfNetworkClass
 import ke.don.common_datasource.remote.data.bookshelf.repositoryImpl.BookshelfRepositoryImpl
 import ke.don.common_datasource.remote.data.profile.network.ProfileNetworkClass
@@ -70,16 +73,32 @@ object DatasourceModule {
 
     @Provides
     @Singleton
+    fun provideBookshelfDatabase(@ApplicationContext context: Context): BookshelfDatabase {
+        return Room.databaseBuilder(
+            context,
+            BookshelfDatabase::class.java,
+            "bookshelf_database"
+        ).build()
+    }
+
+    @Provides
+    @Singleton
+    fun provideBookshelfDao(database: BookshelfDatabase): BookshelfDao = database.bookshelfDao()
+
+    @Provides
+    @Singleton
     fun provideBookshelfRepository(
         bookshelfNetworkClass: BookshelfNetworkClass,
         @ApplicationContext context: Context,
         profileRepository: ProfileRepository,
-        userProfile: Profile?
+        userProfile: Profile?,
+        bookshelfDao: BookshelfDao
     ): BookshelfRepository = BookshelfRepositoryImpl(
         bookshelfNetworkClass = bookshelfNetworkClass,
         context = context,
         profileRepository = profileRepository,
-        userProfile = userProfile
+        userProfile = userProfile,
+        bookshelfDao = bookshelfDao
     )
 
 }

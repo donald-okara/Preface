@@ -16,11 +16,17 @@ interface BookshelfDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(bookshelfEntity: BookshelfEntity)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(bookshelfEntities: List<BookshelfEntity>)
+
     /**
      * READ
      */
     @Query("SELECT * FROM bookshelves")
-    fun getAllBookshelves(): Flow<List<BookshelfEntity>>
+    fun getAllBookshelvesFlow(): Flow<List<BookshelfEntity>>
+
+    @Query("SELECT * FROM bookshelves")
+    fun getAllBookshelves(): List<BookshelfEntity>
 
 
     @Query("SELECT * FROM bookshelves WHERE id = :id")

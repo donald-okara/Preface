@@ -52,3 +52,4 @@ data class SupabaseBook(
     @SerialName("preview_link")
     val previewLink: String = "" // New field
 )
+

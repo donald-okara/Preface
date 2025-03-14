@@ -1,8 +1,8 @@
 package ke.don.common_datasource.remote.domain.repositories
 
+import ke.don.common_datasource.remote.domain.UserLibraryState
 import ke.don.shared_domain.states.BookUiState
 import ke.don.shared_domain.states.SearchState
-import ke.don.shared_domain.states.UserLibraryState
 import kotlinx.coroutines.flow.StateFlow
 
 interface BooksRepository {
@@ -14,7 +14,7 @@ interface BooksRepository {
 
     var suggestedBook: StateFlow<String>
 
-    val userLibraryState : StateFlow<UserLibraryState>
+    //val userLibraryState : StateFlow<UserLibraryState>
 
     var searchMessage: StateFlow<String>
 

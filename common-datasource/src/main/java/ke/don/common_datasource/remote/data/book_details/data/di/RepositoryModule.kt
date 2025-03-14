@@ -6,6 +6,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import ke.don.common_datasource.local.roomdb.dao.BookshelfDao
 import ke.don.common_datasource.remote.data.book_details.repositoryImpl.BooksRepositoryImpl
 import ke.don.common_datasource.remote.domain.repositories.BooksRepository
 import ke.don.common_datasource.remote.domain.usecases.BooksUseCases
@@ -25,6 +26,7 @@ object RepositoryModule {
         googleBooksApi: GoogleBooksApi,
         bookshelfRepository: BookshelfRepository,
         @ApplicationContext context: Context,
+        bookshelfDao: BookshelfDao,
         logger : Logger
     ): BooksRepository {
         return BooksRepositoryImpl(
@@ -32,6 +34,7 @@ object RepositoryModule {
             apiKey = BuildConfig.GOOGLE_API_KEY,
             logger = logger,
             bookshelfRepository = bookshelfRepository,
+            bookshelfDao = bookshelfDao,
             colorPaletteExtractor = DefaultColorPaletteExtractor()
         )
     }

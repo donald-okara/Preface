@@ -1,19 +1,20 @@
 package ke.don.common_datasource.remote.data.book_details.repositoryImpl
 
 import android.util.Log
-import ke.don.shared_domain.data_models.BookDetailsResponse
+import ke.don.common_datasource.local.roomdb.dao.BookshelfDao
+import ke.don.common_datasource.remote.data.book_details.network.GoogleBooksApi
 import ke.don.common_datasource.remote.domain.repositories.BooksRepository
+import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
+import ke.don.common_datasource.remote.domain.toBookshelfBookDetails
+import ke.don.shared_domain.data_models.BookDetailsResponse
+import ke.don.shared_domain.logger.Logger
 import ke.don.shared_domain.states.BookUiState
+import ke.don.shared_domain.states.BookshelvesState
 import ke.don.shared_domain.states.ResultState
 import ke.don.shared_domain.states.SearchState
 import ke.don.shared_domain.states.searchMessages
 import ke.don.shared_domain.states.suggestedBookTitles
-import ke.don.common_datasource.remote.data.book_details.network.GoogleBooksApi
-import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
-import ke.don.shared_domain.logger.Logger
-import ke.don.shared_domain.states.BookshelvesState
 import ke.don.shared_domain.states.toAddBookToBookshelf
-import ke.don.shared_domain.states.toBookshelfBookDetails
 import ke.don.shared_domain.utils.color_utils.ColorPaletteExtractor
 import ke.don.shared_domain.utils.color_utils.model.ColorPallet
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,6 +27,7 @@ class BooksRepositoryImpl(
     private val bookshelfRepository: BookshelfRepository,
     private val googleBooksApi: GoogleBooksApi,
     private val apiKey: String,
+    private val bookshelfDao: BookshelfDao,
     private val colorPaletteExtractor: ColorPaletteExtractor,
     private val logger: Logger
 ) : BooksRepository {
@@ -51,8 +53,6 @@ class BooksRepositoryImpl(
 
     private var _searchMessage = MutableStateFlow("")
     override var searchMessage : StateFlow<String> = _searchMessage
-
-    override val userLibraryState = bookshelfRepository.userLibraryState
 
     override fun updateBookState(newState: BookUiState) {
         _bookState.update { newState }
@@ -127,35 +127,19 @@ class BooksRepositoryImpl(
         }
     }
 
-    private fun fetchBookshelves(){
+    private fun fetchBookshelves() {
         Log.d(TAG, "Fetching bookshelves")
-        val bookshelves = userLibraryState.value.userBookshelves
-
-        val bookshelfBookDetails = bookshelves.map { bookShelf ->
-            // For each bookshelf, check if the current bookshelf contains the book
-            val isBookPresent = bookShelf.books.any { book ->
-                book.bookId == bookUiState.value.bookDetails.id
-            }
-
-            // Map each bookshelf to its details with the correct `isBookPresent` flag
-            bookShelf.toBookshelfBookDetails(
-                bookshelf = bookShelf,
-                isBookPresent = isBookPresent
-            )
-        }
-
-        Log.d(TAG, "Bookshelves fetched successfully: $bookshelfBookDetails")
-
-        val bookshelfBookState = BookshelvesState(
-            bookshelves = bookshelfBookDetails
-        )
-
         updateBookState(
-            bookUiState.value.copy(
-                bookshelvesState = bookshelfBookState
+            BookUiState(
+                bookshelvesState = BookshelvesState(
+                    bookshelves = bookshelfDao.getAllBookshelves().map {
+                        it.toBookshelfBookDetails(
+                            isBookPresent = it.books.any { book -> book.bookId == bookUiState.value.bookDetails.id }
+                        )
+                    }
+                )
             )
         )
-        initialBookState = bookUiState.value
     }
 
     override fun onBookshelfSelected(bookshelfId: Int) {

@@ -30,6 +30,7 @@ data class BookshelfBookDetailsState(
     val isBookPresent: Boolean = false,
 )
 
+
 fun BookshelfRef.toBookshelfBookDetails(
     bookshelf: BookshelfRef,
     isBookPresent: Boolean = false
@@ -37,6 +38,15 @@ fun BookshelfRef.toBookshelfBookDetails(
     return BookshelfBookDetailsState(
         bookshelfBookDetails = bookshelf,
         isBookPresent = isBookPresent
+    )
+}
+
+fun BookShelf.toBookshelfRef(): BookshelfRef{
+    return BookshelfRef(
+        id = this.supabaseBookShelf.id,
+        name = this.supabaseBookShelf.name,
+        description = this.supabaseBookShelf.description,
+        userId = this.supabaseBookShelf.userId
     )
 }
 
