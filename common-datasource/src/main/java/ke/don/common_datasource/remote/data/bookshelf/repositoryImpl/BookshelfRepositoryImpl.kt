@@ -6,10 +6,11 @@ import android.widget.Toast
 import ke.don.common_datasource.local.roomdb.dao.BookshelfDao
 import ke.don.common_datasource.local.roomdb.entities.toBookshelf
 import ke.don.common_datasource.remote.data.bookshelf.network.BookshelfNetworkClass
-import ke.don.common_datasource.remote.domain.BookshelfUiState
-import ke.don.common_datasource.remote.domain.UserLibraryState
+import ke.don.common_datasource.remote.domain.states.BookshelfUiState
+import ke.don.common_datasource.remote.domain.states.UserLibraryState
 import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
 import ke.don.common_datasource.remote.domain.repositories.ProfileRepository
+import ke.don.common_datasource.remote.domain.states.toEntity
 import ke.don.shared_domain.data_models.AddBookToBookshelf
 import ke.don.shared_domain.data_models.BookshelfRef
 import ke.don.shared_domain.data_models.BookshelfType
@@ -72,15 +73,19 @@ class BookshelfRepositoryImpl(
             _addBookshelfState.update {
                 it.copy(successState = SuccessState.LOADING)
             }
-            bookshelfNetworkClass.createBookshelf(bookshelf)
-
-            profileRepository.userId.value?.let {
-                fetchUserBookShelves()
+            if (bookshelfNetworkClass.createBookshelf(bookshelf) == ResultState.Success){
+                profileRepository.userId.value?.let {
+                    fetchUserBookShelves()
+                }
+                _addBookshelfState.update {
+                    it.copy(
+                        name = "",
+                        description = "",
+                        bookshelfType = BookshelfType.GENERAL,
+                        successState = SuccessState.SUCCESS
+                    )
+                }
             }
-            _addBookshelfState.update {
-                it.copy(successState = SuccessState.SUCCESS)
-            }
-
         } catch (e: Exception) {
             e.printStackTrace()
             _addBookshelfState.update {
@@ -130,7 +135,9 @@ class BookshelfRepositoryImpl(
         _addBookshelfState.update {
             it.copy(successState = SuccessState.LOADING)
         }
-        bookshelfNetworkClass.updateBookshelf(bookshelfId =  bookshelfId, bookshelf = bookshelf)
+        if(bookshelfNetworkClass.updateBookshelf(bookshelfId =  bookshelfId, bookshelf = bookshelf)== ResultState.Success){
+            bookshelfDao.update(bookshelfEntity = bookshelf.toEntity())
+        }
 
         profileRepository.userId.value?.let {
             fetchBookshelfById(bookshelfId)
@@ -165,30 +172,38 @@ class BookshelfRepositoryImpl(
 
     }
 
-    override suspend fun addBookToBookshelf(addBookToBookshelf: AddBookToBookshelf) {
-        try {
+    override suspend fun addBookToBookshelf(addBookToBookshelf: AddBookToBookshelf):ResultState {
+        return try {
             Log.d(TAG, "Attempting to add book")
-
             bookshelfNetworkClass.addBookToBookshelf(addBookToBookshelf)
+            ResultState.Success
         }catch (e: Exception){
             e.printStackTrace()
+            ResultState.Error(e.message.toString())
         }
     }
 
-    override suspend fun removeBookFromBookshelf(bookId: String, bookshelfId: Int) {
-        try {
+    override suspend fun removeBookFromBookshelf(bookId: String, bookshelfId: Int):ResultState {
+        return try {
             bookshelfNetworkClass.removeBookFromBookshelf(bookId, bookshelfId)
+            ResultState.Success
         }catch (e: Exception){
             e.printStackTrace()
+            ResultState.Error(e.message.toString())
         }
     }
 
     override suspend fun deleteBookshelf(bookshelfId: Int): ResultState {
-        return try {
-            bookshelfNetworkClass.deleteBookshelf(bookshelfId)
+        try {
+            if(bookshelfNetworkClass.deleteBookshelf(bookshelfId) == ResultState.Success){
+                bookshelfDao.deleteBookshelfById(bookshelfId)
+                return ResultState.Success
+            }else{
+                return ResultState.Error("Something went wrong")
+            }
         }catch (e: Exception) {
             e.printStackTrace()
-            ResultState.Error(e.message.toString())
+            return ResultState.Error(e.message.toString())
         }
     }
 

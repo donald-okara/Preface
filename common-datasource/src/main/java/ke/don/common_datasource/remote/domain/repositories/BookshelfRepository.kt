@@ -1,7 +1,7 @@
 package ke.don.common_datasource.remote.domain.repositories
 
-import ke.don.common_datasource.remote.domain.BookshelfUiState
-import ke.don.common_datasource.remote.domain.UserLibraryState
+import ke.don.common_datasource.remote.domain.states.BookshelfUiState
+import ke.don.common_datasource.remote.domain.states.UserLibraryState
 import ke.don.shared_domain.data_models.AddBookToBookshelf
 import ke.don.shared_domain.data_models.BookshelfRef
 import ke.don.shared_domain.data_models.BookshelfType
@@ -23,8 +23,8 @@ interface BookshelfRepository {
     suspend fun fetchUserBookShelves()
     suspend fun editBookshelf(bookshelfId: Int, bookshelf: BookshelfRef)
     suspend fun fetchBookshelfRef(bookshelfId: Int)
-    suspend fun addBookToBookshelf(addBookToBookshelf: AddBookToBookshelf)
-    suspend fun removeBookFromBookshelf(bookId: String, bookshelfId: Int)
+    suspend fun addBookToBookshelf(addBookToBookshelf: AddBookToBookshelf):ResultState
+    suspend fun removeBookFromBookshelf(bookId: String, bookshelfId: Int): ResultState
     suspend fun deleteBookshelf(bookshelfId: Int): ResultState
 
 }

@@ -32,9 +32,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import ke.don.common_datasource.remote.domain.states.BookshelfBookDetailsState
 import ke.don.feature_book_details.R
 import ke.don.shared_domain.data_models.VolumeInfoDet
-import ke.don.shared_domain.states.BookshelfBookDetailsState
 
 @Composable
 fun TitleHeader(

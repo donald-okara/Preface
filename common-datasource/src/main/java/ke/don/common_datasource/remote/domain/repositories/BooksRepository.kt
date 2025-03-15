@@ -1,6 +1,6 @@
 package ke.don.common_datasource.remote.domain.repositories
 
-import ke.don.shared_domain.states.BookUiState
+import ke.don.common_datasource.remote.domain.states.BookUiState
 import ke.don.shared_domain.states.SearchState
 import kotlinx.coroutines.flow.StateFlow
 

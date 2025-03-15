@@ -6,7 +6,10 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import ke.don.common_datasource.local.roomdb.entities.BookshelfEntity
+import ke.don.shared_domain.data_models.SupabaseBook
 import kotlinx.coroutines.flow.Flow
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 @Dao
 interface BookshelfDao {
@@ -38,6 +41,24 @@ interface BookshelfDao {
     @Update
     suspend fun update(bookshelfEntity: BookshelfEntity)
 
+    @Query("UPDATE bookshelves SET books = :updatedBooks WHERE id = :bookshelfId")
+    suspend fun updateBooksInBookshelf(bookshelfId: Int, updatedBooks: String)
+
+    suspend fun addBookToBookshelf(bookshelfId: Int, book: SupabaseBook) {
+        val bookshelf = getAllBookshelves().find { it.id == bookshelfId }
+            ?: throw IllegalArgumentException("Bookshelf with ID $bookshelfId not found")
+        val updatedBooks = bookshelf.books.toMutableList().apply { add(book) }.distinctBy { it.bookId }
+        val updatedBooksJson = Json.encodeToString(updatedBooks)
+        updateBooksInBookshelf(bookshelfId, updatedBooksJson)
+    }
+
+    suspend fun removeBookFromBookshelf(bookshelfId: Int, bookId: String) {
+        val bookshelf = getAllBookshelves().find { it.id == bookshelfId }
+            ?: throw IllegalArgumentException("Bookshelf with ID $bookshelfId not found")
+        val updatedBooks = bookshelf.books.filter { it.bookId != bookId }
+        val updatedBooksJson = Json.encodeToString(updatedBooks)
+        updateBooksInBookshelf(bookshelfId, updatedBooksJson)
+    }
     /**
      * DELETE
      */

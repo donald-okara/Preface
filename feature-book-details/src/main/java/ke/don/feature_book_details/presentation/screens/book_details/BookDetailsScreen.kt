@@ -52,13 +52,13 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import ke.don.common_datasource.remote.domain.states.BookshelfBookDetailsState
 import ke.don.common_datasource.remote.domain.utils.getDominantColor
 import ke.don.feature_book_details.presentation.screens.book_details.components.AboutVolume
 import ke.don.feature_book_details.presentation.screens.book_details.components.BookCoverPreview
 import ke.don.feature_book_details.presentation.screens.book_details.components.PublishDetails
 import ke.don.feature_book_details.presentation.screens.book_details.components.TitleHeader
 import ke.don.shared_domain.data_models.VolumeInfoDet
-import ke.don.shared_domain.states.BookshelfBookDetailsState
 import ke.don.shared_domain.states.ResultState
 import kotlinx.coroutines.launch
 

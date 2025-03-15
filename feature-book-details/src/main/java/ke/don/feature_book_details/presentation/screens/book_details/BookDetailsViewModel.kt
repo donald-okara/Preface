@@ -8,9 +8,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ke.don.common_datasource.remote.domain.repositories.BooksRepository
+import ke.don.common_datasource.remote.domain.states.BookUiState
 import ke.don.common_datasource.remote.domain.usecases.BooksUseCases
 import ke.don.shared_domain.logger.Logger
-import ke.don.shared_domain.states.BookUiState
 import ke.don.shared_domain.states.loadingBookJokes
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -52,8 +52,8 @@ class BookDetailsViewModel @Inject constructor(
                     }
                 }
 
-
             }
+
         }
     }
 
@@ -98,7 +98,8 @@ class BookDetailsViewModel @Inject constructor(
                 pushSuccess = booksUseCases.onPushEditedBookshelfBooks()
             )
         }
-        booksUseCases.onPushEditedBookshelfBooks()
+
+        Log.d(TAG, "onPushEditedBookshelfBooks: ${_bookState.value.pushSuccess}")
     }
 
 
