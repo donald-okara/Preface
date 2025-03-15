@@ -59,8 +59,9 @@ fun UserLibraryScreen(
 ) {
     val userLibraryState by userLibraryViewModel.userLibraryState.collectAsState()
 
-    val uniqueBookshelves =
-        userLibraryState.userBookshelves.distinctBy { it.supabaseBookShelf.id } // Ensure uniqueness
+    val bookshelves by userLibraryState.userBookshelves.collectAsState(initial = emptyList())
+
+    val uniqueBookshelves = bookshelves.distinctBy { it.supabaseBookShelf.id }
 
     val isRefreshing = remember{
         mutableStateOf(false)

@@ -3,10 +3,8 @@ package ke.don.common_datasource.remote.data.bookshelf.network
 import android.util.Log
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
-import io.github.jan.supabase.postgrest.query.Columns
-import ke.don.common_datasource.remote.data.bookshelf.repositoryImpl.BookshelfRepositoryImpl
-import ke.don.common_datasource.remote.data.bookshelf.repositoryImpl.BookshelfRepositoryImpl.Companion
-import ke.don.common_datasource.remote.data.profile.network.ProfileNetworkClass
+import ke.don.common_datasource.local.roomdb.entities.BookshelfEntity
+import ke.don.common_datasource.local.roomdb.entities.toEntity
 import ke.don.shared_domain.data_models.AddBookToBookshelf
 import ke.don.shared_domain.data_models.BookShelf
 import ke.don.shared_domain.data_models.BookshelfCatalog
@@ -17,8 +15,6 @@ import ke.don.shared_domain.values.ADDBOOKSTOBOOKSHELF
 import ke.don.shared_domain.values.BOOKS
 import ke.don.shared_domain.values.BOOKSHELFCATALOG
 import ke.don.shared_domain.values.BOOKSHELFTABLE
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 
 class BookshelfNetworkClass(
     private val supabaseClient: SupabaseClient,
@@ -28,13 +24,14 @@ class BookshelfNetworkClass(
      */
     suspend fun createBookshelf(
         bookshelf :BookshelfRef
-    ){
-        try {
+    ): ResultState{
+        return try {
             supabaseClient.from(BOOKSHELFTABLE).insert(bookshelf)
             Log.d(TAG, "Bookshelf inserted successfully")
-
+            ResultState.Success
         }catch (e: Exception){
             e.printStackTrace()
+            ResultState.Error(e.message.toString())
         }
     }
 
@@ -98,7 +95,7 @@ class BookshelfNetworkClass(
         }
     }
 
-    suspend fun fetchUserBookshelves(userId: String): List<BookShelf> {
+    suspend fun fetchUserBookshelves(userId: String): List<BookshelfEntity> {
         return try {
             Log.d(TAG, "Attempting to fetch bookshelves for user: $userId")
 
@@ -141,7 +138,7 @@ class BookshelfNetworkClass(
                 BookShelf(
                     supabaseBookShelf = bookshelfRef,
                     books = currentBooks
-                )
+                ).toEntity()
             }
 
             return bookshelvesDetailed
@@ -159,15 +156,17 @@ class BookshelfNetworkClass(
      */
     suspend fun addBookToBookshelf(
         addBookToBookshelf: AddBookToBookshelf
-    ){
-        try {
+    ): ResultState{
+        return try {
             Log.d(TAG, "Attempting to add book")
 
             supabaseClient.from(
                 ADDBOOKSTOBOOKSHELF
             ).insert(addBookToBookshelf)
+            ResultState.Success
         }catch (e: Exception){
             e.printStackTrace()
+            ResultState.Error(e.message.toString())
         }
     }
 
@@ -188,17 +187,23 @@ class BookshelfNetworkClass(
         }
     }
 
-    suspend fun updateBookshelf(bookshelfId: Int,bookshelf: BookshelfRef){
-        supabaseClient.from(BOOKSHELFTABLE).update(
-            {
-                BookshelfRef::name setTo bookshelf.name
-                BookshelfRef::description setTo bookshelf.description
-                BookshelfRef::bookshelfType setTo bookshelf.bookshelfType
+    suspend fun updateBookshelf(bookshelfId: Int,bookshelf: BookshelfRef): ResultState{
+        return try {
+            supabaseClient.from(BOOKSHELFTABLE).update(
+                {
+                    BookshelfRef::name setTo bookshelf.name
+                    BookshelfRef::description setTo bookshelf.description
+                    BookshelfRef::bookshelfType setTo bookshelf.bookshelfType
+                }
+            ){
+                filter {
+                    BookshelfRef::id eq bookshelfId
+                }
             }
-        ){
-            filter {
-                BookshelfRef::id eq bookshelfId
-            }
+            ResultState.Success
+        } catch (e: Exception) {
+            e.printStackTrace()
+            ResultState.Error(e.message.toString())
         }
     }
 

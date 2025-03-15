@@ -3,22 +3,26 @@ package ke.don.common_datasource.remote.data.bookshelf.repositoryImpl
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import ke.don.common_datasource.local.roomdb.dao.BookshelfDao
+import ke.don.common_datasource.local.roomdb.entities.toBookshelf
 import ke.don.common_datasource.remote.data.bookshelf.network.BookshelfNetworkClass
+import ke.don.common_datasource.remote.domain.states.BookshelfUiState
+import ke.don.common_datasource.remote.domain.states.UserLibraryState
 import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
 import ke.don.common_datasource.remote.domain.repositories.ProfileRepository
+import ke.don.common_datasource.remote.domain.states.toEntity
 import ke.don.shared_domain.data_models.AddBookToBookshelf
 import ke.don.shared_domain.data_models.BookshelfRef
 import ke.don.shared_domain.data_models.BookshelfType
 import ke.don.shared_domain.data_models.Profile
 import ke.don.shared_domain.states.AddBookshelfState
-import ke.don.shared_domain.states.BookshelfUiState
 import ke.don.shared_domain.states.ResultState
 import ke.don.shared_domain.states.SuccessState
-import ke.don.shared_domain.states.UserLibraryState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -26,6 +30,7 @@ class BookshelfRepositoryImpl(
     private val bookshelfNetworkClass: BookshelfNetworkClass,
     private val profileRepository: ProfileRepository,
     private val userProfile : Profile?,
+    private val bookshelfDao: BookshelfDao,
     private val context : Context
 ): BookshelfRepository {
     private val _addBookshelfState = MutableStateFlow(AddBookshelfState())
@@ -68,15 +73,19 @@ class BookshelfRepositoryImpl(
             _addBookshelfState.update {
                 it.copy(successState = SuccessState.LOADING)
             }
-            bookshelfNetworkClass.createBookshelf(bookshelf)
-
-            profileRepository.userId.value?.let {
-                fetchUserBookShelves()
+            if (bookshelfNetworkClass.createBookshelf(bookshelf) == ResultState.Success){
+                profileRepository.userId.value?.let {
+                    fetchUserBookShelves()
+                }
+                _addBookshelfState.update {
+                    it.copy(
+                        name = "",
+                        description = "",
+                        bookshelfType = BookshelfType.GENERAL,
+                        successState = SuccessState.SUCCESS
+                    )
+                }
             }
-            _addBookshelfState.update {
-                it.copy(successState = SuccessState.SUCCESS)
-            }
-
         } catch (e: Exception) {
             e.printStackTrace()
             _addBookshelfState.update {
@@ -91,10 +100,12 @@ class BookshelfRepositoryImpl(
             it.copy(successState = SuccessState.LOADING)
         }
         try {
+            bookshelfDao.insertAll(bookshelfNetworkClass.fetchUserBookshelves(userProfile?.authId!!))
             Log.d(TAG, "Fetching user bookshelves")
-            _userLibraryState.update {
-                it.copy(
-                    userBookshelves = bookshelfNetworkClass.fetchUserBookshelves(userProfile?.authId!!),
+            _userLibraryState.update { libraryState ->
+                libraryState.copy(
+                    userBookshelves = bookshelfDao.getAllBookshelvesFlow()
+                        .map { list -> list.map { it.toBookshelf() } },
                     successState = SuccessState.SUCCESS
                 )
             }
@@ -124,7 +135,9 @@ class BookshelfRepositoryImpl(
         _addBookshelfState.update {
             it.copy(successState = SuccessState.LOADING)
         }
-        bookshelfNetworkClass.updateBookshelf(bookshelfId =  bookshelfId, bookshelf = bookshelf)
+        if(bookshelfNetworkClass.updateBookshelf(bookshelfId =  bookshelfId, bookshelf = bookshelf)== ResultState.Success){
+            bookshelfDao.update(bookshelfEntity = bookshelf.toEntity())
+        }
 
         profileRepository.userId.value?.let {
             fetchBookshelfById(bookshelfId)
@@ -141,19 +154,13 @@ class BookshelfRepositoryImpl(
                 it.copy(resultState = ResultState.Loading)
             }
 
-            val bookshelf = bookshelfNetworkClass.fetchBookshelfById(bookshelfId)
-            if (bookshelf!=null){
-                _bookshelfUiState.update {
-                    it.copy(
-                        bookShelf = bookshelf,
-                        resultState = ResultState.Success
+            val bookshelf = bookshelfDao.getBookshelfById(bookshelfId)
+            _bookshelfUiState.update {
+                it.copy(
+                    bookShelf = bookshelf,
+                    resultState = ResultState.Success
 
-                    )
-                }
-            }else{
-                _bookshelfUiState.update {
-                    it.copy(resultState = ResultState.Error())
-                }
+                )
             }
         } catch (e: Exception) {
             e.printStackTrace()
@@ -165,30 +172,38 @@ class BookshelfRepositoryImpl(
 
     }
 
-    override suspend fun addBookToBookshelf(addBookToBookshelf: AddBookToBookshelf) {
-        try {
+    override suspend fun addBookToBookshelf(addBookToBookshelf: AddBookToBookshelf):ResultState {
+        return try {
             Log.d(TAG, "Attempting to add book")
-
             bookshelfNetworkClass.addBookToBookshelf(addBookToBookshelf)
+            ResultState.Success
         }catch (e: Exception){
             e.printStackTrace()
+            ResultState.Error(e.message.toString())
         }
     }
 
-    override suspend fun removeBookFromBookshelf(bookId: String, bookshelfId: Int) {
-        try {
+    override suspend fun removeBookFromBookshelf(bookId: String, bookshelfId: Int):ResultState {
+        return try {
             bookshelfNetworkClass.removeBookFromBookshelf(bookId, bookshelfId)
+            ResultState.Success
         }catch (e: Exception){
             e.printStackTrace()
+            ResultState.Error(e.message.toString())
         }
     }
 
     override suspend fun deleteBookshelf(bookshelfId: Int): ResultState {
-        return try {
-            bookshelfNetworkClass.deleteBookshelf(bookshelfId)
+        try {
+            if(bookshelfNetworkClass.deleteBookshelf(bookshelfId) == ResultState.Success){
+                bookshelfDao.deleteBookshelfById(bookshelfId)
+                return ResultState.Success
+            }else{
+                return ResultState.Error("Something went wrong")
+            }
         }catch (e: Exception) {
             e.printStackTrace()
-            ResultState.Error(e.message.toString())
+            return ResultState.Error(e.message.toString())
         }
     }
 

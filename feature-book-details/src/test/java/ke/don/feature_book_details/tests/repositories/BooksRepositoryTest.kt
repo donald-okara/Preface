@@ -1,7 +1,7 @@
 package ke.don.feature_book_details.tests.repositories
 
+import ke.don.common_datasource.local.roomdb.dao.BookshelfDao
 import ke.don.common_datasource.remote.data.book_details.repositoryImpl.BooksRepositoryImpl
-import ke.don.common_datasource.remote.data.bookshelf.repositoryImpl.BookshelfRepositoryImpl
 import ke.don.common_datasource.remote.domain.repositories.BooksRepository
 import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
 import ke.don.shared_domain.states.ResultState
@@ -23,6 +23,7 @@ import org.mockito.kotlin.mock
 
 class BooksRepositoryTest {
     private val mockLogger: Logger = mock()
+    private val mockDao : BookshelfDao = mock()
     private val bookshelfRepository : BookshelfRepository = mock()
 
     private val repository: BooksRepository =
@@ -31,7 +32,8 @@ class BooksRepositoryTest {
             apiKey = "fake_api_key",
             logger = mockLogger,
             colorPaletteExtractor = FakeColorPaletteExtractor(),
-            bookshelfRepository = bookshelfRepository
+            bookshelfRepository = bookshelfRepository,
+            bookshelfDao = mockDao
         )
 
     @get:Rule
