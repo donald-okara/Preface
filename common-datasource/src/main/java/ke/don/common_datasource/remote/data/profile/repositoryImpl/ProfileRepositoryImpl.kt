@@ -19,7 +19,6 @@ import kotlinx.coroutines.launch
 class ProfileRepositoryImpl(
     private val profileNetworkClass: ProfileNetworkClass,
     private val context: Context,
-    private val profile: Profile?,
     private val profileDataStoreManager: ProfileDataStoreManager
 ): ProfileRepository {
     override val rawNonce: String
