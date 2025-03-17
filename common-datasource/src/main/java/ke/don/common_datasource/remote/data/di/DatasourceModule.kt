@@ -57,12 +57,10 @@ object DatasourceModule {
         profileNetworkClass: ProfileNetworkClass,
         profileDataStoreManager: ProfileDataStoreManager,
         @ApplicationContext context: Context,
-        userProfile: Profile?
     ): ProfileRepository = ProfileRepositoryImpl(
         profileNetworkClass = profileNetworkClass,
         profileDataStoreManager = profileDataStoreManager,
         context = context,
-        profile = userProfile
     )
 
     @Provides

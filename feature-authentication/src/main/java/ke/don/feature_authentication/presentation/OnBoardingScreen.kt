@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -47,6 +48,7 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import ke.don.feature_authentication.data.animations
 import ke.don.feature_authentication.data.descriptions
 import ke.don.feature_authentication.data.titles
+import ke.don.shared_domain.states.ResultState
 
 
 @Composable
@@ -55,97 +57,107 @@ fun OnboardingScreen(
     viewModel: SignInViewModel = hiltViewModel(),
     onSuccessfulSignIn : () -> Unit
 ) {
-    val isSignInSuccessful by viewModel.isSignInSuccessful.collectAsState()
-
-
-    if (isSignInSuccessful) {
-        onSuccessfulSignIn()
-    }
 
     val pagerState = rememberPagerState(
         pageCount = { animations.size }
     )
 
-    Column(
-        modifier
-            .fillMaxSize()
-            .padding(8.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
+    val signInState = viewModel.signInState.collectAsState()
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = modifier
+    ){
+        Column(
+            modifier
+                .fillMaxSize()
+                .padding(8.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
 
-        HorizontalPager(
-            state = pagerState,
-            modifier.wrapContentSize()
-        ) { currentPage ->
-            Column(
-                Modifier
-                    .wrapContentSize()
-                    .padding(26.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                val composition by rememberLottieComposition(LottieCompositionSpec.RawRes(animations[currentPage]))
-                LottieAnimation(
-                    composition = composition,
-                    iterations = 1,
-                    modifier = modifier.size(400.dp)
-                )
-                Text(
-                    text = titles[currentPage],
-                    textAlign = TextAlign.Center,
-                    fontSize = 44.sp,
-                    fontWeight = FontWeight.Bold
-                )
-                Text(
-                    text = descriptions[currentPage],
-                    modifier.padding(top = 45.dp),
-                    textAlign = TextAlign.Center,
-                    fontSize = 20.sp
-
-                )
-            }
-        }
-
-        LookaheadScope {
-            Row(
-                modifier = modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                PageIndicator(
-                    pageCount = animations.size,
-                    currentPage = pagerState.currentPage,
-                    modifier = modifier.padding(60.dp)
-                )
-
-                AnimatedVisibility(
-                    visible = pagerState.currentPage == 2,
-                    enter = fadeIn(animationSpec = tween(durationMillis = 300)) +
-                            slideInVertically(
-                                initialOffsetY = { it },
-                                animationSpec = spring(stiffness = Spring.StiffnessLow)
-                            ),
-                    exit = fadeOut(animationSpec = tween(durationMillis = 200)) +
-                            slideOutVertically(
-                                targetOffsetY = { it },
-                                animationSpec = spring(stiffness = Spring.StiffnessMedium)
-                            )
+            HorizontalPager(
+                state = pagerState,
+                modifier.wrapContentSize()
+            ) { currentPage ->
+                Column(
+                    Modifier
+                        .wrapContentSize()
+                        .padding(26.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
-                    GoogleSignInButton(
-                        modifier = modifier,
-                        onClickAction = {
-                            viewModel.onSignInWithGoogle()
-                        }
+                    val composition by rememberLottieComposition(
+                        LottieCompositionSpec.RawRes(
+                            animations[currentPage]
+                        )
+                    )
+                    LottieAnimation(
+                        composition = composition,
+                        iterations = 1,
+                        modifier = modifier.size(400.dp)
+                    )
+                    Text(
+                        text = titles[currentPage],
+                        textAlign = TextAlign.Center,
+                        fontSize = 44.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = descriptions[currentPage],
+                        modifier.padding(top = 45.dp),
+                        textAlign = TextAlign.Center,
+                        fontSize = 20.sp
+
                     )
                 }
             }
+
+            LookaheadScope {
+                Row(
+                    modifier = modifier
+                        .fillMaxWidth()
+                        .padding(8.dp),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    PageIndicator(
+                        pageCount = animations.size,
+                        currentPage = pagerState.currentPage,
+                        modifier = modifier.padding(60.dp)
+                    )
+
+                    AnimatedVisibility(
+                        visible = pagerState.currentPage == 2,
+                        enter = fadeIn(animationSpec = tween(durationMillis = 300)) +
+                                slideInVertically(
+                                    initialOffsetY = { it },
+                                    animationSpec = spring(stiffness = Spring.StiffnessLow)
+                                ),
+                        exit = fadeOut(animationSpec = tween(durationMillis = 200)) +
+                                slideOutVertically(
+                                    targetOffsetY = { it },
+                                    animationSpec = spring(stiffness = Spring.StiffnessMedium)
+                                )
+                    ) {
+                        GoogleSignInButton(
+                            modifier = modifier,
+                            enabled = signInState.value != ResultState.Loading,
+                            onClickAction = {
+                                viewModel.onSignInWithGoogle(onSuccessfulSignIn)
+                            }
+                        )
+                    }
+                }
+            }
+
+
         }
+        if (signInState.value == ResultState.Loading){
+            CircularProgressIndicator()
 
-
-
+        }
     }
+
+
 
 }
 

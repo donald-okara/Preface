@@ -30,14 +30,16 @@ import ke.don.feature_authentication.R
 fun GoogleSignInButton(
     modifier: Modifier = Modifier,
     onClickAction: () -> Unit,
+    enabled: Boolean = true,
     isDarkTheme: Boolean = isSystemInDarkTheme()
 ) {
-    val containerColor = if (isDarkTheme) Color.White else Color.Black
+    val containerColor = MaterialTheme.colorScheme.inverseSurface
     val contentColor = if (isDarkTheme) Color.Black else Color.White
 
     Button(
         onClick = onClickAction,
         shape = RoundedCornerShape(64.dp),
+        enabled = enabled,
         colors = ButtonDefaults.buttonColors(
             containerColor = containerColor,
             contentColor = contentColor
