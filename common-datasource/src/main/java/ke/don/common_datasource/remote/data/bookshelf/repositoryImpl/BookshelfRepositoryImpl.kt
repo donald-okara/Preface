@@ -4,14 +4,15 @@ import android.content.Context
 import android.util.Log
 import android.widget.Toast
 import ke.don.common_datasource.local.roomdb.dao.BookshelfDao
+import ke.don.common_datasource.local.roomdb.entities.BookshelfEntity
 import ke.don.common_datasource.local.roomdb.entities.toBookshelf
 import ke.don.common_datasource.remote.data.bookshelf.network.BookshelfNetworkClass
-import ke.don.common_datasource.remote.domain.states.BookshelfUiState
-import ke.don.common_datasource.remote.domain.states.UserLibraryState
 import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
 import ke.don.common_datasource.remote.domain.repositories.ProfileRepository
+import ke.don.common_datasource.remote.domain.states.UserLibraryState
 import ke.don.common_datasource.remote.domain.states.toEntity
 import ke.don.shared_domain.data_models.AddBookToBookshelf
+import ke.don.shared_domain.data_models.BookShelf
 import ke.don.shared_domain.data_models.BookshelfRef
 import ke.don.shared_domain.data_models.Profile
 import ke.don.shared_domain.states.AddBookshelfState
@@ -19,8 +20,10 @@ import ke.don.shared_domain.states.EmptyResultState
 import ke.don.shared_domain.states.SuccessState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -36,11 +39,7 @@ class BookshelfRepositoryImpl(
     override val addBookshelfState: StateFlow<AddBookshelfState> = _addBookshelfState
 
 
-    private val _userLibraryState = MutableStateFlow(UserLibraryState())
-    override val userLibraryState: StateFlow<UserLibraryState> = _userLibraryState
 
-    private val _bookshelfUiState = MutableStateFlow(BookshelfUiState())
-    override val bookshelfUiState: StateFlow<BookshelfUiState> = _bookshelfUiState
 
     init {
         CoroutineScope(Dispatchers.IO).launch{
@@ -71,27 +70,10 @@ class BookshelfRepositoryImpl(
             EmptyResultState.Success
         }
     }
-    override suspend fun fetchUserBookShelves() {
-        _userLibraryState.update{
-            it.copy(successState = SuccessState.LOADING)
-        }
-        try {
-            bookshelfDao.insertAll(bookshelfNetworkClass.fetchUserBookshelves(userProfile?.authId!!))
-            Log.d(TAG, "Fetching user bookshelves")
-            _userLibraryState.update { libraryState ->
-                libraryState.copy(
-                    userBookshelves = bookshelfDao.getAllBookshelvesFlow()
-                        .map { list -> list.map { it.toBookshelf() } },
-                    successState = SuccessState.SUCCESS
-                )
-            }
-            Log.d(TAG, "User bookshelves fetched successfully: ${userLibraryState.value.userBookshelves}")
-        }catch (e: Exception){
-            e.printStackTrace()
-            _userLibraryState.update{
-                it.copy(successState = SuccessState.ERROR)
-            }
-        }
+    override suspend fun fetchUserBookShelves():Flow<List<BookShelf>> {
+        bookshelfDao.insertAll(bookshelfNetworkClass.fetchUserBookshelves(userProfile?.authId!!))
+        return bookshelfDao.getAllBookshelvesFlow()
+                .map { list -> list.map { it.toBookshelf() } }
     }
 
     override suspend fun fetchBookshelfRef(bookshelfId: Int): BookshelfRef? {
@@ -109,29 +91,8 @@ class BookshelfRepositoryImpl(
         }
     }
 
-    override suspend fun fetchBookshelfById(bookshelfId: Int) {
-        try {
-            _bookshelfUiState.update {
-                it.copy(resultState = EmptyResultState.Loading)
-            }
-
-            val bookshelf = bookshelfDao.getBookshelfById(bookshelfId)
-            _bookshelfUiState.update {
-                it.copy(
-                    bookShelf = bookshelf,
-                    resultState = EmptyResultState.Success
-
-                )
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-            _bookshelfUiState.update {
-                it.copy(resultState = EmptyResultState.Error())
-            }
-        }
-
-
-    }
+    override suspend fun fetchBookshelfById(bookshelfId: Int): Flow<BookshelfEntity> =
+        bookshelfDao.getBookshelfById(bookshelfId)
 
     override suspend fun addBookToBookshelf(addBookToBookshelf: AddBookToBookshelf):EmptyResultState {
         return try {

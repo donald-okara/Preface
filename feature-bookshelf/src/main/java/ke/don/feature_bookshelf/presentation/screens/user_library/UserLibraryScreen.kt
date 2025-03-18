@@ -36,6 +36,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ke.don.feature_bookshelf.R
 import ke.don.feature_bookshelf.presentation.shared_components.BooksCoverStack
 import ke.don.feature_bookshelf.presentation.shared_components.BookshelfOptionsSheet
@@ -50,7 +51,7 @@ fun UserLibraryScreen(
     userLibraryViewModel: UserLibraryViewModel = hiltViewModel(),
     onAddBookshelf: () -> Unit,
 ) {
-    val userLibraryState by userLibraryViewModel.userLibraryState.collectAsState()
+    val userLibraryState by userLibraryViewModel.userLibraryState.collectAsStateWithLifecycle()
 
     val bookshelves by userLibraryState.userBookshelves.collectAsState(initial = emptyList())
 

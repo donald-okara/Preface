@@ -3,13 +3,14 @@ package ke.don.feature_bookshelf.presentation.screens.bookshelf_details
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import ke.don.common_datasource.remote.domain.states.BookshelfUiState
 import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
+import ke.don.common_datasource.remote.domain.states.BookshelfUiState
 import ke.don.shared_domain.states.EmptyResultState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -33,16 +34,21 @@ class BookshelfDetailsViewModel @Inject constructor(
 
     private fun observeBookshelfId() {
         viewModelScope.launch {
-            _bookshelfId.filterNotNull().collectLatest { id ->
-                bookshelfRepository.fetchBookshelfById(id)
-                bookshelfRepository.bookshelfUiState.collectLatest { state ->
-                    _bookshelfUiState.update {
-                        state
+            _bookshelfId.filterNotNull()
+                .flatMapLatest { id ->
+                    bookshelfRepository.fetchBookshelfById(id)
+                }
+                .collectLatest { bookshelf ->
+                    _bookshelfUiState.update { currentState ->
+                        currentState.copy(
+                            bookShelf = bookshelf,
+                            resultState = EmptyResultState.Success
+                        )
                     }
                 }
-            }
         }
     }
+
 
     fun onBookshelfIdPassed(passedBookshelfId : Int){
         _bookshelfId.update {
@@ -50,13 +56,11 @@ class BookshelfDetailsViewModel @Inject constructor(
         }
     }
 
-
     fun updateShowSheet(newState: Boolean){
         _showOptionsSheet.update {
             newState
         }
     }
-
 
 
     fun deleteBookshelf(onNavigateBack: () -> Unit, bookshelfId : Int){

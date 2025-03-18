@@ -14,7 +14,7 @@ data class UserLibraryState(
 )
 
 data class BookshelfUiState(
-    val bookShelf: Flow<BookshelfEntity> = emptyFlow(),
+    val bookShelf: BookshelfEntity? = null,
     val resultState: EmptyResultState = EmptyResultState.Empty,
 )
 
