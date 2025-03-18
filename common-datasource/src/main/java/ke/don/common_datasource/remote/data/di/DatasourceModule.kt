@@ -94,7 +94,6 @@ object DatasourceModule {
     ): BookshelfRepository = BookshelfRepositoryImpl(
         bookshelfNetworkClass = bookshelfNetworkClass,
         context = context,
-        profileRepository = profileRepository,
         userProfile = userProfile,
         bookshelfDao = bookshelfDao
     )

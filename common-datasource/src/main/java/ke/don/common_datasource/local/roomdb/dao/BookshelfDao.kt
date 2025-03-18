@@ -29,7 +29,7 @@ interface BookshelfDao {
     fun getAllBookshelvesFlow(): Flow<List<BookshelfEntity>>
 
     @Query("SELECT * FROM bookshelves")
-    fun getAllBookshelves(): List<BookshelfEntity>
+    suspend fun getAllBookshelves(): List<BookshelfEntity>
 
 
     @Query("SELECT * FROM bookshelves WHERE id = :id")
@@ -64,6 +64,10 @@ interface BookshelfDao {
      */
     @Query("DELETE FROM bookshelves WHERE id = :id")
     suspend fun deleteBookshelfById(id: Int)
+
+
+    @Query("DELETE FROM bookshelves WHERE id NOT IN (:validIds)")
+    suspend fun deleteBookshelvesNotIn(validIds: Set<Int>)
 
     @Query("DELETE FROM bookshelves")
     suspend fun deleteAllBookshelves()

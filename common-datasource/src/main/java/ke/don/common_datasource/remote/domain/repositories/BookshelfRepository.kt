@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.StateFlow
 
 interface BookshelfRepository {
-    val addBookshelfState: StateFlow<AddBookshelfState>
 
     suspend fun createBookshelf(bookshelf: BookshelfRef): EmptyResultState
     suspend fun fetchBookshelfById(bookshelfId: Int): Flow<BookshelfEntity>
