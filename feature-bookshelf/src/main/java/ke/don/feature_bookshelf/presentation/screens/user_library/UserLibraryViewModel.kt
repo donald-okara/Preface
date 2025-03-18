@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
-import ke.don.shared_domain.states.ResultState
+import ke.don.shared_domain.states.EmptyResultState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
@@ -45,7 +45,7 @@ class UserLibraryViewModel @Inject constructor(
 
     fun deleteBookshelf(onRefreshComplete: () -> Unit, bookshelfId : Int){
         viewModelScope.launch {
-            if (bookshelfRepository.deleteBookshelf(bookshelfId) == ResultState.Success){
+            if (bookshelfRepository.deleteBookshelf(bookshelfId) == EmptyResultState.Success){
                 updateShowSheet(false)
                 refreshAction(onRefreshComplete)
             }

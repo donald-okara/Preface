@@ -28,13 +28,11 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -48,7 +46,7 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import ke.don.feature_authentication.data.animations
 import ke.don.feature_authentication.data.descriptions
 import ke.don.feature_authentication.data.titles
-import ke.don.shared_domain.states.ResultState
+import ke.don.shared_domain.states.EmptyResultState
 
 
 @Composable
@@ -140,7 +138,7 @@ fun OnboardingScreen(
                     ) {
                         GoogleSignInButton(
                             modifier = modifier,
-                            enabled = signInState.value != ResultState.Loading,
+                            enabled = signInState.value != EmptyResultState.Loading,
                             onClickAction = {
                                 viewModel.onSignInWithGoogle(onSuccessfulSignIn)
                             }
@@ -151,7 +149,7 @@ fun OnboardingScreen(
 
 
         }
-        if (signInState.value == ResultState.Loading){
+        if (signInState.value == EmptyResultState.Loading){
             CircularProgressIndicator()
 
         }

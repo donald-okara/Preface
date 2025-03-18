@@ -26,7 +26,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import ke.don.common_datasource.local.roomdb.entities.BookshelfEntity
 import ke.don.feature_bookshelf.presentation.screens.bookshelf_details.components.BookList
 import ke.don.feature_bookshelf.presentation.shared_components.BookshelfOptionsSheet
-import ke.don.shared_domain.states.ResultState
+import ke.don.shared_domain.states.EmptyResultState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -82,7 +82,7 @@ fun BookshelfDetailsRoute(
                 .padding(innerPadding)
         ) {
             when (val state = bookshelfUiState.resultState) {
-                is ResultState.Success -> {
+                is EmptyResultState.Success -> {
                     if (bookshelf.id == -1) { // Use -1 to indicate loading/default state
                         CircularProgressIndicator()
                     } else {
@@ -110,7 +110,7 @@ fun BookshelfDetailsRoute(
                         )
                     }
                 }
-                is ResultState.Error -> {
+                is EmptyResultState.Error -> {
                     Text(
                         text = "Error loading bookshelf: ${state.message}",
                         color = MaterialTheme.colorScheme.error

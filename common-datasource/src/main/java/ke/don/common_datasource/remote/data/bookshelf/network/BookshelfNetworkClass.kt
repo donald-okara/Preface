@@ -10,7 +10,7 @@ import ke.don.shared_domain.data_models.BookShelf
 import ke.don.shared_domain.data_models.BookshelfCatalog
 import ke.don.shared_domain.data_models.BookshelfRef
 import ke.don.shared_domain.data_models.SupabaseBook
-import ke.don.shared_domain.states.ResultState
+import ke.don.shared_domain.states.EmptyResultState
 import ke.don.shared_domain.values.ADDBOOKSTOBOOKSHELF
 import ke.don.shared_domain.values.BOOKS
 import ke.don.shared_domain.values.BOOKSHELFCATALOG
@@ -24,14 +24,14 @@ class BookshelfNetworkClass(
      */
     suspend fun createBookshelf(
         bookshelf :BookshelfRef
-    ): ResultState{
+    ): EmptyResultState{
         return try {
             supabaseClient.from(BOOKSHELFTABLE).insert(bookshelf)
             Log.d(TAG, "Bookshelf inserted successfully")
-            ResultState.Success
+            EmptyResultState.Success
         }catch (e: Exception){
             e.printStackTrace()
-            ResultState.Error(e.message.toString())
+            EmptyResultState.Error(e.message.toString())
         }
     }
 
@@ -156,17 +156,17 @@ class BookshelfNetworkClass(
      */
     suspend fun addBookToBookshelf(
         addBookToBookshelf: AddBookToBookshelf
-    ): ResultState{
+    ): EmptyResultState{
         return try {
             Log.d(TAG, "Attempting to add book")
 
             supabaseClient.from(
                 ADDBOOKSTOBOOKSHELF
             ).insert(addBookToBookshelf)
-            ResultState.Success
+            EmptyResultState.Success
         }catch (e: Exception){
             e.printStackTrace()
-            ResultState.Error(e.message.toString())
+            EmptyResultState.Error(e.message.toString())
         }
     }
 
@@ -187,7 +187,7 @@ class BookshelfNetworkClass(
         }
     }
 
-    suspend fun updateBookshelf(bookshelfId: Int,bookshelf: BookshelfRef): ResultState{
+    suspend fun updateBookshelf(bookshelfId: Int,bookshelf: BookshelfRef): EmptyResultState{
         return try {
             supabaseClient.from(BOOKSHELFTABLE).update(
                 {
@@ -200,10 +200,10 @@ class BookshelfNetworkClass(
                     BookshelfRef::id eq bookshelfId
                 }
             }
-            ResultState.Success
+            EmptyResultState.Success
         } catch (e: Exception) {
             e.printStackTrace()
-            ResultState.Error(e.message.toString())
+            EmptyResultState.Error(e.message.toString())
         }
     }
 
@@ -212,17 +212,17 @@ class BookshelfNetworkClass(
      */
     suspend fun deleteBookshelf(
         bookshelfId: Int
-    ): ResultState {
+    ): EmptyResultState {
         return try {
             supabaseClient.from(BOOKSHELFTABLE).delete {
                 filter {
                     BookshelfRef::id eq bookshelfId
                 }
             }
-            ResultState.Success
+            EmptyResultState.Success
         } catch (e: Exception) {
             e.printStackTrace()
-            ResultState.Error(e.message.toString())
+            EmptyResultState.Error(e.message.toString())
         }
     }
 

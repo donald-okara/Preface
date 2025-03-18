@@ -1,7 +1,7 @@
 package ke.don.common_datasource.remote.domain.states
 
 import ke.don.common_datasource.local.roomdb.entities.BookshelfEntity
-import ke.don.shared_domain.states.ResultState
+import ke.don.shared_domain.states.EmptyResultState
 import ke.don.shared_domain.data_models.AddBookToBookshelf
 import ke.don.shared_domain.data_models.BookDetailsResponse
 import ke.don.shared_domain.data_models.BookShelf
@@ -14,7 +14,7 @@ data class BookUiState(
     val colorPallet: ColorPallet = ColorPallet(),
     val highestImageUrl: String? = null,
     val bookshelvesState: BookshelvesState = BookshelvesState(),
-    val resultState: ResultState = ResultState.Empty,
+    val resultState: EmptyResultState = EmptyResultState.Empty,
     val pushSuccess: Boolean = false
 )
 

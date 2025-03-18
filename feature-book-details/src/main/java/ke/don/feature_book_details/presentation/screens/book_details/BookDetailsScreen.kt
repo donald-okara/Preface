@@ -59,7 +59,7 @@ import ke.don.feature_book_details.presentation.screens.book_details.components.
 import ke.don.feature_book_details.presentation.screens.book_details.components.PublishDetails
 import ke.don.feature_book_details.presentation.screens.book_details.components.TitleHeader
 import ke.don.shared_domain.data_models.VolumeInfoDet
-import ke.don.shared_domain.states.ResultState
+import ke.don.shared_domain.states.EmptyResultState
 import kotlinx.coroutines.launch
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -128,10 +128,10 @@ fun BookDetailsScreen(
                     bookDetailsViewModel.onSearchAuthor(author = author)
                     onNavigateToSearch()
                 },
-                isLoading = bookUiState.value.resultState != ResultState.Success,
+                isLoading = bookUiState.value.resultState != EmptyResultState.Success,
                 imageUrl = imageUrl,
                 dominantColor = dominantColor,
-                isGradientVisible = bookUiState.value.resultState == ResultState.Success,
+                isGradientVisible = bookUiState.value.resultState == EmptyResultState.Success,
                 uniqueBookshelves = bookshelfList,
                 onBookshelfClicked = {bookshelfId->
                     bookDetailsViewModel.onSelectBookshelf(bookshelfId)
@@ -141,13 +141,13 @@ fun BookDetailsScreen(
                 onResetSuccess = bookDetailsViewModel::resetPushSuccess
             )
 
-            if (bookUiState.value.resultState != ResultState.Success) {
+            if (bookUiState.value.resultState != EmptyResultState.Success) {
                 DetailsLoadingScreen(
                     modifier = modifier
                         .padding(16.dp),
-                    text = if(bookUiState.value.resultState != ResultState.Error()) loadingJoke else "Failed to load your book. Please try again",
+                    text = if(bookUiState.value.resultState != EmptyResultState.Error()) loadingJoke else "Failed to load your book. Please try again",
                     onRetryAction = bookDetailsViewModel::refreshAction,
-                    textColor = if(bookUiState.value.resultState == ResultState.Loading) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onTertiaryContainer
+                    textColor = if(bookUiState.value.resultState == EmptyResultState.Loading) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onTertiaryContainer
                 )
 
 
