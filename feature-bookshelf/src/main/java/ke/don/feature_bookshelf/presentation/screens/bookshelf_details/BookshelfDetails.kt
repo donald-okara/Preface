@@ -38,10 +38,9 @@ fun BookshelfDetailsRoute(
     navigateBack: () -> Unit,
     onItemClick: (String) -> Unit
 ) {
-    // The UI state now directly holds a BookshelfEntity (or null) instead of a Flow.
     val bookshelfUiState by bookshelfDetailsViewModel.bookshelfUiState.collectAsState()
-    // Provide a fallback value when the data is loading.
-    val bookshelf = bookshelfUiState.bookShelf ?: BookshelfEntity(id = -1, name = "Loading...", books = emptyList())
+    val bookshelf by bookshelfUiState.bookShelf.collectAsState(initial = BookshelfEntity())
+
     val showBottomSheet by bookshelfDetailsViewModel.showOptionsSheet.collectAsState()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 

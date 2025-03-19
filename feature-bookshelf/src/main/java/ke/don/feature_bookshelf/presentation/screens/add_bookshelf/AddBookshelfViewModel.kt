@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
+import ke.don.common_datasource.remote.domain.states.UserLibraryState
 import ke.don.shared_domain.data_models.BookshelfRef
 import ke.don.shared_domain.states.AddBookshelfState
 import ke.don.shared_domain.states.toBookshelf
@@ -11,8 +12,11 @@ import ke.don.shared_domain.data_models.BookshelfType
 import ke.don.shared_domain.states.SuccessState
 import ke.don.shared_domain.states.NetworkResult
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -25,24 +29,33 @@ class AddBookshelfViewModel @Inject constructor(
     val bookshelfId: StateFlow<Int?> = _bookShelfId
 
     private val _addBookshelfState = MutableStateFlow(AddBookshelfState())
-    val addBookshelfState: StateFlow<AddBookshelfState> = _addBookshelfState
-
-    init {
-        observeBookshelfId()
-    }
-
+    val addBookshelfState = _addBookshelfState
+        .onStart { observeBookshelfId() }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = AddBookshelfState()
+        )
 
     private fun observeBookshelfId() {
         viewModelScope.launch {
             bookshelfId.collectLatest { id ->
-                id?.let {
-                    bookshelfRepository.fetchBookshelfRef(it)?.let { result ->
-                        _addBookshelfState.update { state ->
-                            state.copy(
-                                name = result.name,
-                                description = result.description,
+                when (val result = id?.let { bookshelfRepository.fetchBookshelfRef(it) }) {
+                    is NetworkResult.Error -> {
+                        _addBookshelfState.update { it.copy(successState = SuccessState.ERROR) }
+                    }
+
+                    is NetworkResult.Success -> {
+                        _addBookshelfState.update {
+                            it.copy(
+                                name = result.result.name,
+                                description = result.result.description
                             )
                         }
+                    }
+
+                    null -> {
+                        //Do nothing
                     }
                 }
             }

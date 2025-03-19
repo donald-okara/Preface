@@ -41,63 +41,22 @@ class BookshelfNetworkClass(
      * READ
      */
 
-    suspend fun fetchBookshelfRef(bookshelfId: Int): BookshelfRef?{
+    suspend fun fetchBookshelfRef(bookshelfId: Int): NetworkResult<BookshelfRef>{
         return try{
-            supabaseClient.from(BOOKSHELFTABLE)
-                .select() {
+            val result = supabaseClient.from(BOOKSHELFTABLE)
+                .select {
                     filter { BookshelfRef::id eq bookshelfId }
                 }
-                .decodeSingleOrNull<BookshelfRef>()
+                .decodeSingle<BookshelfRef>()
+            NetworkResult.Success(result)
         }catch (e: Exception){
-            null
-        }
-    }
-
-    suspend fun fetchBookshelfById(bookshelfId: Int): BookShelf? {
-        return try {
-            Log.d(TAG, "Attempting to fetch bookshelf with ID: $bookshelfId")
-
-            // Fetch the bookshelf reference (includes books JSONB array)
-            val bookshelfRef = fetchBookshelfRef(bookshelfId)
-
-            if (bookshelfRef == null) {
-                Log.d(TAG, "No bookshelf found with ID: $bookshelfId")
-                return null
-            }
-
-            Log.d(TAG, "Fetched bookshelfRef: $bookshelfRef")
-
-            // Use the indexed JSONB array to extract book IDs
-            val bookIds = bookshelfRef.books.map { it.bookId }
-
-            // Fetch full book details efficiently using the indexed JSONB filter
-            val books = if (bookIds.isNotEmpty()) {
-                supabaseClient.from(BOOKS)
-                    .select{
-                        filter { SupabaseBook::bookId isIn  bookIds } // Uses indexing for fast lookups
-
-                    }
-                    .decodeList<SupabaseBook>()
-            } else {
-                emptyList()
-            }
-
-            Log.d(TAG, "Fetched books: $books")
-
-            // Return the detailed BookShelf object
-            Log.d(TAG, "Bookshelf fetched successfully: $bookshelfRef, $books")
-            BookShelf(
-                supabaseBookShelf = bookshelfRef,
-                books = books
-            )
-        } catch (e: Exception) {
             e.printStackTrace()
-            Log.e(TAG, "Error fetching bookshelf with ID: $bookshelfId", e)
-            null // Return null on failure
+            NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
         }
     }
 
-    suspend fun fetchUserBookshelves(userId: String): List<BookshelfEntity> {
+
+    suspend fun fetchUserBookshelves(userId: String): NetworkResult<List<BookshelfEntity>> {
         return try {
             Log.d(TAG, "Attempting to fetch bookshelves for user: $userId")
 
@@ -143,11 +102,11 @@ class BookshelfNetworkClass(
                 ).toEntity()
             }
 
-            return bookshelvesDetailed
+            NetworkResult.Success(bookshelvesDetailed)
         } catch (e: Exception) {
             e.printStackTrace()
             Log.e(TAG, "Error fetching bookshelves for user: $userId", e)
-            emptyList() // Handle errors gracefully
+            NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
         }
     }
 
@@ -214,17 +173,17 @@ class BookshelfNetworkClass(
      */
     suspend fun deleteBookshelf(
         bookshelfId: Int
-    ): ResultState {
+    ): NetworkResult<NoDataReturned> {
         return try {
             supabaseClient.from(BOOKSHELFTABLE).delete {
                 filter {
                     BookshelfRef::id eq bookshelfId
                 }
             }
-            ResultState.Success
+            NetworkResult.Success(NoDataReturned())
         } catch (e: Exception) {
             e.printStackTrace()
-            ResultState.Error(e.message.toString())
+            NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
         }
     }
 
