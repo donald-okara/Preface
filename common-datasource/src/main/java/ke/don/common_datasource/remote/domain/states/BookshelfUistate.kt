@@ -3,10 +3,11 @@ package ke.don.common_datasource.remote.domain.states
 import ke.don.common_datasource.local.roomdb.entities.BookshelfEntity
 import ke.don.shared_domain.data_models.BookShelf
 import ke.don.shared_domain.data_models.BookshelfRef
-import ke.don.shared_domain.states.EmptyResultState
+import ke.don.shared_domain.states.ResultState
 import ke.don.shared_domain.states.SuccessState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.serialization.Serializable
 
 data class UserLibraryState(
     val userBookshelves: Flow<List<BookShelf>> = emptyFlow(),
@@ -15,7 +16,7 @@ data class UserLibraryState(
 
 data class BookshelfUiState(
     val bookShelf: BookshelfEntity? = null,
-    val resultState: EmptyResultState = EmptyResultState.Empty,
+    val resultState: ResultState = ResultState.Empty,
 )
 
 fun BookshelfEntity.toBookshelfBookDetails(
@@ -36,3 +37,6 @@ fun BookshelfRef.toEntity(): BookshelfEntity {
         bookshelfType = this.bookshelfType
     )
 }
+
+@Serializable
+class NoDataReturned()

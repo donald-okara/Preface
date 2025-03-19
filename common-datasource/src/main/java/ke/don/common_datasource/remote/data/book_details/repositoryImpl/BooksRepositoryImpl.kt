@@ -13,7 +13,7 @@ import ke.don.common_datasource.remote.domain.states.toBookshelfBookDetails
 import ke.don.common_datasource.remote.domain.states.toSupabaseBook
 import ke.don.shared_domain.data_models.BookDetailsResponse
 import ke.don.shared_domain.logger.Logger
-import ke.don.shared_domain.states.EmptyResultState
+import ke.don.shared_domain.states.ResultState
 import ke.don.shared_domain.states.SearchState
 import ke.don.shared_domain.states.searchMessages
 import ke.don.shared_domain.states.suggestedBookTitles
@@ -70,7 +70,7 @@ class BooksRepositoryImpl(
         // Set the loading state
         updateBookState(
             BookUiState(
-                resultState = EmptyResultState.Loading
+                resultState = ResultState.Loading
             )
         )
 
@@ -100,7 +100,7 @@ class BooksRepositoryImpl(
                             bookDetails = volumeData,
                             colorPallet = colorPallet,
                             highestImageUrl = highestImageUrl, // Set the highest image URL
-                            resultState = EmptyResultState.Success
+                            resultState = ResultState.Success
                         )
                     )
                     fetchBookshelves()
@@ -112,7 +112,7 @@ class BooksRepositoryImpl(
                     // Handle case where no data is available
                     updateBookState(
                         BookUiState(
-                            resultState = EmptyResultState.Error("No data available")
+                            resultState = ResultState.Error("No data available")
                         )
                     )
                 }
@@ -120,7 +120,7 @@ class BooksRepositoryImpl(
                 // Handle unsuccessful response
                 updateBookState(
                     BookUiState(
-                        resultState = EmptyResultState.Error("Failed to load book details")
+                        resultState = ResultState.Error("Failed to load book details")
                     )
                 )
             }
@@ -129,7 +129,7 @@ class BooksRepositoryImpl(
             // Handle network error
             updateBookState(
                 BookUiState(
-                    resultState = EmptyResultState.Error("Network error. Check your internet and try again")
+                    resultState = ResultState.Error("Network error. Check your internet and try again")
                 )
             )
         }
@@ -194,7 +194,7 @@ class BooksRepositoryImpl(
                                         bookshelfId = currentBookshelf.bookshelfBookDetails.id,
                                         bookUiState.value
                                     )
-                                ) == EmptyResultState.Success
+                                ) == ResultState.Success
                             ) {
                                 bookshelfDao.addBookToBookshelf(
                                     bookshelfId = currentBookshelf.bookshelfBookDetails.id,
@@ -209,7 +209,7 @@ class BooksRepositoryImpl(
                             if (bookshelfRepository.removeBookFromBookshelf(
                                     bookshelfId = currentBookshelf.bookshelfBookDetails.id,
                                     bookId = bookUiState.value.bookDetails.id
-                                ) == EmptyResultState.Success
+                                ) == ResultState.Success
                             ) {
                                 bookshelfDao.removeBookFromBookshelf(
                                     bookshelfId = currentBookshelf.bookshelfBookDetails.id,

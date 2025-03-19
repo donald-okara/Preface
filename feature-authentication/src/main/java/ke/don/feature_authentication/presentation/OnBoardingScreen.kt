@@ -46,7 +46,7 @@ import com.airbnb.lottie.compose.rememberLottieComposition
 import ke.don.feature_authentication.data.animations
 import ke.don.feature_authentication.data.descriptions
 import ke.don.feature_authentication.data.titles
-import ke.don.shared_domain.states.EmptyResultState
+import ke.don.shared_domain.states.ResultState
 
 
 @Composable
@@ -138,7 +138,7 @@ fun OnboardingScreen(
                     ) {
                         GoogleSignInButton(
                             modifier = modifier,
-                            enabled = signInState.value != EmptyResultState.Loading,
+                            enabled = signInState.value != ResultState.Loading,
                             onClickAction = {
                                 viewModel.onSignInWithGoogle(onSuccessfulSignIn)
                             }
@@ -149,7 +149,7 @@ fun OnboardingScreen(
 
 
         }
-        if (signInState.value == EmptyResultState.Loading){
+        if (signInState.value == ResultState.Loading){
             CircularProgressIndicator()
 
         }

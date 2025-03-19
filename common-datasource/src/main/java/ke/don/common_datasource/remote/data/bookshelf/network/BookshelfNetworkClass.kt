@@ -5,12 +5,14 @@ import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import ke.don.common_datasource.local.roomdb.entities.BookshelfEntity
 import ke.don.common_datasource.local.roomdb.entities.toEntity
+import ke.don.common_datasource.remote.domain.states.NoDataReturned
 import ke.don.shared_domain.data_models.AddBookToBookshelf
 import ke.don.shared_domain.data_models.BookShelf
 import ke.don.shared_domain.data_models.BookshelfCatalog
 import ke.don.shared_domain.data_models.BookshelfRef
 import ke.don.shared_domain.data_models.SupabaseBook
-import ke.don.shared_domain.states.EmptyResultState
+import ke.don.shared_domain.states.ResultState
+import ke.don.shared_domain.states.NetworkResult
 import ke.don.shared_domain.values.ADDBOOKSTOBOOKSHELF
 import ke.don.shared_domain.values.BOOKS
 import ke.don.shared_domain.values.BOOKSHELFCATALOG
@@ -24,14 +26,14 @@ class BookshelfNetworkClass(
      */
     suspend fun createBookshelf(
         bookshelf :BookshelfRef
-    ): EmptyResultState{
+    ): NetworkResult<NoDataReturned>{
         return try {
             supabaseClient.from(BOOKSHELFTABLE).insert(bookshelf)
             Log.d(TAG, "Bookshelf inserted successfully")
-            EmptyResultState.Success
+            NetworkResult.Success(NoDataReturned())
         }catch (e: Exception){
             e.printStackTrace()
-            EmptyResultState.Error(e.message.toString())
+            NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
         }
     }
 
@@ -156,17 +158,17 @@ class BookshelfNetworkClass(
      */
     suspend fun addBookToBookshelf(
         addBookToBookshelf: AddBookToBookshelf
-    ): EmptyResultState{
+    ): ResultState{
         return try {
             Log.d(TAG, "Attempting to add book")
 
             supabaseClient.from(
                 ADDBOOKSTOBOOKSHELF
             ).insert(addBookToBookshelf)
-            EmptyResultState.Success
+            ResultState.Success
         }catch (e: Exception){
             e.printStackTrace()
-            EmptyResultState.Error(e.message.toString())
+            ResultState.Error(e.message.toString())
         }
     }
 
@@ -187,7 +189,7 @@ class BookshelfNetworkClass(
         }
     }
 
-    suspend fun updateBookshelf(bookshelfId: Int,bookshelf: BookshelfRef): EmptyResultState{
+    suspend fun updateBookshelf(bookshelfId: Int,bookshelf: BookshelfRef): NetworkResult<NoDataReturned> {
         return try {
             supabaseClient.from(BOOKSHELFTABLE).update(
                 {
@@ -200,10 +202,10 @@ class BookshelfNetworkClass(
                     BookshelfRef::id eq bookshelfId
                 }
             }
-            EmptyResultState.Success
+            NetworkResult.Success(NoDataReturned())
         } catch (e: Exception) {
             e.printStackTrace()
-            EmptyResultState.Error(e.message.toString())
+            NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
         }
     }
 
@@ -212,17 +214,17 @@ class BookshelfNetworkClass(
      */
     suspend fun deleteBookshelf(
         bookshelfId: Int
-    ): EmptyResultState {
+    ): ResultState {
         return try {
             supabaseClient.from(BOOKSHELFTABLE).delete {
                 filter {
                     BookshelfRef::id eq bookshelfId
                 }
             }
-            EmptyResultState.Success
+            ResultState.Success
         } catch (e: Exception) {
             e.printStackTrace()
-            EmptyResultState.Error(e.message.toString())
+            ResultState.Error(e.message.toString())
         }
     }
 

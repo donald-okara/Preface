@@ -23,7 +23,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import ke.don.shared_domain.states.SuccessState
 import ke.don.shared_domain.data_models.BookshelfType
 
 @Composable
@@ -56,7 +55,7 @@ fun AddBookshelfRoute(
                 addBookshelfViewModel.onDescriptionChange(it)
             },
             onAddBookshelf = {
-                addBookshelfViewModel.onAddBookshelf(onNavigateBack)
+                addBookshelfViewModel.onSubmit(onNavigateBack)
             },
             bookshelfType = state.value.bookshelfType,
             onBookshelfTypeChange = {

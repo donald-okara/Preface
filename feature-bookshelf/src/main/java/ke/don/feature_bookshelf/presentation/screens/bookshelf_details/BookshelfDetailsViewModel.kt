@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
 import ke.don.common_datasource.remote.domain.states.BookshelfUiState
-import ke.don.shared_domain.states.EmptyResultState
+import ke.don.shared_domain.states.ResultState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -42,7 +42,7 @@ class BookshelfDetailsViewModel @Inject constructor(
                     _bookshelfUiState.update { currentState ->
                         currentState.copy(
                             bookShelf = bookshelf,
-                            resultState = EmptyResultState.Success
+                            resultState = ResultState.Success
                         )
                     }
                 }
@@ -65,7 +65,7 @@ class BookshelfDetailsViewModel @Inject constructor(
 
     fun deleteBookshelf(onNavigateBack: () -> Unit, bookshelfId : Int){
         viewModelScope.launch {
-            if (bookshelfRepository.deleteBookshelf(bookshelfId) == EmptyResultState.Success){
+            if (bookshelfRepository.deleteBookshelf(bookshelfId) == ResultState.Success){
                 updateShowSheet(false)
                 onNavigateBack()
             }

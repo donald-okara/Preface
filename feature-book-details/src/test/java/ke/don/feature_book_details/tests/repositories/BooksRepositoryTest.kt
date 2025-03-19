@@ -4,7 +4,7 @@ import ke.don.common_datasource.local.roomdb.dao.BookshelfDao
 import ke.don.common_datasource.remote.data.book_details.repositoryImpl.BooksRepositoryImpl
 import ke.don.common_datasource.remote.domain.repositories.BooksRepository
 import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
-import ke.don.shared_domain.states.EmptyResultState
+import ke.don.shared_domain.states.ResultState
 import ke.don.shared_domain.states.SearchState
 import ke.don.feature_book_details.fake.contracts.FakeColorPaletteExtractor
 import ke.don.feature_book_details.fake.data.FakeBookUiState.fakeBookUiStateSuccess
@@ -177,7 +177,7 @@ class BooksRepositoryTest {
 
         // Assert
         assertEquals(
-            EmptyResultState.Success,
+            ResultState.Success,
             repository.bookUiState.value.resultState
         )
     }
@@ -193,7 +193,7 @@ class BooksRepositoryTest {
 
         // Assert
         assertEquals(
-            EmptyResultState.Error("Failed to load book details"),
+            ResultState.Error("Failed to load book details"),
             repository.bookUiState.value.resultState
         )
 

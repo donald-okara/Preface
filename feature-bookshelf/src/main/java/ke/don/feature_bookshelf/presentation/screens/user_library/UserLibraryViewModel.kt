@@ -3,15 +3,13 @@ package ke.don.feature_bookshelf.presentation.screens.user_library
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import ke.don.common_datasource.local.roomdb.entities.toBookshelf
 import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
 import ke.don.common_datasource.remote.domain.states.UserLibraryState
-import ke.don.shared_domain.states.EmptyResultState
+import ke.don.shared_domain.states.ResultState
 import ke.don.shared_domain.states.SuccessState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -75,7 +73,7 @@ class UserLibraryViewModel @Inject constructor(
 
     fun deleteBookshelf(onRefreshComplete: () -> Unit, bookshelfId : Int){
         viewModelScope.launch {
-            if (bookshelfRepository.deleteBookshelf(bookshelfId) == EmptyResultState.Success){
+            if (bookshelfRepository.deleteBookshelf(bookshelfId) == ResultState.Success){
                 updateShowSheet(false)
                 refreshAction(onRefreshComplete)
             }
