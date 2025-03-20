@@ -14,13 +14,10 @@ import ke.don.shared_domain.data_models.AddBookToBookshelf
 import ke.don.shared_domain.data_models.BookShelf
 import ke.don.shared_domain.data_models.BookshelfRef
 import ke.don.shared_domain.data_models.Profile
-import ke.don.shared_domain.states.ResultState
 import ke.don.shared_domain.states.NetworkResult
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
+import ke.don.shared_domain.states.ResultState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
 
 class BookshelfRepositoryImpl(
     private val bookshelfNetworkClass: BookshelfNetworkClass,
@@ -28,15 +25,6 @@ class BookshelfRepositoryImpl(
     private val bookshelfDao: BookshelfDao,
     private val context : Context
 ): BookshelfRepository {
-
-    init {
-        CoroutineScope(Dispatchers.IO).launch{
-            Log.d(TAG, "userProfile: $userProfile")
-            userProfile?.authId?.let {
-                fetchUserBookShelves()
-            }
-        }
-    }
 
     override suspend fun createBookshelf(bookshelf: BookshelfRef): NetworkResult<NoDataReturned> {
         return when (val result= bookshelfNetworkClass.createBookshelf(bookshelf)) {

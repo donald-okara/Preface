@@ -62,7 +62,7 @@ class BookshelfNetworkClass(
 
             // Fetch bookshelf references for the user (includes books JSONB array)
             val bookshelfRefs = supabaseClient.from(BOOKSHELFTABLE)
-                .select(){
+                .select() {
                     filter { BookshelfRef::userId eq userId }
 
                 }
@@ -77,7 +77,7 @@ class BookshelfNetworkClass(
             // Fetch all books associated with these book IDs using a single query
             val books = if (bookIds.isNotEmpty()) {
                 supabaseClient.from(BOOKS)
-                    .select(){
+                    .select() {
                         filter { SupabaseBook::bookId isIn bookIds }
 
                     }
@@ -106,7 +106,11 @@ class BookshelfNetworkClass(
         } catch (e: Exception) {
             e.printStackTrace()
             Log.e(TAG, "Error fetching bookshelves for user: $userId", e)
-            NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
+            NetworkResult.Error(
+                message = e.message.toString(),
+                hint = e.cause.toString(),
+                details = e.stackTrace.toString()
+            )
         }
     }
 

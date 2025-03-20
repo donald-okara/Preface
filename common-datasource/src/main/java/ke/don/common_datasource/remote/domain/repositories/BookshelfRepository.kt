@@ -15,7 +15,7 @@ interface BookshelfRepository {
     suspend fun fetchBookshelfById(bookshelfId: Int): NetworkResult<Flow<BookshelfEntity>>
     suspend fun fetchUserBookShelves():NetworkResult<Flow<List<BookShelf>>>
     suspend fun editBookshelf(bookshelfId: Int, bookshelf: BookshelfRef): NetworkResult<NoDataReturned>
-    suspend fun fetchBookshelfRef(bookshelfId: Int): NetworkResult<BookshelfRef> //TODO change to NetworkResult
+    suspend fun fetchBookshelfRef(bookshelfId: Int): NetworkResult<BookshelfRef>
     suspend fun addBookToBookshelf(addBookToBookshelf: AddBookToBookshelf):ResultState //TODO change to NetworkResult
     suspend fun removeBookFromBookshelf(bookId: String, bookshelfId: Int): ResultState //TODO change to NetworkResult
     suspend fun deleteBookshelf(bookshelfId: Int): NetworkResult<NoDataReturned>
