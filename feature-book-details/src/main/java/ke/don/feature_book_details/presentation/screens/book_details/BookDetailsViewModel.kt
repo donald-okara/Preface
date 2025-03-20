@@ -72,10 +72,11 @@ class BookDetailsViewModel @Inject constructor(
     }
 
     fun onSearchAuthor(author: String) {
-        booksUseCases.onSearchQueryChange(author)
-        viewModelScope.launch {
-            booksUseCases.onSearch()
-        }
+//        booksUseCases.onSearchQueryChange(author)
+//        viewModelScope.launch {
+//            booksUseCases.onSearch()
+//        }
+        TODO()
     }
 
     fun onSelectBookshelf(bookshelfId: Int) = viewModelScope.launch {

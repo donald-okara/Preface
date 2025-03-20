@@ -12,11 +12,10 @@ import ke.don.common_datasource.remote.domain.states.toAddBookToBookshelf
 import ke.don.common_datasource.remote.domain.states.toBookshelfBookDetails
 import ke.don.common_datasource.remote.domain.states.toSupabaseBook
 import ke.don.shared_domain.data_models.BookDetailsResponse
+import ke.don.shared_domain.data_models.BookItem
 import ke.don.shared_domain.logger.Logger
+import ke.don.shared_domain.states.NetworkResult
 import ke.don.shared_domain.states.ResultState
-import ke.don.shared_domain.states.SearchState
-import ke.don.shared_domain.states.searchMessages
-import ke.don.shared_domain.states.suggestedBookTitles
 import ke.don.shared_domain.utils.color_utils.ColorPaletteExtractor
 import ke.don.shared_domain.utils.color_utils.model.ColorPallet
 import kotlinx.coroutines.Dispatchers
@@ -25,7 +24,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 import retrofit2.Response
-import kotlin.random.Random
 
 class BooksRepositoryImpl(
     private val bookshelfRepository: BookshelfRepository,
@@ -43,21 +41,6 @@ class BooksRepositoryImpl(
     override val bookUiState: StateFlow<BookUiState> = _bookState
 
     private var initialBookshelves: List<BookshelfBookDetailsState> = emptyList()
-
-    /**
-     * SearchBook vals
-     */
-    private var _searchUiState = MutableStateFlow<SearchState>(SearchState.Empty)
-    override val searchUiState: StateFlow<SearchState> = _searchUiState
-
-    private var _searchQuery = MutableStateFlow("")
-    override var searchQuery : StateFlow<String> = _searchQuery
-
-    private var _suggestedBook = MutableStateFlow("")
-    override var suggestedBook : StateFlow<String> = _suggestedBook
-
-    private var _searchMessage = MutableStateFlow("")
-    override var searchMessage : StateFlow<String> = _searchMessage
 
     private var initialBookState = BookUiState()
 
@@ -236,84 +219,54 @@ class BooksRepositoryImpl(
      *   SearchBook funs
      *
      */
-    init {
-        suggestRandomBook()
-    }
 
-    override fun clearSearch() {
-
-        updateSearchState(SearchState.Empty)
-        _searchQuery.update {
-            ""
-        }
-    }
-
-    override fun updateSearchState(newState: SearchState){
-        _searchUiState.update { newState }
-    }
     // New function to get a random book suggestion
-    override fun suggestRandomBook() {
-        _suggestedBook.update {
-            suggestedBookTitles[Random.nextInt(suggestedBookTitles.size)]
-        }
-    }
 
-    override fun onLoading(){
-        _searchMessage.update {
-            searchMessages[Random.nextInt(searchMessages.size)]
-        }
-    }
-
-
-    override fun onSearchQueryChange(query: String) {
-        _searchQuery.update {
-            query
-        }
-    }
-
-    override fun assignSuggestedBook(){
-        onSearchQueryChange(suggestedBook.value)
-    }
-
-    override fun shuffleBook(){
-        suggestRandomBook()
-        assignSuggestedBook()
-    }
-
-    override suspend fun onSearch() {
-        if (searchQuery.value.isEmpty() && suggestedBook.value.isNotEmpty()) {
-            assignSuggestedBook()
-        }
-        onLoading()
-        searchBooks(searchQuery.value)
-    }
-
-    override suspend fun searchBooks(query: String) {
-        updateSearchState(SearchState.Loading)
-        try {
+    override suspend fun searchBooks(query: String): NetworkResult<List<BookItem>> {
+        return try {
             val response = googleBooksApi.searchBooks(query, apiKey)
+
             if (response.isSuccessful) {
-                updateSearchState(
-                    SearchState.Success(
-                        response.body()?.items ?: emptyList()
-                    )
-                )
-
+                NetworkResult.Success(response.body()?.items ?: emptyList())
             } else {
-                updateSearchState(
-                    SearchState.Error("Failed with status: ${response.code()}")
+                NetworkResult.Error(
+                    message = response.message(),
+                    code = response.code().toString(),
+                    hint = response.code().toString(),
+                    details = response.body().toString()
                 )
-
             }
         } catch (e: Exception) {
-            updateSearchState(
-                SearchState.Error("An error occurred. Check your internet and try again")
-
+            NetworkResult.Error(
+                message = "Something went wrong. Please check your internet and try again",
             )
-
         }
-
     }
+//        updateSearchState(SearchState.Loading)
+//        try {
+//            val response = googleBooksApi.searchBooks(query, apiKey)
+//            if (response.isSuccessful) {
+//                updateSearchState(
+//                    SearchState.Success(
+//                        response.body()?.items ?: emptyList()
+//                    )
+//                )
+//
+//            } else {
+//                updateSearchState(
+//                    SearchState.Error("Failed with status: ${response.code()}")
+//                )
+//
+//            }
+//        } catch (e: Exception) {
+//            updateSearchState(
+//                SearchState.Error("An error occurred. Check your internet and try again")
+//
+//            )
+//
+//        }
+
+
 
     companion object {
         const val TAG = "BooksRepositoryImpl"

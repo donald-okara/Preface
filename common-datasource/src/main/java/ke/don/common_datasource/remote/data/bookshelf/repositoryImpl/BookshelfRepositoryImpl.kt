@@ -72,21 +72,9 @@ class BookshelfRepositoryImpl(
     }
 
     override suspend fun fetchUserBookShelves(): NetworkResult<Flow<List<BookShelf>>> {
-        return when (val remoteBookshelves = syncLocalBookshelvesDb()){
-            is NetworkResult.Error -> {
-                Toast.makeText(context, "${remoteBookshelves.message} ${remoteBookshelves.hint}", Toast.LENGTH_SHORT).show()
-                NetworkResult.Error(
-                    message = remoteBookshelves.message,
-                    code = remoteBookshelves.code,
-                    details = remoteBookshelves.details,
-                    hint = remoteBookshelves.hint
-                )
-            }
-            is NetworkResult.Success ->{
-                NetworkResult.Success(bookshelfDao.getAllBookshelvesFlow()
-                    .map { list -> list.map { it.toBookshelf() } })
-            }
-        }
+        syncLocalBookshelvesDb()
+        return NetworkResult.Success(bookshelfDao.getAllBookshelvesFlow()
+            .map { list -> list.map { it.toBookshelf() } })
     }
 
 

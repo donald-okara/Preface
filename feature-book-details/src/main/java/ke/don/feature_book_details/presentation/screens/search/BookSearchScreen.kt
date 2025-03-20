@@ -21,9 +21,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import ke.don.shared_domain.states.SearchState
 import ke.don.feature_book_details.presentation.screens.search.components.BookSearchBar
 import ke.don.feature_book_details.presentation.screens.search.components.BooksGridScreen
+import ke.don.shared_domain.states.ResultState
 
 @Composable
 fun BookSearchScreen(
@@ -67,34 +67,34 @@ fun BookSearchScreen(
                 )
 
                 Spacer(modifier = modifier.padding(8.dp))
-                when (searchState) {
-                    is SearchState.Success -> {
-                        if ((searchState as SearchState.Success).data.isEmpty()) {
+                when (searchState.resultState) {
+                    is ResultState.Success -> {
+                        if (searchState.data.isEmpty()) {
                             Text(text = "No books found. Try searching for something else.")
                         } else {
                             BooksGridScreen(
-                                books = (searchState as SearchState.Success).data,
+                                books = searchState.data,
                                 onNavigateToBookItem = onNavigateToBookItem
                             )
                         }
 
                     }
 
-                    is SearchState.Error -> {
+                    is ResultState.Error -> {
                         SearchErrorScreen(
-                            text = (searchState as SearchState.Error).message,
+                            text = searchState.errorMessage,
                             onRefresh = viewModel::onSearch
 
                         )
                     }
 
-                    is SearchState.Loading -> {
+                    is ResultState.Loading -> {
                         SearchLoadingScreen(
                             text = searchMessage
                         )
                     }
 
-                    is SearchState.Empty -> {
+                    is ResultState.Empty -> {
                         Text(text = "Hit the shuffle button for a new suggestion")
                     }
                 }
