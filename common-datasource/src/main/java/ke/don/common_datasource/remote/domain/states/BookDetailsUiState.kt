@@ -13,9 +13,7 @@ data class BookUiState(
     val bookDetails: BookDetailsResponse = BookDetailsResponse(),
     val colorPallet: ColorPallet = ColorPallet(),
     val highestImageUrl: String? = null,
-    val bookshelvesState: BookshelvesState = BookshelvesState(),
     val resultState: ResultState = ResultState.Empty,
-    val pushSuccess: Boolean = false
 )
 
 
@@ -25,6 +23,14 @@ data class BookshelfBookDetailsState(
     val isBookPresent: Boolean = false,
 )
 
+data class BookshelvesState(
+    val bookshelves: List<BookshelfBookDetailsState> = emptyList(),
+)
+
+data class ShowBookshelvesState(
+    val showBooksheves : Boolean = false,
+    val isLoading : Boolean = false,
+)
 //
 //fun BookshelfRef.toBookshelfBookDetails(
 //    bookshelf: BookshelfRef,
@@ -121,7 +127,64 @@ fun AddBookToBookshelf.toSupabaseBook(): SupabaseBook{
     )
 }
 
+fun BookDetailsResponse.toAddBookToBookshelf(
+    bookshelfId : Int
+): AddBookToBookshelf{
+    val lowestImageUrl = this.volumeInfo.imageLinks.let {
+        it.extraLarge ?: it.large ?: it.medium ?: it.small ?: it.thumbnail
+        ?: it.smallThumbnail
+    }?.replace("http", "https")
+    val highestImageUrl = this.volumeInfo.imageLinks.let {
+        it.extraLarge ?: it.large ?: it.medium ?: it.small ?: it.thumbnail
+        ?: it.smallThumbnail
+    }?.replace("http", "https")
 
-data class BookshelvesState(
-    val bookshelves: List<BookshelfBookDetailsState> = emptyList(),
-)
+    return AddBookToBookshelf(
+        bookshelfId = bookshelfId,
+        bookId = this.id,
+        title = this.volumeInfo.title,
+        description = this.volumeInfo.description,
+        highestImageUrl = highestImageUrl,
+        lowestImageUrl = lowestImageUrl,
+        authors = this.volumeInfo.authors,
+        categories = this.volumeInfo.categories,
+        publishedDate = this.volumeInfo.publishedDate,
+        publisher = this.volumeInfo.publisher,
+        maturityRating = this.volumeInfo.maturityRating,
+        language = this.volumeInfo.language,
+        previewLink = this.volumeInfo.previewLink
+    )
+}
+
+fun Boolean?.orFalse(): Boolean = this ?: false
+fun Boolean?.orTrue(): Boolean = this ?: true
+
+fun BookshelfEntity.toAddBookToBookshelf(
+    book : BookDetailsResponse
+): AddBookToBookshelf {
+    val lowestImageUrl = book.volumeInfo.imageLinks.let {
+        it.extraLarge ?: it.large ?: it.medium ?: it.small ?: it.thumbnail
+        ?: it.smallThumbnail
+    }?.replace("http", "https")
+    val highestImageUrl = book.volumeInfo.imageLinks.let {
+        it.extraLarge ?: it.large ?: it.medium ?: it.small ?: it.thumbnail
+        ?: it.smallThumbnail
+    }?.replace("http", "https")
+
+    return AddBookToBookshelf(
+        bookshelfId = this.id,
+        bookId = book.id,
+        title = book.volumeInfo.title,
+        description = book.volumeInfo.description,
+        highestImageUrl = highestImageUrl,
+        lowestImageUrl = lowestImageUrl,
+        authors = book.volumeInfo.authors,
+        categories = book.volumeInfo.categories,
+        publishedDate = book.volumeInfo.publishedDate,
+        publisher = book.volumeInfo.publisher,
+        maturityRating = book.volumeInfo.maturityRating,
+        language = book.volumeInfo.language,
+        previewLink = book.volumeInfo.previewLink
+    )
+}
+

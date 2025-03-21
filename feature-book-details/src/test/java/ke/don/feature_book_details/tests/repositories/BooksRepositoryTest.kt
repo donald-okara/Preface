@@ -5,7 +5,7 @@ import ke.don.common_datasource.remote.data.book_details.repositoryImpl.BooksRep
 import ke.don.common_datasource.remote.domain.repositories.BooksRepository
 import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
 import ke.don.shared_domain.states.ResultState
-import ke.don.shared_domain.states.SearchState
+import ke.don.shared_domain.states.SearchResult
 import ke.don.feature_book_details.fake.contracts.FakeColorPaletteExtractor
 import ke.don.feature_book_details.fake.data.FakeBookUiState.fakeBookUiStateSuccess
 import ke.don.feature_book_details.fake.data.FakeBooksDataSource.fakeSearchSuccessState
@@ -73,7 +73,7 @@ class BooksRepositoryTest {
         repository.clearSearch()
 
         // Assert
-        assertEquals(searchState.value, SearchState.Empty)
+        assertEquals(searchState.value, SearchResult.Empty)
         assertEquals(searchQuery.value, "")
     }
 

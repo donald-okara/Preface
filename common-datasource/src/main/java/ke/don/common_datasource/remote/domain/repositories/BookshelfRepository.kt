@@ -1,30 +1,24 @@
 package ke.don.common_datasource.remote.domain.repositories
 
-import ke.don.common_datasource.remote.domain.states.BookshelfUiState
-import ke.don.common_datasource.remote.domain.states.UserLibraryState
+import ke.don.common_datasource.local.roomdb.entities.BookshelfEntity
+import ke.don.common_datasource.remote.domain.states.NoDataReturned
 import ke.don.shared_domain.data_models.AddBookToBookshelf
+import ke.don.shared_domain.data_models.BookShelf
 import ke.don.shared_domain.data_models.BookshelfRef
-import ke.don.shared_domain.data_models.BookshelfType
-import ke.don.shared_domain.states.AddBookshelfState
 import ke.don.shared_domain.states.ResultState
-import kotlinx.coroutines.flow.StateFlow
+import ke.don.shared_domain.states.NetworkResult
+import kotlinx.coroutines.flow.Flow
 
 interface BookshelfRepository {
-    val addBookshelfState: StateFlow<AddBookshelfState>
-    val userLibraryState: StateFlow<UserLibraryState>
-    val bookshelfUiState: StateFlow<BookshelfUiState>
 
-    fun onNameChange(name: String)
-    fun onDescriptionChange(description: String)
-    fun onBookshelfTypeChange(bookshelfType: BookshelfType)
-
-    suspend fun createBookshelf(bookshelf: BookshelfRef)
-    suspend fun fetchBookshelfById(bookshelfId: Int)
-    suspend fun fetchUserBookShelves()
-    suspend fun editBookshelf(bookshelfId: Int, bookshelf: BookshelfRef)
-    suspend fun fetchBookshelfRef(bookshelfId: Int)
-    suspend fun addBookToBookshelf(addBookToBookshelf: AddBookToBookshelf):ResultState
-    suspend fun removeBookFromBookshelf(bookId: String, bookshelfId: Int): ResultState
-    suspend fun deleteBookshelf(bookshelfId: Int): ResultState
+    suspend fun createBookshelf(bookshelf: BookshelfRef): NetworkResult<NoDataReturned>
+    suspend fun fetchBookshelfById(bookshelfId: Int): NetworkResult<Flow<BookshelfEntity>>
+    suspend fun fetchUserBookShelves():NetworkResult<Flow<List<BookShelf>>>
+    suspend fun syncLocalBookshelvesDb():NetworkResult<NoDataReturned>
+    suspend fun editBookshelf(bookshelfId: Int, bookshelf: BookshelfRef): NetworkResult<NoDataReturned>
+    suspend fun fetchBookshelfRef(bookshelfId: Int): NetworkResult<BookshelfRef>
+    suspend fun addBookToBookshelf(addBookToBookshelf: AddBookToBookshelf):NetworkResult<NoDataReturned>
+    suspend fun removeBookFromBookshelf(bookId: String, bookshelfId: Int): NetworkResult<NoDataReturned>
+    suspend fun deleteBookshelf(bookshelfId: Int): NetworkResult<NoDataReturned>
 
 }

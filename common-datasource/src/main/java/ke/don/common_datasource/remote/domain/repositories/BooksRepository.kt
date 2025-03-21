@@ -1,46 +1,21 @@
 package ke.don.common_datasource.remote.domain.repositories
 
-import ke.don.common_datasource.remote.domain.states.BookUiState
-import ke.don.shared_domain.states.SearchState
-import kotlinx.coroutines.flow.StateFlow
+import ke.don.common_datasource.local.roomdb.entities.BookshelfEntity
+import ke.don.common_datasource.remote.domain.states.NoDataReturned
+import ke.don.shared_domain.data_models.AddBookToBookshelf
+import ke.don.shared_domain.data_models.BookDetailsResponse
+import ke.don.shared_domain.data_models.BookItem
+import ke.don.shared_domain.states.NetworkResult
+import kotlinx.coroutines.flow.Flow
 
 interface BooksRepository {
-    val bookUiState : StateFlow<BookUiState>
 
-    val searchUiState: StateFlow<SearchState>
+    suspend fun searchBooks(query: String): NetworkResult<List<BookItem>>
 
-    var searchQuery: StateFlow<String>
+    suspend fun getBookDetails(bookId: String): NetworkResult<BookDetailsResponse>
 
-    var suggestedBook: StateFlow<String>
+    suspend fun fetchBookshelves() : Flow<List<BookshelfEntity>>
 
-    //val userLibraryState : StateFlow<UserLibraryState>
-
-    var searchMessage: StateFlow<String>
-
-    suspend fun searchBooks(query: String)
-
-    suspend fun getBookDetails(bookId: String)
-
-    fun updateBookState(newState: BookUiState)
-
-    fun clearSearch()
-
-    fun updateSearchState(newState: SearchState)
-
-    fun suggestRandomBook()
-
-    fun onLoading()
-
-    fun onSearchQueryChange(query: String)
-
-    fun assignSuggestedBook()
-
-    fun shuffleBook()
-
-    fun onBookshelfSelected(bookshelfId: Int)
-
-    suspend fun onSearch()
-
-    suspend fun pushEditedBookshelfBooks() : Boolean
+    suspend fun pushEditedBookshelfBooks(bookId: String, bookshelfIds: List<Int>, addBookshelves: List<AddBookToBookshelf>) : NetworkResult<NoDataReturned>
 }
 

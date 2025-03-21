@@ -14,10 +14,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import ke.don.common_datasource.remote.domain.states.BookshelfBookDetailsState
+import ke.don.common_datasource.remote.domain.states.ShowBookshelvesState
 import ke.don.feature_book_details.R
 import ke.don.shared_domain.data_models.VolumeInfoDet
 
@@ -43,27 +40,15 @@ fun TitleHeader(
     volumeInfo: VolumeInfoDet,
     imageUrl: String? = null,
     onConfirm: () -> Unit,
-    uploadSuccess: Boolean,
+    showBookshelves : ShowBookshelvesState,
     isLoading: Boolean = true,
+    onExpandBookshelves: () -> Unit,
     onBookshelfClicked: (Int) -> Unit,
     onSearchAuthor: (String) -> Unit,
     onResetSuccess: () -> Unit,
     uniqueBookshelves: List<BookshelfBookDetailsState>,
     textColor: Color = MaterialTheme.colorScheme.onTertiaryContainer
 ) {
-    var expanded by remember { mutableStateOf(false) }
-
-    LaunchedEffect(
-        uniqueBookshelves
-    ) {
-        Log.d("ScreenHeader", "Bookstate : ${uniqueBookshelves}")
-
-    }
-    if (uploadSuccess){
-        expanded = false
-        onResetSuccess()
-    }
-
     Column(
         modifier = modifier
             .wrapContentHeight(),
@@ -90,9 +75,9 @@ fun TitleHeader(
             BookshelfDropdownMenu(
                 uniqueBookshelves = uniqueBookshelves,
                 defaultColor = textColor,
-                onExpandToggle = { expanded = !expanded },
+                onExpandToggle = { onExpandBookshelves() },
                 onItemClick = onBookshelfClicked,
-                expanded = expanded,
+                showBookshelvesState = showBookshelves,
                 onConfirm = onConfirm
             )
         }
@@ -144,8 +129,8 @@ fun BookImage(
     imageUrl : String? = null,
 ) {
 
-    LaunchedEffect(Unit) {
-        Log.d("BookImage", "imageUrl : $imageUrl")
+    LaunchedEffect(imageUrl) {
+        Log.d("Image", "imageUrl : $imageUrl")
     }
     if (imageUrl.isNullOrEmpty()) {
         Image(

@@ -88,13 +88,11 @@ object DatasourceModule {
     fun provideBookshelfRepository(
         bookshelfNetworkClass: BookshelfNetworkClass,
         @ApplicationContext context: Context,
-        profileRepository: ProfileRepository,
         userProfile: Profile?,
         bookshelfDao: BookshelfDao
     ): BookshelfRepository = BookshelfRepositoryImpl(
         bookshelfNetworkClass = bookshelfNetworkClass,
         context = context,
-        profileRepository = profileRepository,
         userProfile = userProfile,
         bookshelfDao = bookshelfDao
     )

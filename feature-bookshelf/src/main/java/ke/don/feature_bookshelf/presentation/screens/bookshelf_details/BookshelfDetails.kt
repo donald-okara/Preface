@@ -39,8 +39,8 @@ fun BookshelfDetailsRoute(
     onItemClick: (String) -> Unit
 ) {
     val bookshelfUiState by bookshelfDetailsViewModel.bookshelfUiState.collectAsState()
-    // Use a non-null initial value and handle null emissions safely
-    val bookshelf by bookshelfUiState.bookShelf.collectAsState(initial = BookshelfEntity(id = -1, name = "Loading..."))
+    val bookshelf by bookshelfUiState.bookShelf.collectAsState(initial = BookshelfEntity())
+
     val showBottomSheet by bookshelfDetailsViewModel.showOptionsSheet.collectAsState()
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
@@ -54,9 +54,9 @@ fun BookshelfDetailsRoute(
                 scrollBehavior = scrollBehavior,
                 title = { Text("") },
                 navigationIcon = {
-                    IconButton(onClick = { navigateBack() }) {
+                    IconButton(onClick = navigateBack) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Default.ArrowBack,
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Back"
                         )
                     }
@@ -83,7 +83,7 @@ fun BookshelfDetailsRoute(
         ) {
             when (val state = bookshelfUiState.resultState) {
                 is ResultState.Success -> {
-                    if (bookshelf.id == -1) { // Use -1 to indicate loading/default state
+                    if (bookshelf.id == -1) { // Loading state indicator
                         CircularProgressIndicator()
                     } else {
                         BookList(
@@ -116,13 +116,10 @@ fun BookshelfDetailsRoute(
                         color = MaterialTheme.colorScheme.error
                     )
                 }
-                else -> { // Loading or Empty
+                else -> { // For Loading or Empty states
                     CircularProgressIndicator()
                 }
             }
         }
     }
 }
-
-
-
