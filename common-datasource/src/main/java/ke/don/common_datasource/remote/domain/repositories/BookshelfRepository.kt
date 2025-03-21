@@ -17,8 +17,8 @@ interface BookshelfRepository {
     suspend fun syncLocalBookshelvesDb():NetworkResult<NoDataReturned>
     suspend fun editBookshelf(bookshelfId: Int, bookshelf: BookshelfRef): NetworkResult<NoDataReturned>
     suspend fun fetchBookshelfRef(bookshelfId: Int): NetworkResult<BookshelfRef>
-    suspend fun addBookToBookshelf(addBookToBookshelf: AddBookToBookshelf):ResultState //TODO change to NetworkResult
-    suspend fun removeBookFromBookshelf(bookId: String, bookshelfId: Int): ResultState //TODO change to NetworkResult
+    suspend fun addBookToBookshelf(addBookToBookshelf: AddBookToBookshelf):NetworkResult<NoDataReturned>
+    suspend fun removeBookFromBookshelf(bookId: String, bookshelfId: Int): NetworkResult<NoDataReturned>
     suspend fun deleteBookshelf(bookshelfId: Int): NetworkResult<NoDataReturned>
 
 }

@@ -121,17 +121,21 @@ class BookshelfNetworkClass(
      */
     suspend fun addBookToBookshelf(
         addBookToBookshelf: AddBookToBookshelf
-    ): ResultState{
+    ): NetworkResult<NoDataReturned>{
         return try {
             Log.d(TAG, "Attempting to add book")
 
             supabaseClient.from(
                 ADDBOOKSTOBOOKSHELF
             ).insert(addBookToBookshelf)
-            ResultState.Success
+            NetworkResult.Success(NoDataReturned())
         }catch (e: Exception){
             e.printStackTrace()
-            ResultState.Error(e.message.toString())
+            NetworkResult.Error(
+                message = e.message.toString(),
+                hint = e.cause.toString(),
+                details = e.stackTrace.toString()
+            )
         }
     }
 
@@ -198,17 +202,18 @@ class BookshelfNetworkClass(
     suspend fun removeBookFromBookshelf(
         bookId: String,
         bookshelfId: Int
-    ){
-        try {
+    ): NetworkResult<NoDataReturned> {
+        return try {
             supabaseClient.from(BOOKSHELFCATALOG).delete {
                 filter {
                     BookshelfCatalog::bookshelfId eq bookshelfId
                     BookshelfCatalog::bookId eq bookId
                 }
             }
-
+            NetworkResult.Success(NoDataReturned())
         }catch (e: Exception){
             e.printStackTrace()
+            NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
         }
     }
 

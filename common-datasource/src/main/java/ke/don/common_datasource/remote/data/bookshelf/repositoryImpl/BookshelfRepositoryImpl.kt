@@ -27,22 +27,9 @@ class BookshelfRepositoryImpl(
 ): BookshelfRepository {
 
     override suspend fun createBookshelf(bookshelf: BookshelfRef): NetworkResult<NoDataReturned> {
-        return when (val result= bookshelfNetworkClass.createBookshelf(bookshelf)) {
-            is NetworkResult.Error -> {
+        return bookshelfNetworkClass.createBookshelf(bookshelf).also { result->
+            if (result is NetworkResult.Error){
                 Toast.makeText(context, "${result.message} ${result.hint}", Toast.LENGTH_SHORT).show()
-                NetworkResult.Error(
-                    message = result.message,
-                    code = result.code,
-                    details = result.details,
-                    hint = result.hint
-                )
-            }
-
-            is NetworkResult.Success -> {
-                userProfile?.authId?.let {
-                    fetchUserBookShelves()
-                }
-                 NetworkResult.Success(NoDataReturned())
             }
         }
     }
@@ -79,46 +66,23 @@ class BookshelfRepositoryImpl(
 
 
     override suspend fun fetchBookshelfRef(bookshelfId: Int): NetworkResult<BookshelfRef> {
-        return when(val result = bookshelfNetworkClass.fetchBookshelfRef(bookshelfId)){
-            is NetworkResult.Error -> {
-                Toast.makeText(context, "${result.message} ${result.hint}", Toast.LENGTH_SHORT).show()
-                NetworkResult.Error(
-                    message = result.message,
-                    code = result.code,
-                    details = result.details,
-                    hint = result.hint)
-            }
-            is NetworkResult.Success -> {
-                NetworkResult.Success(result.data)
-            }
-        }
+       return bookshelfNetworkClass.fetchBookshelfRef(bookshelfId).also { result ->
+           if (result is NetworkResult.Error) {
+               Toast.makeText(context, "${'$'}{result.message} ${'$'}{result.hint}", Toast.LENGTH_SHORT).show()
+           }
+       }
+
     }
 
     override suspend fun editBookshelf(bookshelfId: Int, bookshelf: BookshelfRef): NetworkResult<NoDataReturned> {
-      return when(val result = bookshelfNetworkClass.updateBookshelf(bookshelfId, bookshelf)){
-         is NetworkResult.Error -> {
-             Toast.makeText(context, "${result.message} ${result.hint}", Toast.LENGTH_SHORT).show()
+        return bookshelfNetworkClass.updateBookshelf(bookshelfId, bookshelf).also { result ->
+            if (result is NetworkResult.Error) {
+                Toast.makeText(context, "${'$'}{result.message} ${'$'}{result.hint}", Toast.LENGTH_SHORT).show()
+            }else{
+                bookshelfDao.updateBookshelf(bookshelf.toEntity())
+            }
+        }
 
-             NetworkResult.Error(
-                 message = result.message,
-                 code = result.code,
-                 details = result.details,
-                 hint = result.hint
-             )
-         }
-
-          is NetworkResult.Success -> {
-              bookshelfDao.update(bookshelfEntity = bookshelf.toEntity())
-              NetworkResult.Success(NoDataReturned())
-          }
-
-      }
-//
-//        return try {
-//            if(bookshelfNetworkClass.updateBookshelf(bookshelfId =  bookshelfId, bookshelf = bookshelf)== ResultState.Success){
-//                bookshelfDao.update(bookshelfEntity = bookshelf.toEntity())
-//            }
-//           ResultState.Success
 
     }
 
@@ -141,50 +105,30 @@ class BookshelfRepositoryImpl(
         }
     }
 
-    override suspend fun addBookToBookshelf(addBookToBookshelf: AddBookToBookshelf):ResultState {
-        return try {
-            Log.d(TAG, "Attempting to add book")
-            bookshelfNetworkClass.addBookToBookshelf(addBookToBookshelf)
-            ResultState.Success
-        }catch (e: Exception){
-            e.printStackTrace()
-            ResultState.Error(e.message.toString())
+    override suspend fun addBookToBookshelf(addBookToBookshelf: AddBookToBookshelf): NetworkResult<NoDataReturned> {
+        return bookshelfNetworkClass.addBookToBookshelf(addBookToBookshelf).also { result ->
+            if (result is NetworkResult.Error) {
+                Toast.makeText(context, "${result.message} ${result.hint}", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
-    override suspend fun removeBookFromBookshelf(bookId: String, bookshelfId: Int):ResultState {
-        return try {
-            bookshelfNetworkClass.removeBookFromBookshelf(bookId, bookshelfId)
-            ResultState.Success
-        }catch (e: Exception){
-            e.printStackTrace()
-            ResultState.Error(e.message.toString())
+
+    override suspend fun removeBookFromBookshelf(bookId: String, bookshelfId: Int):NetworkResult<NoDataReturned>  {
+        return bookshelfNetworkClass.removeBookFromBookshelf(bookId, bookshelfId). also {result ->
+            if (result is NetworkResult.Error){
+                Toast.makeText(context, "${result.message} ${result.hint}", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
     override suspend fun deleteBookshelf(bookshelfId: Int): NetworkResult<NoDataReturned> {
-        return when(val result = bookshelfNetworkClass.deleteBookshelf(bookshelfId)){
-            is NetworkResult.Error -> {
-                Toast.makeText(context, "${result.message} ${result.hint}", Toast.LENGTH_SHORT)
-                    .show()
-                NetworkResult.Error(message = result.message, hint = result.hint, details = result.details)
-            }
-            is NetworkResult.Success -> {
-                bookshelfDao.deleteBookshelfById(bookshelfId)
-                NetworkResult.Success(NoDataReturned())
+        return bookshelfNetworkClass.deleteBookshelf(bookshelfId).also { result ->
+            if (result is NetworkResult.Error) {
+                Toast.makeText(context, "${'$'}{result.message} ${'$'}{result.hint}", Toast.LENGTH_SHORT).show()
             }
         }
-//        try {
-//            if(bookshelfNetworkClass.deleteBookshelf(bookshelfId) == ResultState.Success){
-//                bookshelfDao.deleteBookshelfById(bookshelfId)
-//                return ResultState.Success
-//            }else{
-//                return ResultState.Error("Something went wrong")
-//            }
-//        }catch (e: Exception) {
-//            e.printStackTrace()
-//            return ResultState.Error(e.message.toString())
-//        }
+
     }
 
 

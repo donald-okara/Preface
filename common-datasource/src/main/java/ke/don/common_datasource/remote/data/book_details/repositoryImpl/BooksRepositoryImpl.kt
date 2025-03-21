@@ -29,14 +29,6 @@ class BooksRepositoryImpl(
     private val bookshelfRepository: BookshelfRepository,
 ) : BooksRepository {
 
-    /**
-     * BookDetails vals
-     */
-    private var initialBookshelves: List<BookshelfBookDetailsState> = emptyList()
-
-    private var initialBookState = BookUiState()
-
-
     override suspend fun getBookDetails(bookId: String): NetworkResult<BookDetailsResponse> {
         return try {
             // Fetch book details from the API
@@ -46,12 +38,19 @@ class BooksRepositoryImpl(
             if (response.isSuccessful) {
                 NetworkResult.Success(response.body() ?: BookDetailsResponse())
             } else {
-               NetworkResult.Error(
+                Toast.makeText(
+                    context,
+                    "${response.code()}: ${response.message()}",
+                    //"Something went wrong. Please check your internet and try again",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                NetworkResult.Error(
                     message = response.message(),
                     code = response.code().toString(),
                     hint = response.code().toString(),
                     details = response.body().toString()
-               )
+                )
             }
 
         } catch (e: Exception) {
@@ -71,36 +70,32 @@ class BooksRepositoryImpl(
         bookId: String,
         bookshelfIds: List<Int>,
         addBookshelves: List<AddBookToBookshelf>
-    ): NetworkResult<NoDataReturned> {
-        return try {
-            // Remove the book from specified bookshelves first
-            Log.d(TAG, "Attempting to remove book from bookshelves:: $bookshelfIds")
-            val removeResult = bookshelfNetworkClass.removeBookFromMultipleBookshelves(bookId, bookshelfIds)
+    ): NetworkResult<NoDataReturned> = try {
+        Log.d(TAG, "Attempting to remove book from bookshelves:: $bookshelfIds")
 
-            // If removal fails, return the error
-            if (removeResult is NetworkResult.Error) {
-                Toast.makeText(context, "${removeResult.message} ${removeResult.hint}", Toast.LENGTH_SHORT).show()
-                return removeResult
+        bookshelfNetworkClass.removeBookFromMultipleBookshelves(bookId, bookshelfIds).also { result ->
+            if (result is NetworkResult.Error) {
+                Toast.makeText(context, "${result.message} ${result.hint ?: ""}", Toast.LENGTH_SHORT).show()
+                return result
             }
+        }
 
-            // Add the book to new bookshelves (only if there are bookshelves to add)
-            if (addBookshelves.isNotEmpty()) {
-                val addResult = bookshelfNetworkClass.addMultipleBooksToBookshelf(addBookshelves)
-                if (addResult is NetworkResult.Error) {
-                    return addResult
+        if (addBookshelves.isNotEmpty()) {
+            bookshelfNetworkClass.addMultipleBooksToBookshelf(addBookshelves).also { result ->
+                if (result is NetworkResult.Error) {
+                    Toast.makeText(context, "${result.message} ${result.hint ?: ""}", Toast.LENGTH_SHORT).show()
+                    return result
                 }
             }
-
-            // If both operations succeed, return success
-            bookshelfRepository.syncLocalBookshelvesDb()
-        } catch (e: Exception) {
-            e.printStackTrace()
-            NetworkResult.Error(
-                message = e.message.toString(),
-                hint = e.cause?.toString() ?: "No cause available",
-                details = e.stackTraceToString()
-            )
         }
+
+        bookshelfRepository.syncLocalBookshelvesDb()
+    } catch (e: Exception) {
+        NetworkResult.Error(
+            message = e.message.orEmpty(),
+            hint = e.cause?.toString().orEmpty(),
+            details = e.stackTraceToString()
+        )
     }
 
 

@@ -39,7 +39,7 @@ interface BookshelfDao {
      * UPDATE
      */
     @Update
-    suspend fun update(bookshelfEntity: BookshelfEntity)
+    suspend fun updateBookshelf(bookshelfEntity: BookshelfEntity)
 
     @Query("UPDATE bookshelves SET books = :updatedBooks WHERE id = :bookshelfId")
     suspend fun updateBooksInBookshelf(bookshelfId: Int, updatedBooks: String)
