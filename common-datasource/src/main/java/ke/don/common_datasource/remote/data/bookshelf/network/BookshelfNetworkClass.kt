@@ -135,6 +135,66 @@ class BookshelfNetworkClass(
         }
     }
 
+    suspend fun addMultipleBooksToBookshelf(books: List<AddBookToBookshelf>): NetworkResult<NoDataReturned> {
+        return try {
+            if (books.isEmpty()) {
+                return NetworkResult.Error(
+                    message = "Book list is empty",
+                    hint = "Ensure that the list contains at least one book before inserting.",
+                    details = "Empty lists are not allowed for batch insert."
+                )
+            }
+
+            supabaseClient.from(ADDBOOKSTOBOOKSHELF)
+                .insert(books)
+
+            NetworkResult.Success(NoDataReturned())
+        } catch (e: Exception) {
+            e.printStackTrace()
+            NetworkResult.Error(
+                message = e.message.toString(),
+                hint = e.cause?.toString() ?: "No cause available",
+                details = e.stackTraceToString()
+            )
+        }
+    }
+
+    suspend fun removeBookFromMultipleBookshelves(
+        bookId: String,
+        bookshelfIds: List<Int>
+    ): NetworkResult<NoDataReturned>{
+        Log.d(TAG, "Attempting to remove book from bookshelves:: $bookshelfIds")
+        return try {
+            supabaseClient.from(BOOKSHELFCATALOG).delete {
+                filter {
+                    BookshelfCatalog::bookshelfId isIn bookshelfIds
+                    BookshelfCatalog::bookId eq bookId
+                }
+            }
+            NetworkResult.Success(NoDataReturned())
+
+        }catch (e: Exception){
+            e.printStackTrace()
+            NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
+        }
+    }
+
+    suspend fun removeMultipleBooksFromBookshelf(bookshelfId: Int, bookIds: List<String>): NetworkResult<NoDataReturned>{
+        return try {
+            supabaseClient.from(BOOKSHELFCATALOG).delete {
+                filter {
+                    BookshelfCatalog::bookshelfId eq bookshelfId
+                    BookshelfCatalog::bookId isIn bookIds
+                }
+            }
+            NetworkResult.Success(NoDataReturned())
+        }catch (e: Exception){
+            e.printStackTrace()
+            NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
+        }
+    }
+
+
     suspend fun removeBookFromBookshelf(
         bookId: String,
         bookshelfId: Int

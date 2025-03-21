@@ -47,7 +47,7 @@ class BookshelfRepositoryImpl(
         }
     }
 
-    suspend fun syncLocalBookshelvesDb(): NetworkResult<NoDataReturned>{
+    override suspend fun syncLocalBookshelvesDb(): NetworkResult<NoDataReturned>{
         return when (val remoteBookshelves = bookshelfNetworkClass.fetchUserBookshelves(userProfile?.authId!!)){
             is NetworkResult.Error -> {
                 Toast.makeText(context, "${remoteBookshelves.message} ${remoteBookshelves.hint}", Toast.LENGTH_SHORT).show()
@@ -59,11 +59,11 @@ class BookshelfRepositoryImpl(
                 )
             }
             is NetworkResult.Success ->{
-                val remoteIds = remoteBookshelves.result.map { it.id }.toSet() // Convert to set for fast lookup
+                val remoteIds = remoteBookshelves.data.map { it.id }.toSet() // Convert to set for fast lookup
                 bookshelfDao.deleteBookshelvesNotIn(remoteIds)
 
                 // Insert/update fetched bookshelves
-                bookshelfDao.insertAll(remoteBookshelves.result)
+                bookshelfDao.insertAll(remoteBookshelves.data)
 
                 NetworkResult.Success(NoDataReturned())
             }
@@ -89,7 +89,7 @@ class BookshelfRepositoryImpl(
                     hint = result.hint)
             }
             is NetworkResult.Success -> {
-                NetworkResult.Success(result.result)
+                NetworkResult.Success(result.data)
             }
         }
     }

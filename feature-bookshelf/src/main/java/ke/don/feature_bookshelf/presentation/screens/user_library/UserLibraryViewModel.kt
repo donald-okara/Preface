@@ -6,7 +6,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
 import ke.don.common_datasource.remote.domain.states.UserLibraryState
 import ke.don.shared_domain.states.NetworkResult
-import ke.don.shared_domain.states.ResultState
 import ke.don.shared_domain.states.SuccessState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -74,7 +73,7 @@ class UserLibraryViewModel @Inject constructor(
                 is NetworkResult.Success -> {
                     _userLibraryState.update { libraryState ->
                         libraryState.copy(
-                            userBookshelves = result.result,
+                            userBookshelves = result.data,
                             successState = SuccessState.SUCCESS
                         )
                     }

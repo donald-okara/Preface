@@ -13,8 +13,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.LibraryBooks
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
@@ -29,12 +28,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import ke.don.common_datasource.remote.domain.states.BookshelfBookDetailsState
+import ke.don.common_datasource.remote.domain.states.ShowBookshelvesState
 
 @Composable
 fun BookshelfDropdownMenu(
     modifier: Modifier = Modifier,
     uniqueBookshelves: List<BookshelfBookDetailsState>,
-    expanded: Boolean,
+    showBookshelvesState: ShowBookshelvesState,
     onConfirm: () -> Unit,
     onExpandToggle: () -> Unit,
     defaultColor: Color,
@@ -51,7 +51,7 @@ fun BookshelfDropdownMenu(
             Icon(Icons.AutoMirrored.Filled.LibraryBooks, contentDescription = "Add to library")
         }
         DropdownMenu(
-            expanded = expanded,
+            expanded = showBookshelvesState.showBooksheves,
             onDismissRequest = { onExpandToggle() },
             modifier = modifier
                 .padding(8.dp)
@@ -95,6 +95,7 @@ fun BookshelfDropdownMenu(
                 onCancel = {
                     onExpandToggle()
                 },
+                isLoading = showBookshelvesState.isLoading,
                 onConfirm = {
                     onConfirm()
                 },
@@ -141,6 +142,7 @@ fun AddBookRow(
     modifier: Modifier = Modifier,
     onCancel: () -> Unit,
     buttonColor : Color,
+    isLoading: Boolean,
     onConfirm: () -> Unit,
 ){
     Row(
@@ -148,7 +150,7 @@ fun AddBookRow(
         verticalAlignment = Alignment.CenterVertically,
         modifier = modifier
             .padding(8.dp)
-    ){
+    ) {
         OutlinedButton(
             onCancel
         ) {
@@ -158,7 +160,8 @@ fun AddBookRow(
         }
         Spacer(modifier = modifier.weight(1f))
         Button(
-            onConfirm
+            onConfirm,
+            enabled = !isLoading
         ) {
             Text(
                 text = "Done"

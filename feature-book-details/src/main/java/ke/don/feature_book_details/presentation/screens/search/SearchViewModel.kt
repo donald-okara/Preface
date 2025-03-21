@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ke.don.common_datasource.remote.domain.repositories.BooksRepository
-import ke.don.shared_domain.states.SearchResult
 import ke.don.common_datasource.remote.domain.usecases.BooksUseCases
 import ke.don.shared_domain.states.NetworkResult
 import ke.don.shared_domain.states.ResultState
@@ -112,7 +111,7 @@ class SearchViewModel @Inject constructor(
                 updateSearchState(
                     SearchState(
                         resultState = ResultState.Success,
-                        data = result.result
+                        data = result.data
                     )
                 )
             }

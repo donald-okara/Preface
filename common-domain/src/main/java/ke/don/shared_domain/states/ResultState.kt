@@ -8,7 +8,7 @@ sealed interface ResultState {
 }
 
 sealed interface NetworkResult<out T : Any> {
-    data class Success<T: Any> (val result: T): NetworkResult<T>
+    data class Success<T: Any> (val data: T): NetworkResult<T>
     data class Error(
         val code: String? = null,
         val details: String? = null,

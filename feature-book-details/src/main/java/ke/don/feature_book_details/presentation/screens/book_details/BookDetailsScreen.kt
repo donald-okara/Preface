@@ -40,6 +40,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -53,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import ke.don.common_datasource.remote.domain.states.BookshelfBookDetailsState
+import ke.don.common_datasource.remote.domain.states.ShowBookshelvesState
 import ke.don.common_datasource.remote.domain.utils.getDominantColor
 import ke.don.feature_book_details.presentation.screens.book_details.components.AboutVolume
 import ke.don.feature_book_details.presentation.screens.book_details.components.BookCoverPreview
@@ -73,10 +75,12 @@ fun BookDetailsScreen(
     onBackPressed: () -> Unit
 ){
     val bookUiState = bookDetailsViewModel.bookState.collectAsState()
+    val bookshelvesState by bookDetailsViewModel.bookshelvesState.collectAsState()
     val loadingJoke = bookDetailsViewModel.loadingJoke
     val imageUrl = bookUiState.value.highestImageUrl
+    val showBookshelves by bookDetailsViewModel.showBookshelves.collectAsState()
 
-    val bookshelfList = bookUiState.value.bookshelvesState.bookshelves
+    val bookshelfList = bookshelvesState.bookshelves
 
     val colorPallet = bookUiState.value.colorPallet
     val dominantColor =
@@ -136,8 +140,9 @@ fun BookDetailsScreen(
                 onBookshelfClicked = {bookshelfId->
                     bookDetailsViewModel.onSelectBookshelf(bookshelfId)
                 },
+                onExpandBookshelves = bookDetailsViewModel::onShowBookshelves,
+                showBookshelves = showBookshelves,
                 onConfirm = bookDetailsViewModel::onPushEditedBookshelfBooks,
-                uploadSuccess = bookUiState.value.pushSuccess,
                 onResetSuccess = bookDetailsViewModel::resetPushSuccess
             )
 
@@ -165,9 +170,10 @@ fun BookDetailsContent(
     volumeInfo: VolumeInfoDet,
     onBookshelfClicked: (Int) -> Unit,
     dominantColor : Color,
+    showBookshelves: ShowBookshelvesState,
+    onExpandBookshelves: () -> Unit,
     imageUrl: String? = null,
     onResetSuccess: () -> Unit,
-    uploadSuccess: Boolean,
     isLoading: Boolean = true,
     onConfirm: () -> Unit,
     isGradientVisible: Boolean,
@@ -226,11 +232,13 @@ fun BookDetailsContent(
                     showPreview.value = true
                 },
                 isLoading = isLoading,
+
                 uniqueBookshelves = uniqueBookshelves,
                 onBookshelfClicked = onBookshelfClicked,
                 onConfirm = onConfirm,
-                uploadSuccess = uploadSuccess,
+                onExpandBookshelves = onExpandBookshelves,
                 onResetSuccess = onResetSuccess,
+                showBookshelves = showBookshelves,
                 modifier = modifier
                     .padding(8.dp)
             )

@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
-import ke.don.common_datasource.remote.domain.states.UserLibraryState
 import ke.don.shared_domain.data_models.BookshelfRef
 import ke.don.shared_domain.states.AddBookshelfState
 import ke.don.shared_domain.states.toBookshelf
@@ -48,8 +47,8 @@ class AddBookshelfViewModel @Inject constructor(
                     is NetworkResult.Success -> {
                         _addBookshelfState.update {
                             it.copy(
-                                name = result.result.name,
-                                description = result.result.description
+                                name = result.data.name,
+                                description = result.data.description
                             )
                         }
                     }

@@ -1,21 +1,21 @@
 package ke.don.common_datasource.remote.domain.repositories
 
-import ke.don.common_datasource.remote.domain.states.BookUiState
+import ke.don.common_datasource.local.roomdb.entities.BookshelfEntity
+import ke.don.common_datasource.remote.domain.states.NoDataReturned
+import ke.don.shared_domain.data_models.AddBookToBookshelf
+import ke.don.shared_domain.data_models.BookDetailsResponse
 import ke.don.shared_domain.data_models.BookItem
 import ke.don.shared_domain.states.NetworkResult
-import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.Flow
 
 interface BooksRepository {
-    val bookUiState : StateFlow<BookUiState>
 
     suspend fun searchBooks(query: String): NetworkResult<List<BookItem>>
 
-    suspend fun getBookDetails(bookId: String)
+    suspend fun getBookDetails(bookId: String): NetworkResult<BookDetailsResponse>
 
-    fun updateBookState(newState: BookUiState)
+    suspend fun fetchBookshelves() : Flow<List<BookshelfEntity>>
 
-    fun onBookshelfSelected(bookshelfId: Int)
-
-    suspend fun pushEditedBookshelfBooks() : Boolean
+    suspend fun pushEditedBookshelfBooks(bookId: String, bookshelfIds: List<Int>, addBookshelves: List<AddBookToBookshelf>) : NetworkResult<NoDataReturned>
 }
 

@@ -10,9 +10,7 @@ import ke.don.shared_domain.states.ResultState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -53,7 +51,7 @@ class BookshelfDetailsViewModel @Inject constructor(
                     is NetworkResult.Success -> {
                         _bookshelfUiState.update { uiState ->
                             uiState.copy(
-                                bookShelf = result.result,
+                                bookShelf = result.data,
                                 resultState = ResultState.Success
                             )
                         }
