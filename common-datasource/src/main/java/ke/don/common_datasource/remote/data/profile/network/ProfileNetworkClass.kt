@@ -150,7 +150,6 @@ class ProfileNetworkClass(
         return signInStatus
 
     }
-    // TODO: Do not deploy to playstore until we have revisited https://chatgpt.com/share/67ac894b-7928-8000-a399-13809feeb1f0
 
     /**
      * UPDATE
