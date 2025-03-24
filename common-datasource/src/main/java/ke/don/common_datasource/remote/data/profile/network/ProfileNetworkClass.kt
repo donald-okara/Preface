@@ -14,11 +14,13 @@ import ke.don.common_datasource.local.datastore.profile.profileDataStore
 import ke.don.common_datasource.local.datastore.token.TokenData
 import ke.don.common_datasource.local.datastore.token.TokenDatastoreManager
 import ke.don.common_datasource.local.datastore.token.tokenDatastore
+import ke.don.common_datasource.remote.domain.states.NoDataReturned
 import ke.don.shared_domain.data_models.BookShelf
 import ke.don.shared_domain.data_models.BookshelfCatalog
 import ke.don.shared_domain.data_models.BookshelfRef
 import ke.don.shared_domain.data_models.Profile
 import ke.don.shared_domain.data_models.SupabaseBook
+import ke.don.shared_domain.states.NetworkResult
 import ke.don.shared_domain.values.BOOKS
 import ke.don.shared_domain.values.BOOKSHELFCATALOG
 import ke.don.shared_domain.values.BOOKSHELFTABLE
@@ -36,99 +38,107 @@ class ProfileNetworkClass(
     private val supabase: SupabaseClient,
     private val tokenDatastore: TokenDatastoreManager
 ) {
-    private val _userInfo = MutableStateFlow<UserInfo?>(null)
-    private val userInfo:StateFlow<UserInfo?> = _userInfo
-
     /**
      * CREATE
      */
     suspend fun signIn(
         idToken: String,
         rawNonce: String
-    ): Boolean{
+    ): NetworkResult<UserInfo>{
         return try {
             supabase.auth.signInWith(IDToken) {
                 this.idToken = idToken
                 provider = Google
                 nonce = rawNonce
             }
-            _userInfo.update {
-                supabase.auth.currentUserOrNull()
-            }
-            Log.d(TAG, "Current user:: ${_userInfo.value}")
+            val userInfo =  supabase.auth.currentUserOrNull()
 
             tokenDatastore.setToken(
                 supabase.auth.currentAccessTokenOrNull()
             )
-
-            Log.d(TAG, "User Id is present: ${userInfo.value != null}")
-            true
+            if(userInfo != null){
+                NetworkResult.Success(userInfo)
+            }else{
+                NetworkResult.Error(
+                    message = "User is not logged in"
+                )
+            }
         } catch (e: Exception) {
             e.printStackTrace()
-            false
+            NetworkResult.Error(
+                message = e.message.toString()
+            )
         }
 
     }
 
     suspend fun insertUserProfile(
         profile : Profile
-    ){
-        try {
+    ): NetworkResult<NoDataReturned>{
+        return try {
             supabase.from(PROFILESTABLE).insert(profile)
             Log.d(TAG, "Profile inserted successfully")
+
+            NetworkResult.Success(NoDataReturned())
         } catch (e: Exception) {
             e.printStackTrace()
             Toast.makeText(context, "Failed to create profile. Please try again later", Toast.LENGTH_SHORT).show()
+            NetworkResult.Error(
+                message = e.message.toString()
+            )
         }
     }
 
     /**
      * READ
      */
-    suspend fun checkIfProfileIsPresent(): Boolean{
+    suspend fun checkIfProfileIsPresent(userId: String): NetworkResult<Boolean>{
         return try {
-            if (userInfo.value == null) {
-                Log.d(TAG, "User is not logged in")
-                return false  // Return false if user is not logged in
-            }
-
             val response = supabase.from("profiles")
                 .select {
                     filter {
-                        Profile::authId eq userInfo.value!!.id
+                        Profile::authId eq userId
                         //or
-                        eq("auth_id", userInfo.value!!.id)
+                        eq("auth_id", userId)
                     }
                 }
                 .decodeSingleOrNull<Profile>()
 
-            response != null
+            NetworkResult.Success(response != null)
         } catch (e: Exception) {
 
             e.printStackTrace()
-            false
+            NetworkResult.Error(
+                message = e.message.toString()
+            )
         }
 
     }
 
-    suspend fun fetchUserProfile(): Profile? {
-        return if (userInfo.value == null) {
-            Log.d("ProfileRepositoryImpl", "User is not logged in")
-            null
-        } else {
+    suspend fun fetchUserProfile(userId: String): NetworkResult<Profile> {
+        return try {
             val response = supabase.from("profiles")
                 .select {
                     filter {
-                        Profile::authId eq userInfo.value!!.id
+                        Profile::authId eq userId
                         //or
-                        eq("auth_id", userInfo.value!!.id)
+                        eq("auth_id", userId)
                     }
                 }
                 .decodeSingleOrNull<Profile>()
 
             Log.d(TAG, "Profile fetched from supabase:: $response")
-            response
-
+            if(response != null){
+                NetworkResult.Success(response)
+            }else{
+                NetworkResult.Error(
+                    message = "No profile found"
+                )
+            }
+        } catch (e: Exception) {
+            NetworkResult.Error(
+                message = e.message.toString()
+            )
         }
     }
 
