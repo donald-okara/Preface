@@ -7,6 +7,7 @@ import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.auth.providers.Google
 import io.github.jan.supabase.auth.providers.builtin.IDToken
+import io.github.jan.supabase.auth.status.SessionStatus
 import io.github.jan.supabase.auth.user.UserInfo
 import io.github.jan.supabase.postgrest.from
 import ke.don.common_datasource.local.datastore.profile.profileDataStore
@@ -159,48 +160,18 @@ class ProfileNetworkClass(
 suspend fun Context.reloadSession(
     supabase: SupabaseClient
 ): Boolean {
-    val TAG = "Context"
-    val maxRetries = MAX_RETRIES
-    var attempt = 0
 
-    while (attempt < maxRetries) {
-        try {
-            val token = tokenDatastore.data.first().token
-            Log.d(TAG, "Attempt ${attempt + 1} - Token: $token")
+    try {
+        val sessionStatus = supabase.auth.sessionStatus
+            .first { it !is SessionStatus.Initializing }
 
-            if (!token.isNullOrEmpty()) {
-                supabase.auth.refreshCurrentSession()
+        return sessionStatus is SessionStatus.Authenticated
 
-                val newAccessToken = supabase.auth.currentAccessTokenOrNull()
-                Log.d(TAG, "New token present : ${!newAccessToken.isNullOrEmpty()}")
-
-                if (!newAccessToken.isNullOrEmpty()) {
-                    tokenDatastore.updateData {
-                        it.copy(token = newAccessToken)
-                    }
-                    return true
-                }
-
-                Log.d(TAG, "Failed to refresh token, retrying...")
-            } else {
-                Log.d(TAG, "Token is null or empty")
-                return false
-            }
-        } catch (e: Exception) {
-            Log.e(TAG, "Error reloading session on attempt ${attempt + 1}", e)
-        }
-
-        attempt++
-        delay(2000) // Wait for 2 seconds before retrying
+    } catch (e: Exception) {
+        Log.e("Context", "Error reloading session", e)
+        tokenDatastore.updateData { TokenData() }
+        profileDataStore.updateData { Profile() }
+        return false
     }
 
-    // If all retries fail, sign out the user
-    Log.d(TAG, "Max retries reached, forcing re-authentication")
-    supabase.auth.signOut()
-
-    // Clear stored token
-    tokenDatastore.updateData { TokenData() }
-    profileDataStore.updateData { Profile() }
-
-    return false
 }
