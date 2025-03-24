@@ -65,11 +65,6 @@ fun AppNavigation() {
 
     Navigator(SplashVoyagerScreen) { navigator ->
         when (val currentScreen = navigator.lastItemOrNull) {
-            is SplashVoyagerScreen, is OnBoardingVoyagerScreen -> {
-                // Show Splash or Onboarding without TabNavigator
-                currentScreen.Content()
-            }
-
             is SearchVoyagerScreen, is MyLibraryScreen -> {
                 // Screens that require bottom navigation should be inside TabNavigator
                 TabNavigator(MyLibraryTab) {

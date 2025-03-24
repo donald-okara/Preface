@@ -4,7 +4,7 @@ import ke.don.shared_domain.data_models.BookItem
 import ke.don.shared_domain.data_models.BookListItemResponse
 import ke.don.shared_domain.data_models.ImageLinks
 import ke.don.shared_domain.data_models.VolumeInfo
-import ke.don.shared_domain.states.SearchState
+import ke.don.shared_domain.states.SearchResult
 import retrofit2.Response
 
 object FakeBooksDataSource {
@@ -78,12 +78,12 @@ object FakeBooksDataSource {
         fakeBookListItemResponse
     )
 
-    val fakeSearchSuccessState = SearchState.Success(
+    val fakeSearchSuccessState = SearchResult.Success(
         fakeBookList.body()?.items ?: emptyList()
     )
 
-    val fakeSearchErrorResponseState = SearchState.Error("Failed with status: 404")
+    val fakeSearchErrorResponseState = SearchResult.Error("Failed with status: 404")
 
-    val fakeSearchErrorState = SearchState.Error("An error occurred. Check your internet and try again")
+    val fakeSearchErrorState = SearchResult.Error("An error occurred. Check your internet and try again")
 
 }

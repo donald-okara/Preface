@@ -5,12 +5,14 @@ import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import ke.don.common_datasource.local.roomdb.entities.BookshelfEntity
 import ke.don.common_datasource.local.roomdb.entities.toEntity
+import ke.don.common_datasource.remote.domain.states.NoDataReturned
 import ke.don.shared_domain.data_models.AddBookToBookshelf
 import ke.don.shared_domain.data_models.BookShelf
 import ke.don.shared_domain.data_models.BookshelfCatalog
 import ke.don.shared_domain.data_models.BookshelfRef
 import ke.don.shared_domain.data_models.SupabaseBook
 import ke.don.shared_domain.states.ResultState
+import ke.don.shared_domain.states.NetworkResult
 import ke.don.shared_domain.values.ADDBOOKSTOBOOKSHELF
 import ke.don.shared_domain.values.BOOKS
 import ke.don.shared_domain.values.BOOKSHELFCATALOG
@@ -24,14 +26,14 @@ class BookshelfNetworkClass(
      */
     suspend fun createBookshelf(
         bookshelf :BookshelfRef
-    ): ResultState{
+    ): NetworkResult<NoDataReturned>{
         return try {
             supabaseClient.from(BOOKSHELFTABLE).insert(bookshelf)
             Log.d(TAG, "Bookshelf inserted successfully")
-            ResultState.Success
+            NetworkResult.Success(NoDataReturned())
         }catch (e: Exception){
             e.printStackTrace()
-            ResultState.Error(e.message.toString())
+            NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
         }
     }
 
@@ -39,69 +41,28 @@ class BookshelfNetworkClass(
      * READ
      */
 
-    suspend fun fetchBookshelfRef(bookshelfId: Int): BookshelfRef?{
+    suspend fun fetchBookshelfRef(bookshelfId: Int): NetworkResult<BookshelfRef>{
         return try{
-            supabaseClient.from(BOOKSHELFTABLE)
-                .select() {
+            val result = supabaseClient.from(BOOKSHELFTABLE)
+                .select {
                     filter { BookshelfRef::id eq bookshelfId }
                 }
-                .decodeSingleOrNull<BookshelfRef>()
+                .decodeSingle<BookshelfRef>()
+            NetworkResult.Success(result)
         }catch (e: Exception){
-            null
-        }
-    }
-
-    suspend fun fetchBookshelfById(bookshelfId: Int): BookShelf? {
-        return try {
-            Log.d(TAG, "Attempting to fetch bookshelf with ID: $bookshelfId")
-
-            // Fetch the bookshelf reference (includes books JSONB array)
-            val bookshelfRef = fetchBookshelfRef(bookshelfId)
-
-            if (bookshelfRef == null) {
-                Log.d(TAG, "No bookshelf found with ID: $bookshelfId")
-                return null
-            }
-
-            Log.d(TAG, "Fetched bookshelfRef: $bookshelfRef")
-
-            // Use the indexed JSONB array to extract book IDs
-            val bookIds = bookshelfRef.books.map { it.bookId }
-
-            // Fetch full book details efficiently using the indexed JSONB filter
-            val books = if (bookIds.isNotEmpty()) {
-                supabaseClient.from(BOOKS)
-                    .select{
-                        filter { SupabaseBook::bookId isIn  bookIds } // Uses indexing for fast lookups
-
-                    }
-                    .decodeList<SupabaseBook>()
-            } else {
-                emptyList()
-            }
-
-            Log.d(TAG, "Fetched books: $books")
-
-            // Return the detailed BookShelf object
-            Log.d(TAG, "Bookshelf fetched successfully: $bookshelfRef, $books")
-            BookShelf(
-                supabaseBookShelf = bookshelfRef,
-                books = books
-            )
-        } catch (e: Exception) {
             e.printStackTrace()
-            Log.e(TAG, "Error fetching bookshelf with ID: $bookshelfId", e)
-            null // Return null on failure
+            NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
         }
     }
 
-    suspend fun fetchUserBookshelves(userId: String): List<BookshelfEntity> {
+
+    suspend fun fetchUserBookshelves(userId: String): NetworkResult<List<BookshelfEntity>> {
         return try {
             Log.d(TAG, "Attempting to fetch bookshelves for user: $userId")
 
             // Fetch bookshelf references for the user (includes books JSONB array)
             val bookshelfRefs = supabaseClient.from(BOOKSHELFTABLE)
-                .select(){
+                .select() {
                     filter { BookshelfRef::userId eq userId }
 
                 }
@@ -116,7 +77,7 @@ class BookshelfNetworkClass(
             // Fetch all books associated with these book IDs using a single query
             val books = if (bookIds.isNotEmpty()) {
                 supabaseClient.from(BOOKS)
-                    .select(){
+                    .select() {
                         filter { SupabaseBook::bookId isIn bookIds }
 
                     }
@@ -141,11 +102,15 @@ class BookshelfNetworkClass(
                 ).toEntity()
             }
 
-            return bookshelvesDetailed
+            NetworkResult.Success(bookshelvesDetailed)
         } catch (e: Exception) {
             e.printStackTrace()
             Log.e(TAG, "Error fetching bookshelves for user: $userId", e)
-            emptyList() // Handle errors gracefully
+            NetworkResult.Error(
+                message = e.message.toString(),
+                hint = e.cause.toString(),
+                details = e.stackTrace.toString()
+            )
         }
     }
 
@@ -156,38 +121,103 @@ class BookshelfNetworkClass(
      */
     suspend fun addBookToBookshelf(
         addBookToBookshelf: AddBookToBookshelf
-    ): ResultState{
+    ): NetworkResult<NoDataReturned>{
         return try {
             Log.d(TAG, "Attempting to add book")
 
             supabaseClient.from(
                 ADDBOOKSTOBOOKSHELF
             ).insert(addBookToBookshelf)
-            ResultState.Success
+            NetworkResult.Success(NoDataReturned())
         }catch (e: Exception){
             e.printStackTrace()
-            ResultState.Error(e.message.toString())
+            NetworkResult.Error(
+                message = e.message.toString(),
+                hint = e.cause.toString(),
+                details = e.stackTrace.toString()
+            )
         }
     }
+
+    suspend fun addMultipleBooksToBookshelf(books: List<AddBookToBookshelf>): NetworkResult<NoDataReturned> {
+        return try {
+            if (books.isEmpty()) {
+                return NetworkResult.Error(
+                    message = "Book list is empty",
+                    hint = "Ensure that the list contains at least one book before inserting.",
+                    details = "Empty lists are not allowed for batch insert."
+                )
+            }
+
+            supabaseClient.from(ADDBOOKSTOBOOKSHELF)
+                .insert(books)
+
+            NetworkResult.Success(NoDataReturned())
+        } catch (e: Exception) {
+            e.printStackTrace()
+            NetworkResult.Error(
+                message = e.message.toString(),
+                hint = e.cause?.toString() ?: "No cause available",
+                details = e.stackTraceToString()
+            )
+        }
+    }
+
+    suspend fun removeBookFromMultipleBookshelves(
+        bookId: String,
+        bookshelfIds: List<Int>
+    ): NetworkResult<NoDataReturned>{
+        Log.d(TAG, "Attempting to remove book from bookshelves:: $bookshelfIds")
+        return try {
+            supabaseClient.from(BOOKSHELFCATALOG).delete {
+                filter {
+                    BookshelfCatalog::bookshelfId isIn bookshelfIds
+                    BookshelfCatalog::bookId eq bookId
+                }
+            }
+            NetworkResult.Success(NoDataReturned())
+
+        }catch (e: Exception){
+            e.printStackTrace()
+            NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
+        }
+    }
+
+    suspend fun removeMultipleBooksFromBookshelf(bookshelfId: Int, bookIds: List<String>): NetworkResult<NoDataReturned>{
+        return try {
+            supabaseClient.from(BOOKSHELFCATALOG).delete {
+                filter {
+                    BookshelfCatalog::bookshelfId eq bookshelfId
+                    BookshelfCatalog::bookId isIn bookIds
+                }
+            }
+            NetworkResult.Success(NoDataReturned())
+        }catch (e: Exception){
+            e.printStackTrace()
+            NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
+        }
+    }
+
 
     suspend fun removeBookFromBookshelf(
         bookId: String,
         bookshelfId: Int
-    ){
-        try {
+    ): NetworkResult<NoDataReturned> {
+        return try {
             supabaseClient.from(BOOKSHELFCATALOG).delete {
                 filter {
                     BookshelfCatalog::bookshelfId eq bookshelfId
                     BookshelfCatalog::bookId eq bookId
                 }
             }
-
+            NetworkResult.Success(NoDataReturned())
         }catch (e: Exception){
             e.printStackTrace()
+            NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
         }
     }
 
-    suspend fun updateBookshelf(bookshelfId: Int,bookshelf: BookshelfRef): ResultState{
+    suspend fun updateBookshelf(bookshelfId: Int,bookshelf: BookshelfRef): NetworkResult<NoDataReturned> {
         return try {
             supabaseClient.from(BOOKSHELFTABLE).update(
                 {
@@ -200,10 +230,10 @@ class BookshelfNetworkClass(
                     BookshelfRef::id eq bookshelfId
                 }
             }
-            ResultState.Success
+            NetworkResult.Success(NoDataReturned())
         } catch (e: Exception) {
             e.printStackTrace()
-            ResultState.Error(e.message.toString())
+            NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
         }
     }
 
@@ -212,17 +242,17 @@ class BookshelfNetworkClass(
      */
     suspend fun deleteBookshelf(
         bookshelfId: Int
-    ): ResultState {
+    ): NetworkResult<NoDataReturned> {
         return try {
             supabaseClient.from(BOOKSHELFTABLE).delete {
                 filter {
                     BookshelfRef::id eq bookshelfId
                 }
             }
-            ResultState.Success
+            NetworkResult.Success(NoDataReturned())
         } catch (e: Exception) {
             e.printStackTrace()
-            ResultState.Error(e.message.toString())
+            NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
         }
     }
 

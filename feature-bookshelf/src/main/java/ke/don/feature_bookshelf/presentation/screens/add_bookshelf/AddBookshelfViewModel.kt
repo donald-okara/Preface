@@ -4,15 +4,18 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
+import ke.don.shared_domain.data_models.BookshelfRef
 import ke.don.shared_domain.states.AddBookshelfState
 import ke.don.shared_domain.states.toBookshelf
 import ke.don.shared_domain.data_models.BookshelfType
-import ke.don.shared_domain.states.ResultState
 import ke.don.shared_domain.states.SuccessState
+import ke.don.shared_domain.states.NetworkResult
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.onStart
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -24,15 +27,36 @@ class AddBookshelfViewModel @Inject constructor(
     private val _bookShelfId = MutableStateFlow<Int?>(null)
     val bookshelfId: StateFlow<Int?> = _bookShelfId
 
-    val addBookshelfState: StateFlow<AddBookshelfState> = bookshelfRepository.addBookshelfState
+    private val _addBookshelfState = MutableStateFlow(AddBookshelfState())
+    val addBookshelfState = _addBookshelfState
+        .onStart { observeBookshelfId() }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = AddBookshelfState()
+        )
 
-    init {
-        observeBookshelfId()
-    }
     private fun observeBookshelfId() {
         viewModelScope.launch {
-            _bookShelfId.filterNotNull().collectLatest { id ->
-                bookshelfRepository.fetchBookshelfRef(id)
+            bookshelfId.collectLatest { id ->
+                when (val result = id?.let { bookshelfRepository.fetchBookshelfRef(it) }) {
+                    is NetworkResult.Error -> {
+                        _addBookshelfState.update { it.copy(successState = SuccessState.ERROR) }
+                    }
+
+                    is NetworkResult.Success -> {
+                        _addBookshelfState.update {
+                            it.copy(
+                                name = result.data.name,
+                                description = result.data.description
+                            )
+                        }
+                    }
+
+                    null -> {
+                        //Do nothing
+                    }
+                }
             }
         }
     }
@@ -43,28 +67,74 @@ class AddBookshelfViewModel @Inject constructor(
         }
     }
 
-    fun onNameChange(name: String) = bookshelfRepository.onNameChange(name)
+    fun onNameChange(name: String) {
+        _addBookshelfState.update {
+            it.copy(name = name)
+        }
+    }
 
     fun isAddButtonEnabled(): Boolean{
         return addBookshelfState.value.name.isNotEmpty() && addBookshelfState.value.successState != SuccessState.LOADING
     }
 
-    fun onDescriptionChange(description: String) = bookshelfRepository.onDescriptionChange(description)
 
-    fun onBookshelfTypeChange(bookshelfType: BookshelfType) = bookshelfRepository.onBookshelfTypeChange(bookshelfType)
+    fun onDescriptionChange(description: String) {
+        _addBookshelfState.update {
+            it.copy(description = description)
+        }
 
-    fun onAddBookshelf(onNavigateBack: () -> Unit){
+    }
+
+    fun onBookshelfTypeChange(bookshelfType: BookshelfType) {
+        _addBookshelfState.update {
+            it.copy(bookshelfType = bookshelfType)
+        }
+    }
+
+    private fun createBookshelf(bookshelf: BookshelfRef, onNavigateBack: () -> Unit) {
         viewModelScope.launch {
-            if (bookshelfId.value == null){
-                bookshelfRepository.createBookshelf(addBookshelfState.value.toBookshelf())
-            }else{
-                bookshelfRepository.editBookshelf(bookshelfId = bookshelfId.value!!, addBookshelfState.value.toBookshelf())
+            when(bookshelfRepository.createBookshelf(bookshelf)){
+                is NetworkResult.Error -> {
+                    _addBookshelfState.update { it.copy(successState = SuccessState.ERROR) }
+                }
+                is NetworkResult.Success -> {
+                    _addBookshelfState.update { it.copy(successState = SuccessState.SUCCESS) }
+                    onNavigateBack()
+                }
+            }
+        }
+
+    }
+
+    private fun editBookshelf(bookshelf: BookshelfRef, onNavigateBack: () -> Unit){
+        viewModelScope.launch {
+            when(bookshelfRepository.editBookshelf(bookshelfId.value!!, bookshelf)){
+                is NetworkResult.Error -> {
+                    _addBookshelfState.update { it.copy(successState = SuccessState.ERROR) }
+                }
+
+                is NetworkResult.Success -> {
+                    _addBookshelfState.update { it.copy(successState = SuccessState.SUCCESS) }
+                    onNavigateBack()
+                }
+            }
+        }
+    }
+
+    fun onSubmit(onNavigateBack: () -> Unit) {
+        viewModelScope.launch {
+            _addBookshelfState.update { it.copy(successState = SuccessState.LOADING) }
+
+            val bookshelf = addBookshelfState.value.toBookshelf()
+
+            if (bookshelfId.value == null) {
+                createBookshelf(bookshelf, onNavigateBack)
+                return@launch
+            } else {
+                editBookshelf(bookshelf, onNavigateBack)
+                return@launch
             }
 
-            when(addBookshelfState.value.successState){
-                SuccessState.SUCCESS -> onNavigateBack()
-                else -> {}
-            }
         }
     }
 

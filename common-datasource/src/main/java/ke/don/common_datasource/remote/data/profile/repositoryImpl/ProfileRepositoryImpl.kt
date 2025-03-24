@@ -7,7 +7,9 @@ import ke.don.common_datasource.local.datastore.profile.profileDataStore
 import ke.don.common_datasource.remote.data.profile.network.ProfileNetworkClass
 import ke.don.common_datasource.remote.domain.getters.generateNonce
 import ke.don.common_datasource.remote.domain.repositories.ProfileRepository
+import ke.don.common_datasource.remote.domain.states.NoDataReturned
 import ke.don.shared_domain.data_models.Profile
+import ke.don.shared_domain.states.NetworkResult
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,18 +26,7 @@ class ProfileRepositoryImpl(
     override val rawNonce: String
     override val hashedNonce: String
 
-    private val _userProfile = MutableStateFlow(Profile())
-    override val userProfile: StateFlow<Profile> = _userProfile
-
-    private val _userId = MutableStateFlow<String?>(null)
-    override val userId: StateFlow<String?> = _userId
-
     init {
-        CoroutineScope(Dispatchers.IO).launch{
-            val profile = context.profileDataStore.data.first()
-            _userId.value = profile.authId
-
-        }
         val (raw, hashed) = generateNonce()
         rawNonce = raw
         hashedNonce = hashed
@@ -47,40 +38,69 @@ class ProfileRepositoryImpl(
         idToken: String,
         displayName: String?,
         profilePictureUri: String?
-    ): Boolean {
+    ): NetworkResult<NoDataReturned> {
         val profile = Profile(
             name = displayName.orEmpty(),
             avatarUrl = profilePictureUri.orEmpty()
         )
 
         return try {
-            if (profileNetworkClass.signIn(idToken, rawNonce)) {
-                val isProfilePresent = profileNetworkClass.checkIfProfileIsPresent()
+            val signInResult = profileNetworkClass.signIn(idToken, rawNonce)
 
-                if (!isProfilePresent) {
-                    Log.d(TAG, "Profile is not present. Inserting profile.")
-                    profileNetworkClass.insertUserProfile(profile)
-                } else {
-                    Log.d(TAG, "Profile is present.")
-                }
+            if (signInResult is NetworkResult.Error) {
+                Log.e(TAG, "Sign-in failed: ${signInResult.message}")
+                return NetworkResult.Error(
+                    message = signInResult.message
+                )
+            }
 
-                _userProfile.update {
-                    profileNetworkClass.fetchUserProfile()!!
-                }
+            val userId = (signInResult as NetworkResult.Success).data.id
+            val profileIsPresentResult = profileNetworkClass.checkIfProfileIsPresent(userId)
 
-                Log.d(TAG, "Profile fetched from network class:: ${userProfile.value}")
-                _userProfile.value.let {
-                    profileDataStoreManager.setProfileInDatastore(
-                        it
+            if (profileIsPresentResult is NetworkResult.Error) {
+                Log.e(TAG, "Error checking profile presence: ${profileIsPresentResult.message}")
+                return NetworkResult.Error(
+                    message = profileIsPresentResult.message
+                )
+            }
+
+            if (!(profileIsPresentResult as NetworkResult.Success).data) {
+                val insertResult = profileNetworkClass.insertUserProfile(profile)
+                if (insertResult is NetworkResult.Error) {
+                    Log.e(TAG, "Error inserting profile: ${insertResult.message}")
+                    return NetworkResult.Error(
+                        message = insertResult.message
                     )
                 }
             }
-            true
+
+            fetchAndStoreUserProfile(userId)
         } catch (e: Exception) {
-            e.printStackTrace()
-            false
+            Log.e(TAG, "Exception in signInAndInsertProfile", e)
+            NetworkResult.Error(
+                message = e.message.toString()
+            )
         }
     }
+
+    /**
+     * Fetches the user profile and stores it in Datastore.
+     */
+    private suspend fun fetchAndStoreUserProfile(userId: String): NetworkResult<NoDataReturned> {
+        val profileResult = profileNetworkClass.fetchUserProfile(userId)
+
+        return if (profileResult is NetworkResult.Success) {
+            profileDataStoreManager.setProfileInDatastore(profileResult.data)
+            Log.d(TAG, "Profile fetched and stored successfully")
+            NetworkResult.Success(NoDataReturned())
+        } else {
+            Log.e(TAG, "Error fetching profile: ${(profileResult as NetworkResult.Error).message}")
+            NetworkResult.Error(
+                message = (profileResult as NetworkResult.Error).message
+            )
+        }
+    }
+
 
     companion object {
         private const val TAG = "ProfileRepositoryImpl"

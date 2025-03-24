@@ -1,13 +1,13 @@
 package ke.don.common_datasource.remote.domain.states
 
 import ke.don.common_datasource.local.roomdb.entities.BookshelfEntity
-import ke.don.common_datasource.local.roomdb.entities.toBookshelf
 import ke.don.shared_domain.data_models.BookShelf
 import ke.don.shared_domain.data_models.BookshelfRef
 import ke.don.shared_domain.states.ResultState
 import ke.don.shared_domain.states.SuccessState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.emptyFlow
+import kotlinx.serialization.Serializable
 
 data class UserLibraryState(
     val userBookshelves: Flow<List<BookShelf>> = emptyFlow(),
@@ -37,3 +37,6 @@ fun BookshelfRef.toEntity(): BookshelfEntity {
         bookshelfType = this.bookshelfType
     )
 }
+
+@Serializable
+class NoDataReturned()

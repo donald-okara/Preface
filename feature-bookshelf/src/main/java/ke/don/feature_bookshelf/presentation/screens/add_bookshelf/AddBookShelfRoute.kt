@@ -19,11 +19,11 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import ke.don.shared_domain.states.SuccessState
 import ke.don.shared_domain.data_models.BookshelfType
 
 @Composable
@@ -34,7 +34,7 @@ fun AddBookshelfRoute(
     onNavigateBack: () -> Unit,
     addBookshelfViewModel: AddBookshelfViewModel = hiltViewModel(),
 ){
-    val state = addBookshelfViewModel.addBookshelfState.collectAsState()
+    val state by addBookshelfViewModel.addBookshelfState.collectAsState()
 
     LaunchedEffect(bookshelfId) {
         addBookshelfViewModel.onBookshelfIdPassed(bookshelfId)
@@ -47,18 +47,18 @@ fun AddBookshelfRoute(
             .fillMaxSize()
     ){
         BookshelfForm(
-            name = state.value.name,
+            name = state.name,
             onNameChange = {
                 addBookshelfViewModel.onNameChange(it)
             },
-            description = state.value.description,
+            description = state.description,
             onDescriptionChange = {
                 addBookshelfViewModel.onDescriptionChange(it)
             },
             onAddBookshelf = {
-                addBookshelfViewModel.onAddBookshelf(onNavigateBack)
+                addBookshelfViewModel.onSubmit(onNavigateBack)
             },
-            bookshelfType = state.value.bookshelfType,
+            bookshelfType = state.bookshelfType,
             onBookshelfTypeChange = {
                 addBookshelfViewModel.onBookshelfTypeChange(it)
             },
