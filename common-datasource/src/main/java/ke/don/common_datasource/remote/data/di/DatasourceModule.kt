@@ -57,8 +57,10 @@ object DatasourceModule {
         profileNetworkClass: ProfileNetworkClass,
         profileDataStoreManager: ProfileDataStoreManager,
         @ApplicationContext context: Context,
+        bookshelfDao: BookshelfDao,
     ): ProfileRepository = ProfileRepositoryImpl(
         profileNetworkClass = profileNetworkClass,
+        bookshelfDao = bookshelfDao,
         profileDataStoreManager = profileDataStoreManager,
         context = context,
     )

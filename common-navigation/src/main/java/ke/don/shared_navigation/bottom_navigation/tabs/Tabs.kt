@@ -7,15 +7,17 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
-import ke.don.shared_navigation.bottom_navigation.tabs.library.MyLibraryScreen
-import ke.don.shared_navigation.bottom_navigation.tabs.search.SearchVoyagerScreen
+import ke.don.feature_book_details.presentation.screens.search.BookSearchScreen
+import ke.don.feature_bookshelf.presentation.screens.user_library.UserLibraryScreen
+import ke.don.feature_profile.tab.ProfileScreen
 
-object MyLibraryTab : Tab {
-    private fun readResolve(): Any = MyLibraryTab
-
+class MyLibraryTab(
+    private val onNavigateToAddBookshelf: () -> Unit = {},
+    private val onNavigateToEditBookshelf: (Int) -> Unit = {},
+    private val onNavigateToBookshelfItem: (Int) -> Unit = {},
+) : Tab {
     override val options: TabOptions
         @Composable
         get() {
@@ -28,12 +30,21 @@ object MyLibraryTab : Tab {
 
     @Composable
     override fun Content() {
-        Navigator(screen = MyLibraryScreen)
+        UserLibraryScreen(
+            onNavigateToBookshefItem = { bookshelfId ->
+                onNavigateToBookshelfItem(bookshelfId)
+            },
+            onAddBookshelf = {
+                onNavigateToAddBookshelf
+            },
+            onNavigateToEdit = {bookshelfId->
+                onNavigateToEditBookshelf(bookshelfId)
+            }
+        )
     }
 }
 
-object SearchTab : Tab {
-    private fun readResolve(): Any = SearchTab
+class SearchTab(private val onNavigateToBookItem: (String) -> Unit) : Tab {
 
     override val options: TabOptions
         @Composable
@@ -47,12 +58,13 @@ object SearchTab : Tab {
 
     @Composable
     override fun Content() {
-        Navigator(screen = SearchVoyagerScreen)
+        BookSearchScreen(
+            onNavigateToBookItem = onNavigateToBookItem
+        )
     }
 }
 
-object ProfileTab : Tab {
-    private fun readResolve(): Any = ProfileTab
+class ProfileTab(private val onSignOut: () -> Unit) : Tab {
 
     override val options: TabOptions
         @Composable
@@ -66,6 +78,8 @@ object ProfileTab : Tab {
 
     @Composable
     override fun Content() {
-        Navigator(screen = SearchVoyagerScreen)
+        ProfileScreen(
+            onNavigateToSignIn = { onSignOut() },
+        )
     }
 }

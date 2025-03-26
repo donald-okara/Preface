@@ -45,7 +45,7 @@ import ke.don.feature_bookshelf.presentation.shared_components.BookshelfOptionsS
 @Composable
 fun UserLibraryScreen(
     modifier: Modifier = Modifier,
-    paddingValues: PaddingValues,
+    paddingValues: PaddingValues = PaddingValues(),
     onNavigateToEdit: (Int) -> Unit,
     onNavigateToBookshefItem: (Int) -> Unit,
     userLibraryViewModel: UserLibraryViewModel = hiltViewModel(),

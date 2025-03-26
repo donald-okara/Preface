@@ -77,6 +77,7 @@ dependencies {
     implementation(project(":feature-book-details"))
     implementation(project(":feature-authentication"))
     implementation(project(":feature-bookshelf"))
+    implementation(project(":feature-profile"))
     implementation(libs.androidx.navigation.compose)
 
     testImplementation(libs.junit)

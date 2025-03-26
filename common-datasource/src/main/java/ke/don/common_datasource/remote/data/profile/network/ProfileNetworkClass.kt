@@ -19,6 +19,7 @@ import ke.don.shared_domain.data_models.BookShelf
 import ke.don.shared_domain.data_models.BookshelfCatalog
 import ke.don.shared_domain.data_models.BookshelfRef
 import ke.don.shared_domain.data_models.Profile
+import ke.don.shared_domain.data_models.ProfileDetails
 import ke.don.shared_domain.data_models.SupabaseBook
 import ke.don.shared_domain.states.NetworkResult
 import ke.don.shared_domain.values.BOOKS
@@ -142,6 +143,33 @@ class ProfileNetworkClass(
         }
     }
 
+    suspend fun fetchProfileDetails(userId: String): NetworkResult<ProfileDetails> {
+        return try {
+            val response = supabase.from("profile_discovered_books")
+                .select {
+                    filter {
+                        ProfileDetails::authId eq userId
+                        //or
+                        eq("auth_id", userId)
+                    }
+                }
+                .decodeSingleOrNull<ProfileDetails>()
+
+            Log.d(TAG, "Profile fetched from supabase:: $response")
+            if(response != null){
+                NetworkResult.Success(response)
+            }else{
+                NetworkResult.Error(
+                    message = "No profile found"
+                )
+            }
+        }catch (e: Exception){
+            NetworkResult.Error(
+                message = e.message.toString()
+            )
+        }
+    }
+
     suspend fun checkSignedInStatus(): Boolean {
 
         val signInStatus = context.reloadSession(supabase)
@@ -158,7 +186,33 @@ class ProfileNetworkClass(
     /**
      * DELETE
      */
+    suspend fun signOut(): NetworkResult<NoDataReturned> {
+        return try {
+            supabase.auth.signOut()
 
+            NetworkResult.Success(NoDataReturned())
+        }catch (e:Exception){
+            e.printStackTrace()
+            NetworkResult.Error(message = e.message.toString())
+        }
+    }
+
+    suspend fun deleteProfile(userId: String): NetworkResult<NoDataReturned> {
+        return try {
+            supabase.from("profiles").delete {
+                filter {
+                    Profile::authId eq userId
+                    //Or
+                    eq("auth_id", userId)
+                }
+            }
+
+            NetworkResult.Success(NoDataReturned())
+        }catch (e: Exception){
+            e.printStackTrace()
+            NetworkResult.Error(message = e.message.toString())
+        }
+    }
 
     companion object {
         private const val TAG = "ProfileNetworkClass"

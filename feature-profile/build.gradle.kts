@@ -1,5 +1,3 @@
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
@@ -10,9 +8,8 @@ plugins {
     id("kotlin-parcelize")
 }
 
-
 android {
-    namespace = "ke.don.feature_book_details"
+    namespace = "ke.don.feature_profile"
     compileSdk = 35
 
     defaultConfig {
@@ -20,7 +17,6 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
-
     }
 
     buildTypes {
@@ -38,13 +34,6 @@ android {
     }
     kotlinOptions {
         jvmTarget = "11"
-    }
-    buildFeatures {
-        compose = true
-        buildConfig = true
-    }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.1"
     }
 }
 
@@ -64,7 +53,8 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
 
     implementation(libs.androidx.foundation)
-
+    implementation(libs.coil.compose)
+    implementation(libs.coil)
     //Dagger Hilt
     implementation(libs.hilt.android)
     implementation(libs.androidx.runtime.livedata)
@@ -72,38 +62,11 @@ dependencies {
     kapt(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
 
-    // Retrofit with Kotlin serialization Converter
-    implementation(libs.retrofit2.kotlinx.serialization.converter)
-    implementation(libs.retrofit)
-    implementation(libs.okhttp)
-    implementation(libs.kotlinx.serialization.json)
-    implementation (libs.converter.gson)
-
-    implementation(libs.androidx.palette.ktx)
-
-
-    //Coil
-    implementation(libs.coil)
-    implementation(libs.coil.gif)
-    implementation(libs.coil.compose)
-    implementation(libs.androidx.core.splashscreen)
-
-
-    implementation(libs.glide) // Latest version
-    //noinspection KaptUsageInsteadOfKsp
-    kapt(libs.compiler)
-
     implementation(project(":common-domain"))
+    implementation(project(":shared-components"))
     implementation(project(":common-datasource"))
 
     testImplementation(libs.junit)
-    testImplementation(libs.mockito.kotlin)
-    testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(libs.androidx.core.testing)
-    testImplementation( libs.junit)
-    testImplementation(libs.mockito.inline)
-    testImplementation(libs.mockito.core)
-
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }

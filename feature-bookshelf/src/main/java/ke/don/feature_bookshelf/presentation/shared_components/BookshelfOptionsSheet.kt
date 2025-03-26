@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Edit
@@ -36,13 +35,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ke.don.feature_bookshelf.R
-import ke.don.shared_components.SinkingBox
+import ke.don.shared_components.ConfirmationDialog
+import ke.don.shared_components.SheetOptionItem
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
@@ -78,7 +77,7 @@ fun BookshelfOptionsSheet(
                     )
                 }
                 item {
-                    BookShelfOptionItem(
+                    SheetOptionItem(
                         modifier = modifier,
                         icon = Icons.Outlined.Edit,
                         title = "Edit bookshelf",
@@ -88,7 +87,7 @@ fun BookshelfOptionsSheet(
                     )
                 }
                 item {
-                    BookShelfOptionItem(
+                    SheetOptionItem(
                         modifier = modifier,
                         icon = Icons.Outlined.Close,
                         title = "Delete bookshelf",
@@ -116,47 +115,6 @@ fun BookshelfOptionsSheet(
 
 }
 
-@Composable
-fun ConfirmationDialog(
-    onDismissRequest: () -> Unit,
-    onConfirmation: () -> Unit,
-    dialogTitle: String,
-    dialogText: String,
-    icon: ImageVector,
-) {
-    AlertDialog(
-        icon = {
-            Icon(icon, contentDescription = dialogText)
-        },
-        title = {
-            Text(text = dialogTitle)
-        },
-        text = {
-            Text(text = dialogText)
-        },
-        onDismissRequest = {
-            onDismissRequest()
-        },
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    onConfirmation()
-                }
-            ) {
-                Text("Confirm")
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = {
-                    onDismissRequest()
-                }
-            ) {
-                Text("Dismiss")
-            }
-        }
-    )
-}
 
 @Composable
 fun BookshelfSheetHeader(
@@ -225,32 +183,4 @@ fun BookshelfSheetHeader(
     }
 }
 
-@Composable
-fun BookShelfOptionItem(
-    modifier: Modifier = Modifier,
-    icon: ImageVector,
-    title: String,
-    onOptionClick: () -> Unit
-) {
-    val textSize = 18f
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .clickable {onOptionClick()}
-            .padding(8.dp), // Inner padding for content
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Start
-    ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = title,
-            modifier = modifier.size(24.dp)
-        )
-        Spacer(modifier = modifier.width(8.dp))
-        Text(
-            text = title,
-            style = MaterialTheme.typography.headlineMedium.copy(fontSize = textSize.sp)
-        )
-    }
 
-}
