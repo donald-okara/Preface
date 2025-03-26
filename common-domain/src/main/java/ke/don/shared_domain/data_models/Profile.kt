@@ -11,5 +11,19 @@ data class Profile(
     @SerialName("auth_id")
     val authId : String = "",
     @SerialName("avatar_url")
-    val avatarUrl : String = ""
+    val avatarUrl : String = "",
+)
+
+@Serializable
+data class ProfileDetails(
+    val id: Int = 0,
+    val name : String = "",
+
+    @SerialName("auth_id")
+    val authId : String = "",
+    @SerialName("avatar_url")
+    val avatarUrl : String = "",
+    @SerialName("discovered_books")
+    val discoveredBooks: Int = 0,
+    val email : String = ""
 )

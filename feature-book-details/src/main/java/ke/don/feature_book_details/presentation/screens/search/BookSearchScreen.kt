@@ -28,7 +28,7 @@ import ke.don.shared_domain.states.ResultState
 @Composable
 fun BookSearchScreen(
     modifier: Modifier = Modifier,
-    paddingValues: PaddingValues,
+    paddingValues: PaddingValues = PaddingValues(),
     viewModel: SearchViewModel = hiltViewModel(),
     onNavigateToBookItem: (String) -> Unit
 ) {

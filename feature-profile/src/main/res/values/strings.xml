@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="discovered_books">Discovered %1$s books</string>
+    <string name="delete_profile">Delete Profile</string>
+    <string name="delete_profile_message">Are you sure you want to delete your profile? It can never be recovered</string>
+    <string name="sign_out">Sign out</string>
+    <string name="sign_out_message">Are you sure you want to sign out?</string>
+</resources>

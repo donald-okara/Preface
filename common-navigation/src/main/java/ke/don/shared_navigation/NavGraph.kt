@@ -1,29 +1,33 @@
 package ke.don.shared_navigation
 
-import android.annotation.SuppressLint
-import android.util.Log
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.tab.CurrentTab
-import ke.don.feature_authentication.presentation.OnboardingScreen
-import ke.don.shared_domain.values.Screens
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabNavigator
-import ke.don.shared_navigation.bottom_navigation.model.BottomNavItem
+import ke.don.feature_authentication.presentation.OnboardingScreen
 import ke.don.shared_navigation.bottom_navigation.tabs.MyLibraryTab
-import ke.don.shared_navigation.bottom_navigation.tabs.library.MyLibraryScreen
-import ke.don.shared_navigation.bottom_navigation.tabs.search.SearchVoyagerScreen
+import ke.don.shared_navigation.bottom_navigation.tabs.ProfileTab
+import ke.don.shared_navigation.bottom_navigation.tabs.SearchTab
+import ke.don.shared_navigation.bottom_navigation.tabs.library.AddBookshelfVoyagerScreen
+import ke.don.shared_navigation.bottom_navigation.tabs.library.BookshelfDetailsScreen
+import ke.don.shared_navigation.bottom_navigation.tabs.search.BookDetailsVoyagerScreen
 
 
 object OnBoardingVoyagerScreen : AndroidScreen() {
@@ -33,9 +37,7 @@ object OnBoardingVoyagerScreen : AndroidScreen() {
     override fun Content() {
         val navigator = LocalNavigator.current
         OnboardingScreen(
-            onSuccessfulSignIn = {
-                navigator?.replaceAll(SearchVoyagerScreen)
-            }
+            onSuccessfulSignIn = { navigator?.replaceAll(MainScreen) }
         )
     }
 }
@@ -47,68 +49,97 @@ object SplashVoyagerScreen : AndroidScreen() {
     override fun Content() {
         val navigator = LocalNavigator.current
         PrefaceSplashScreen(
-            onNavigateToMain = {
-                navigator?.replaceAll(SearchVoyagerScreen)
-            },
-            onNavigateToOnBoarding = {
-                navigator?.replaceAll(OnBoardingVoyagerScreen)
-            }
+            onNavigateToMain = { navigator?.replaceAll(MainScreen) },
+            onNavigateToOnBoarding = { navigator?.replaceAll(OnBoardingVoyagerScreen) }
         )
     }
 }
 
+object MainScreen : AndroidScreen() {
+    @Composable
+    override fun Content() {
+        val navigator = LocalNavigator.current // Top-level navigator managing MainScreen
+        // Define tab instances
+        val myLibraryTab = remember {
+            MyLibraryTab(
+                onNavigateToAddBookshelf = {
+                    navigator?.push(AddBookshelfVoyagerScreen(null))
+                },
+                onNavigateToEditBookshelf = {
+                    navigator?.push(AddBookshelfVoyagerScreen(it))
+                },
+                onNavigateToBookshelfItem = {
+                    navigator?.push(BookshelfDetailsScreen(it))
+                }
+            )
+        }
+        val searchTab = remember {
+            SearchTab(
+                onNavigateToBookItem = {
+                    navigator?.push(BookDetailsVoyagerScreen(it))
+                }
+            )
+        }
+        val profileTab = remember {
+            ProfileTab(onSignOut = { navigator?.replaceAll(OnBoardingVoyagerScreen) })
+        }
+        val tabs = listOf(myLibraryTab, searchTab, profileTab)
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@Composable
-fun AppNavigation() {
-    Log.d("NavGraph", "Start destination: ${Screens.Splash.route}")
-
-    Navigator(SplashVoyagerScreen) { navigator ->
-        when (val currentScreen = navigator.lastItemOrNull) {
-            is SearchVoyagerScreen, is MyLibraryScreen -> {
-                // Screens that require bottom navigation should be inside TabNavigator
-                TabNavigator(MyLibraryTab) {
+        TabNavigator(myLibraryTab) { tabNavigator ->
+            Scaffold(
+                bottomBar = {
+                    BottomNavigationBar(
+                        tabs = tabs,
+                        selectedTab = tabNavigator.current,
+                        onTabSelected = { tabNavigator.current = it }
+                    )
+                }
+            ) { innerPadding ->
+                Box(modifier = Modifier.padding(innerPadding)) {
                     CurrentTab()
                 }
             }
-
-            else -> {
-                // For all other screens (like Book Details), just show their content without TabNavigator
-                currentScreen?.Content()
-            }
         }
+    }
+}
+
+@Composable
+fun AppNavigation() {
+    Navigator(SplashVoyagerScreen) { navigator ->
+        navigator.lastItemOrNull?.Content()
     }
 }
 
 
 @Composable
 fun BottomNavigationBar(
+    tabs: List<Tab>,
     selectedTab: Tab,
     onTabSelected: (Tab) -> Unit
 ) {
-    val tabs = listOf(
-        BottomNavItem.MyLibrary,
-        BottomNavItem.Search,
-        BottomNavItem.Profile
-    )
 
     Column(Modifier.fillMaxWidth()) {
         HorizontalDivider()
-
         NavigationBar(
             containerColor = MaterialTheme.colorScheme.surface
         ) {
             tabs.forEach { item ->
                 NavigationBarItem(
-                    selected = selectedTab.key == item.tab.key, // Compare by key (Voyager Tab)
-                    onClick = { onTabSelected(item.tab) }, // Switch tabs via TabNavigator
+                    selected = selectedTab.key == item.key, // Compare by key (Voyager Tab)
+                    onClick = { onTabSelected(item) }, // Switch tabs via TabNavigator
                     icon = {
-                        Icon(
-                            imageVector = item.icon,
-                            contentDescription = item.title
-                        )
+                        item.options.icon?.let {
+                            Icon(
+                                painter = it,
+                                contentDescription = item.options.title,
+                                tint = if (selectedTab.key == item.key)
+                                    MaterialTheme.colorScheme.primary // Apply primary color if selected
+                                else
+                                    MaterialTheme.colorScheme.onSurfaceVariant // Default color for unselected
+                            )
+                        }
                     },
-                    label = { Text(text = item.title) }
+                    label = { Text(text = item.options.title) }
                 )
             }
         }

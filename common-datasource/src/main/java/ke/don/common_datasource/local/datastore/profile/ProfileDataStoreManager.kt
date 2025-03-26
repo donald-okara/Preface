@@ -20,6 +20,10 @@ class ProfileDataStoreManager(private val context : Context) {
 
     }
 
+    suspend fun clearProfileDataStore(){
+        context.profileDataStore.updateData { Profile() }
+    }
+
     suspend fun getProfileFromDatastore(): Profile{
         return context.profileDataStore.data
             .filter { it.authId.isNotEmpty() } // Wait until the profile has a valid ID
