@@ -69,10 +69,10 @@ fun PrefaceSplashScreen(
         contentAlignment = Alignment.Center,
         modifier = modifier
             .fillMaxSize()
-            .background(color = colorResource(R.color.brown))
+            .background(color = colorResource(R.color.mbuku_teal))
     ){
         Image(
-            painter = painterResource(id = R.drawable.splash_screen_2),
+            painter = painterResource(id = R.drawable.app_icon),
             contentDescription = "Splash Screen",
             modifier = modifier
                 .fillMaxSize()

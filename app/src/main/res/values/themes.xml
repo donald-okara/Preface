@@ -2,7 +2,7 @@
 <resources>
 
     <style name="Theme.Bookish" parent="android:Theme.Material.Light.NoActionBar">
-        <item name="android:windowBackground">@color/brown</item>
+        <item name="android:windowBackground">@color/mbuku_teal</item>
 
     </style>
 </resources>

@@ -9,6 +9,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import com.don.preface.ui.theme.PrefaceTheme
 import dagger.hilt.android.AndroidEntryPoint
+import ke.don.shared_components.mbuku_theme.ui.theme.MbukuTheme
 import ke.don.shared_navigation.AppNavigation
 
 @AndroidEntryPoint
@@ -18,7 +19,7 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
         setContent {
-            PrefaceTheme {
+            MbukuTheme  {
                 Surface(modifier = Modifier.fillMaxSize()) {
                     AppNavigation()
 
