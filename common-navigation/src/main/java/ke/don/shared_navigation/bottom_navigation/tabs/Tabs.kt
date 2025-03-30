@@ -3,10 +3,12 @@ package ke.don.shared_navigation.bottom_navigation.tabs
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.LibraryBooks
 import androidx.compose.material.icons.automirrored.filled.ManageSearch
+import androidx.compose.material.icons.automirrored.outlined.LibraryBooks
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import ke.don.feature_book_details.presentation.screens.search.BookSearchScreen
@@ -21,8 +23,17 @@ class MyLibraryTab(
     override val options: TabOptions
         @Composable
         get() {
-            val icon = rememberVectorPainter(image = Icons.AutoMirrored.Filled.LibraryBooks)
+            // Get the current tab state
+            val tabNavigator = LocalTabNavigator.current
+            val isSelected = tabNavigator.current == this
 
+            val icon = rememberVectorPainter(
+                image = if (isSelected) {
+                    Icons.AutoMirrored.Filled.LibraryBooks
+                } else {
+                    Icons.AutoMirrored.Outlined.LibraryBooks
+                }
+            )
             val tabName = "My library"
 
             return remember { TabOptions(index = 0u, title = tabName, icon = icon) }

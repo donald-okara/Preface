@@ -245,7 +245,7 @@ class BookDetailsViewModel @Inject constructor(
             ShowBookshelvesState()
         }
     }
-    override fun onCleared() {
+    public override fun onCleared() {
         super.onCleared()
         _volumeId.update {
             null
@@ -255,6 +255,7 @@ class BookDetailsViewModel @Inject constructor(
         }
         logger.logDebug(TAG, "ViewModel cleared")
     }
+
 
     companion object {
         const val TAG = "BookDetailsViewModel"

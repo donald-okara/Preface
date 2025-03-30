@@ -38,8 +38,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ke.don.feature_bookshelf.R
-import ke.don.feature_bookshelf.presentation.shared_components.BooksCoverStack
 import ke.don.feature_bookshelf.presentation.shared_components.BookshelfOptionsSheet
+import ke.don.feature_bookshelf.presentation.shared_components.Bookstack
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -210,29 +210,22 @@ fun BookshelfItem(
 
             )
     ) {
-        Card(
-            modifier = modifier
-                .padding(4.dp)
-        ) {
-            if(coverImages.isNotEmpty()){
-                BooksCoverStack(
-                    imageUrls = coverImages,
-                    modifier = modifier
-                        .fillMaxWidth()
-                        .height(175.dp)
-                )
-            }else{
-                Image(
-                    painter = painterResource(R.drawable.bookshelf_placeholder),
-                    contentDescription = "Bookshelf item",
-                    modifier = modifier
-                        .fillMaxWidth()
-                        .height(175.dp)
-                )
-            }
-
+        if(coverImages.isNotEmpty()){
+            Bookstack(
+                bookCoverUrls = coverImages,
+                modifier = modifier,
+                size = 200.dp
+            )
         }
-
+        else{
+            Image(
+                painter = painterResource(R.drawable.bookshelf_placeholder),
+                contentDescription = "Bookshelf item",
+                modifier = modifier
+                    .fillMaxWidth()
+                    .height(175.dp)
+            )
+        }
         Spacer(modifier = modifier.height(8.dp)) // Space between the image and the text
 
 

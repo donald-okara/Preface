@@ -10,14 +10,10 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -32,7 +28,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ke.don.feature_bookshelf.R
-import ke.don.feature_bookshelf.presentation.shared_components.BooksCoverStack
+import ke.don.feature_bookshelf.presentation.shared_components.Bookstack
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -82,31 +78,29 @@ fun BookshelfHeader(
             Row(
                 modifier = contentModifier,
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Start
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 16.dp),
-                    modifier = modifier
-                        .padding(4.dp)
-                        .size(imageSize)
-                ) {
-                    if (coverImages.isNotEmpty()) {
-                        BooksCoverStack(imageUrls = coverImages, modifier = modifier.fillMaxSize())
-                    } else {
-                        Image(
-                            painter = painterResource(R.drawable.bookshelf_placeholder),
-                            contentDescription = "Bookshelf item",
-                            modifier = modifier.fillMaxWidth().height(imageHeight)
-                        )
-                    }
+                if (coverImages.isNotEmpty()) {
+                    Bookstack(
+                        bookCoverUrls = coverImages,
+                        modifier = modifier,
+                        size = imageSize
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(R.drawable.bookshelf_placeholder),
+                        contentDescription = "Bookshelf item",
+                        modifier = modifier.fillMaxWidth().height(imageHeight)
+                    )
                 }
 
                 Spacer(modifier = modifier.width(12.dp))
 
                 Column(
                     horizontalAlignment = Alignment.Start,
-                    modifier = modifier.weight(1f)
+                    modifier = modifier
+                        .weight(1f)
+                        .padding(8.dp)
                 ) {
                     Text(
                         text = bookshelfName,
@@ -127,22 +121,18 @@ fun BookshelfHeader(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = contentModifier
             ) {
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 16.dp),
-                    modifier = modifier
-                        .padding(4.dp)
-                        .size(imageSize)
-                ) {
-                    if (coverImages.isNotEmpty()) {
-                        BooksCoverStack(imageUrls = coverImages, modifier = modifier.fillMaxSize())
-                    } else {
-                        Image(
-                            painter = painterResource(R.drawable.bookshelf_placeholder),
-                            contentDescription = "Bookshelf item",
-                            modifier = modifier.fillMaxWidth().height(imageHeight)
-                        )
-                    }
+                if (coverImages.isNotEmpty()) {
+                    Bookstack(
+                        bookCoverUrls = coverImages,
+                        modifier = modifier,
+                        size = imageSize
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(R.drawable.bookshelf_placeholder),
+                        contentDescription = "Bookshelf item",
+                        modifier = modifier.fillMaxWidth().height(imageHeight)
+                    )
                 }
 
                 Text(
