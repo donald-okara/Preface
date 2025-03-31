@@ -3,8 +3,6 @@ package ke.don.shared_domain.data_models
 import kotlinx.serialization.SerialName
 
 data class CreateUserProgressDTO(
-    @SerialName("user_id")
-    val userId: String,
     @SerialName("book_id")
     val bookId: String,
     @SerialName("current_page")
