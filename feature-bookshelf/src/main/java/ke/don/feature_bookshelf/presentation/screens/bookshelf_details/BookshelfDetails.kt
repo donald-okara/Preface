@@ -83,7 +83,7 @@ fun BookshelfDetailsRoute(
         ) {
             when (val state = bookshelfUiState.resultState) {
                 is ResultState.Success -> {
-                    if (bookshelf.id == -1) { // Loading state indicator
+                    if (bookshelf.id == -1 || bookshelf.name == "") { // Loading state indicator
                         CircularProgressIndicator()
                     } else {
                         BookList(

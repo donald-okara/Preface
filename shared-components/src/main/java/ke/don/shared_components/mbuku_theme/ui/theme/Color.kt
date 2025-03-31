@@ -218,7 +218,35 @@ val surfaceContainerDarkHighContrast = Color(0xFF2B3230)
 val surfaceContainerHighDarkHighContrast = Color(0xFF363D3B)
 val surfaceContainerHighestDarkHighContrast = Color(0xFF424846)
 
+val warningLight = Color(0xFF785A0B)
+val onWarningLight = Color(0xFFFFFFFF)
+val warningContainerLight = Color(0xFFFFDFA0)
+val onWarningContainerLight = Color(0xFF5C4300)
 
+val warningLightMediumContrast = Color(0xFF473300)
+val onWarningLightMediumContrast = Color(0xFFFFFFFF)
+val warningContainerLightMediumContrast = Color(0xFF88681C)
+val onWarningContainerLightMediumContrast = Color(0xFFFFFFFF)
+
+val warningLightHighContrast = Color(0xFF3A2900)
+val onWarningLightHighContrast = Color(0xFFFFFFFF)
+val warningContainerLightHighContrast = Color(0xFF5F4500)
+val onWarningContainerLightHighContrast = Color(0xFFFFFFFF)
+
+val warningDark = Color(0xFFEAC16C)
+val onWarningDark = Color(0xFF402D00)
+val warningContainerDark = Color(0xFF5C4300)
+val onWarningContainerDark = Color(0xFFFFDFA0)
+
+val warningDarkMediumContrast = Color(0xFFFFD786)
+val onWarningDarkMediumContrast = Color(0xFF322300)
+val warningContainerDarkMediumContrast = Color(0xFFAF8C3D)
+val onWarningContainerDarkMediumContrast = Color(0xFF000000)
+
+val warningDarkHighContrast = Color(0xFFFFEED2)
+val onWarningDarkHighContrast = Color(0xFF000000)
+val warningContainerDarkHighContrast = Color(0xFFE5BD69)
+val onWarningContainerDarkHighContrast = Color(0xFF110A00)
 
 
 

@@ -51,6 +51,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import ke.don.feature_profile.R
 import ke.don.shared_components.ConfirmationDialog
+import ke.don.shared_components.DialogType
 import ke.don.shared_components.SheetOptionItem
 import ke.don.shared_components.ShimmerEffect
 import ke.don.shared_domain.states.ResultState
@@ -265,6 +266,7 @@ fun ProfileBottomSheet(
                 onDeleteProfile()
                 showDeleteDialog = false
             },
+            dialogType = DialogType.DANGER,
             dialogTitle = stringResource(R.string.delete_profile),
             dialogText = stringResource(R.string.delete_profile_message),
             icon = Icons.Outlined.PersonRemove
@@ -278,6 +280,7 @@ fun ProfileBottomSheet(
                 onSignOut()
                 showSignOutDialog = false
             },
+            dialogType = DialogType.WARNING,
             dialogTitle = stringResource(R.string.sign_out),
             dialogText = stringResource(R.string.sign_out_message),
             icon = Icons.Outlined.Logout

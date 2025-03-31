@@ -37,7 +37,6 @@ object DatasourceModule {
     @Provides
     @Singleton
     fun provideUserProfile(profileDataStoreManager: ProfileDataStoreManager): Profile = runBlocking {
-        Log.d("DatasourceModule", "Fetching User profile")
         profileDataStoreManager.getProfileFromDatastore()
     }
 

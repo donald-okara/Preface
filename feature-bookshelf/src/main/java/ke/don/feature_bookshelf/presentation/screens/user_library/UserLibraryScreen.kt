@@ -39,7 +39,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ke.don.feature_bookshelf.R
 import ke.don.feature_bookshelf.presentation.shared_components.BookshelfOptionsSheet
-import ke.don.feature_bookshelf.presentation.shared_components.Bookstack
+import ke.don.shared_components.BookStack
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -211,7 +211,7 @@ fun BookshelfItem(
             )
     ) {
         if(coverImages.isNotEmpty()){
-            Bookstack(
+            BookStack(
                 bookCoverUrls = coverImages,
                 modifier = modifier,
                 size = 200.dp

@@ -28,7 +28,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ke.don.feature_bookshelf.R
-import ke.don.feature_bookshelf.presentation.shared_components.Bookstack
+import ke.don.shared_components.BookStack
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -81,7 +81,7 @@ fun BookshelfHeader(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 if (coverImages.isNotEmpty()) {
-                    Bookstack(
+                    BookStack(
                         bookCoverUrls = coverImages,
                         modifier = modifier,
                         size = imageSize
@@ -122,7 +122,7 @@ fun BookshelfHeader(
                 modifier = contentModifier
             ) {
                 if (coverImages.isNotEmpty()) {
-                    Bookstack(
+                    BookStack(
                         bookCoverUrls = coverImages,
                         modifier = modifier,
                         size = imageSize
