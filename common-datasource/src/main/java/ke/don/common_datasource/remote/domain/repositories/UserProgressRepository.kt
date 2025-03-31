@@ -6,7 +6,7 @@ import ke.don.shared_domain.data_models.UserProgressResponse
 import ke.don.shared_domain.states.NetworkResult
 
 interface UserProgressRepository {
-    suspend fun addUserProgress(userProgress: CreateUserProgressDTO)
+    suspend fun addUserProgress(userProgress: CreateUserProgressDTO): NetworkResult<NoDataReturned>
 
     suspend fun fetchBookProgressByUserAndBook(userId: String, bookId: String) : NetworkResult<UserProgressResponse>
     suspend fun fetchBookProgressByUser(userId: String) : NetworkResult<List<UserProgressResponse>>
