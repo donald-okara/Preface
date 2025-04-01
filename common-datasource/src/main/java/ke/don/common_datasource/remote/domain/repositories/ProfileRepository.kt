@@ -12,8 +12,8 @@ interface ProfileRepository {
 
     suspend fun signInAndInsertProfile(
         idToken: String,
-        displayName: String?,
-        profilePictureUri: String?
+        displayName: String,
+        profilePictureUri: String
     ): NetworkResult<NoDataReturned>
 
     suspend fun syncUserProfile(userId: String): NetworkResult<NoDataReturned>

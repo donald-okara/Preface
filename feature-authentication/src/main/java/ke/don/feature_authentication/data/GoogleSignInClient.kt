@@ -36,8 +36,7 @@ class GoogleSignInClient(
 
 
     suspend fun signInWithGoogle(): NetworkResult<NoDataReturned> {
-        for (attempt in 1..MAX_RETRIES) {
-            try {
+            return try {
                 val result = credentialManager.getCredential(
                     request = request, context = context
                 )
@@ -47,34 +46,28 @@ class GoogleSignInClient(
 
                 val displayName = googleIdTokenCredential.displayName
                 val profilePictureUri = googleIdTokenCredential.profilePictureUri?.toString()
-
                 if (displayName == null || profilePictureUri == null) {
-                    throw Exception("Missing displayName or profilePictureUri")
-                }
-
-                val signInSuccess = profileRepository.signInAndInsertProfile(
-                    googleIdToken, displayName, profilePictureUri
-                )
-
-                return signInSuccess.also {
-                    if (signInSuccess == NetworkResult.Success(NoDataReturned())) {
-                        Toast.makeText(context, "Welcome to Preface", Toast.LENGTH_SHORT).show()
+                    Log.d("GoogleSignInClient", "Display name:: $displayName, profilePictureUri:: $profilePictureUri")
+                    NetworkResult.Error(message = "Null name or profile url")
+                }else{
+                    Log.d("GoogleSignInClient", "Display name:: $displayName, profilePictureUri:: $profilePictureUri")
+                    val signInSuccess = profileRepository.signInAndInsertProfile(
+                        googleIdToken, displayName, profilePictureUri
+                    )
+                    signInSuccess.also {
+                        if (signInSuccess == NetworkResult.Success(NoDataReturned())) {
+                            Toast.makeText(context, "Welcome to Preface", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
             } catch (e: Exception) {
-                Log.d("GoogleSignInClient", "Attempt $attempt failed: ${e.message}")
-                if (attempt == MAX_RETRIES) {
-                    Log.d("GoogleSignInClient", "Max retries reached. Sign in failed.")
-                    Toast.makeText(
-                        context, "Sign in failed. Please try again later", Toast.LENGTH_SHORT
-                    ).show()
-                    return NetworkResult.Error(message = e.message ?: "Unknown error")
-                }
-                delay(2000) // Wait 2 seconds before retrying
+                Toast.makeText(
+                    context, "Sign in failed. Please try again later", Toast.LENGTH_SHORT
+                ).show()
+                return NetworkResult.Error(message = e.message ?: "Unknown error")
             }
         }
         // Should never reach here; return a default failure if it does.
-        return NetworkResult.Error(message = "Unknown error")
-    }
+
 
 }

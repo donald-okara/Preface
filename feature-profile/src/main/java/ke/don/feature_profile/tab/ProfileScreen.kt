@@ -182,7 +182,7 @@ fun ProfileHeader(
                 fontWeight = FontWeight.Bold
             )
 
-            if(!isPrivate){
+            if(!isPrivate || email.isNotEmpty()){
                 Text(
                     text = email,
                     style = MaterialTheme.typography.titleMedium,

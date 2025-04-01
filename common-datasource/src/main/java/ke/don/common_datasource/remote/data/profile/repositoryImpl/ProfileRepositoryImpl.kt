@@ -34,11 +34,12 @@ class ProfileRepositoryImpl(
 
     override suspend fun signInAndInsertProfile(
         idToken: String,
-        displayName: String?,
-        profilePictureUri: String?
+        displayName: String,
+        profilePictureUri: String
     ): NetworkResult<NoDataReturned> {
         val profile = Profile(
             name = displayName.orEmpty(),
+
             avatarUrl = profilePictureUri.orEmpty()
         )
 
