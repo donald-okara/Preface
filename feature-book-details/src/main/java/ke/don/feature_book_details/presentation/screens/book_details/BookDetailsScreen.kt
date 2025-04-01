@@ -25,6 +25,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -55,10 +56,11 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import ke.don.common_datasource.remote.domain.states.BookshelfBookDetailsState
-import ke.don.common_datasource.remote.domain.states.ShowBookshelvesState
+import ke.don.common_datasource.remote.domain.states.ShowOptionState
 import ke.don.common_datasource.remote.domain.utils.getDominantColor
 import ke.don.feature_book_details.presentation.screens.book_details.components.AboutVolume
 import ke.don.feature_book_details.presentation.screens.book_details.components.BookCoverPreview
+import ke.don.feature_book_details.presentation.screens.book_details.components.BookDetailsSheet
 import ke.don.feature_book_details.presentation.screens.book_details.components.PublishDetails
 import ke.don.feature_book_details.presentation.screens.book_details.components.TitleHeader
 import ke.don.shared_domain.data_models.VolumeInfoDet
@@ -80,6 +82,7 @@ fun BookDetailsScreen(
     val loadingJoke = bookDetailsViewModel.loadingJoke
     val imageUrl = bookUiState.value.highestImageUrl
     val showBookshelves by bookDetailsViewModel.showBookshelves.collectAsState()
+    val showOptionState by bookDetailsViewModel.showBookSheetOptions.collectAsState()
 
     val bookshelfList = bookshelvesState.bookshelves
 
@@ -117,8 +120,19 @@ fun BookDetailsScreen(
                         Icon(
                             imageVector = Icons.AutoMirrored.Default.ArrowBack,
                             contentDescription = "Back"
-
                         )
+                    }
+                },
+                actions = {
+                    if (bookUiState.value.resultState == ResultState.Success) {
+                        IconButton(
+                            onClick = bookDetailsViewModel::onShowBookOptions
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.MoreVert,
+                                contentDescription = "Back"
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
@@ -153,6 +167,21 @@ fun BookDetailsScreen(
                 onResetSuccess = bookDetailsViewModel::resetPushSuccess
             )
 
+            BookDetailsSheet(
+                modifier = modifier,
+                bookUrl = bookUiState.value.highestImageUrl,
+                title = bookUiState.value.bookDetails.volumeInfo.title,
+                showBottomSheet = showOptionState.showOption,
+                showBookshelves = showBookshelves,
+                onConfirm = bookDetailsViewModel::onPushEditedBookshelfBooks,
+                onExpandBookshelves = bookDetailsViewModel::onShowBookshelves,
+                onBookshelfClicked = {bookshelfId->
+                    bookDetailsViewModel.onSelectBookshelf(bookshelfId)
+                },
+                uniqueBookshelves = bookshelfList,
+                onDismissSheet = bookDetailsViewModel::onShowBookOptions
+            )
+
             if (bookUiState.value.resultState != ResultState.Success) {
                 DetailsLoadingScreen(
                     modifier = modifier
@@ -165,6 +194,8 @@ fun BookDetailsScreen(
 
             }
         }
+
+
     }
 }
 
@@ -177,7 +208,7 @@ fun BookDetailsContent(
     volumeInfo: VolumeInfoDet,
     onBookshelfClicked: (Int) -> Unit,
     dominantColor : Color,
-    showBookshelves: ShowBookshelvesState,
+    showBookshelves: ShowOptionState,
     onExpandBookshelves: () -> Unit,
     imageUrl: String? = null,
     onResetSuccess: () -> Unit,
@@ -414,11 +445,3 @@ fun search(url : String, context: Context) {
     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     ContextCompat.startActivity(context, intent, null)
 }
-
-
-
-
-
-
-
-

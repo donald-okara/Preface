@@ -10,7 +10,6 @@ import ke.don.shared_domain.states.NetworkResult
 import kotlinx.coroutines.flow.Flow
 
 interface BookshelfRepository {
-
     suspend fun createBookshelf(bookshelf: BookshelfRef): NetworkResult<NoDataReturned>
     suspend fun fetchBookshelfById(bookshelfId: Int): NetworkResult<Flow<BookshelfEntity>>
     suspend fun fetchUserBookShelves():NetworkResult<Flow<List<BookShelf>>>

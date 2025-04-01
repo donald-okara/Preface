@@ -10,9 +10,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import ke.don.common_datasource.remote.domain.repositories.BooksRepository
 import ke.don.common_datasource.remote.domain.states.BookUiState
 import ke.don.common_datasource.remote.domain.states.BookshelvesState
-import ke.don.common_datasource.remote.domain.states.ShowBookshelvesState
-import ke.don.common_datasource.remote.domain.states.orFalse
-import ke.don.common_datasource.remote.domain.states.orTrue
+import ke.don.common_datasource.remote.domain.states.ShowOptionState
 import ke.don.common_datasource.remote.domain.states.toAddBookToBookshelf
 import ke.don.common_datasource.remote.domain.states.toBookshelfBookDetails
 import ke.don.common_datasource.remote.domain.usecases.BooksUseCases
@@ -46,8 +44,11 @@ class BookDetailsViewModel @Inject constructor(
     private val _volumeId = MutableStateFlow<String?>(null)
     private val volumeId: StateFlow<String?> = _volumeId
 
-    private val _showBookshelves= MutableStateFlow(ShowBookshelvesState())
-    val showBookshelves: StateFlow<ShowBookshelvesState> = _showBookshelves
+    private val _showBookshelves= MutableStateFlow(ShowOptionState())
+    val showBookshelves: StateFlow<ShowOptionState> = _showBookshelves
+
+    private val _showBookSheetOptions = MutableStateFlow(ShowOptionState())
+    val showBookSheetOptions: StateFlow<ShowOptionState> = _showBookSheetOptions
 
     private val _bookState = MutableStateFlow(BookUiState())
     val bookState = _bookState
@@ -205,7 +206,7 @@ class BookDetailsViewModel @Inject constructor(
     }
 
     fun onPushEditedBookshelfBooks() = viewModelScope.launch {
-        _showBookshelves.update { ShowBookshelvesState(isLoading = true) }
+        _showBookshelves.update { ShowOptionState(isLoading = true) }
 
         val bookId = bookState.value.bookDetails.id
         val currentBookshelves = _bookshelvesState.value.bookshelves
@@ -224,25 +225,34 @@ class BookDetailsViewModel @Inject constructor(
         when (repository.pushEditedBookshelfBooks(bookId, bookshelfIdsToRemove, addBookToBookshelfList)) {
             is NetworkResult.Success -> {
                 initialBookshelfState = _bookshelvesState.value.copy()
-                _showBookshelves.update { ShowBookshelvesState(isLoading = false, showBooksheves = false) }
+                _showBookshelves.update { ShowOptionState(isLoading = false, showOption = false) }
             }
             is NetworkResult.Error -> {
-                _showBookshelves.update { ShowBookshelvesState(isLoading = false) }
+                _showBookshelves.update { ShowOptionState(isLoading = false) }
             }
         }
     }
 
     fun onShowBookshelves(){
         _showBookshelves.update {
-            ShowBookshelvesState(
-                showBooksheves = !it.showBooksheves
+            ShowOptionState(
+                showOption = !it.showOption
             )
         }
     }
 
+    fun onShowBookOptions(){
+        _showBookSheetOptions.update {
+            ShowOptionState(
+                showOption = !it.showOption
+            )
+        }
+    }
+
+
     fun resetPushSuccess() {
         _showBookshelves.update {
-            ShowBookshelvesState()
+            ShowOptionState()
         }
     }
     public override fun onCleared() {

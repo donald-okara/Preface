@@ -46,7 +46,7 @@ class MyLibraryTab(
                 onNavigateToBookshelfItem(bookshelfId)
             },
             onAddBookshelf = {
-                onNavigateToAddBookshelf
+                onNavigateToAddBookshelf()
             },
             onNavigateToEdit = {bookshelfId->
                 onNavigateToEditBookshelf(bookshelfId)

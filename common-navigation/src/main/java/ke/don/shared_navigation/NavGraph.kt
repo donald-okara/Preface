@@ -1,5 +1,6 @@
 package ke.don.shared_navigation
 
+import android.util.Log
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
@@ -77,6 +78,7 @@ object MainScreen : AndroidScreen() {
         val myLibraryTab = remember {
             MyLibraryTab(
                 onNavigateToAddBookshelf = {
+                    Log.d("MainScreen", "Attempting to add bookshelf")
                     navigator?.push(AddBookshelfVoyagerScreen(null))
                 },
                 onNavigateToEditBookshelf = {

@@ -27,8 +27,8 @@ data class BookshelvesState(
     val bookshelves: List<BookshelfBookDetailsState> = emptyList(),
 )
 
-data class ShowBookshelvesState(
-    val showBooksheves : Boolean = false,
+data class ShowOptionState(
+    val showOption : Boolean = false,
     val isLoading : Boolean = false,
 )
 //

@@ -29,7 +29,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import ke.don.common_datasource.remote.domain.states.BookshelfBookDetailsState
-import ke.don.common_datasource.remote.domain.states.ShowBookshelvesState
+import ke.don.common_datasource.remote.domain.states.ShowOptionState
 import ke.don.feature_book_details.R
 import ke.don.shared_domain.data_models.VolumeInfoDet
 
@@ -40,7 +40,7 @@ fun TitleHeader(
     volumeInfo: VolumeInfoDet,
     imageUrl: String? = null,
     onConfirm: () -> Unit,
-    showBookshelves : ShowBookshelvesState,
+    showBookshelves : ShowOptionState,
     isLoading: Boolean = true,
     onExpandBookshelves: () -> Unit,
     onBookshelfClicked: (Int) -> Unit,
@@ -71,16 +71,15 @@ fun TitleHeader(
             modifier = modifier.padding(bottom = 4.dp) // Minor padding if needed
         )
 
-        if(!isLoading){
-            BookshelfDropdownMenu(
-                uniqueBookshelves = uniqueBookshelves,
-                defaultColor = textColor,
-                onExpandToggle = { onExpandBookshelves() },
-                onItemClick = onBookshelfClicked,
-                showBookshelvesState = showBookshelves,
-                onConfirm = onConfirm
-            )
-        }
+//        if(!isLoading){
+//            BookshelfDropdownMenu(
+//                uniqueBookshelves = uniqueBookshelves,
+//                onExpandToggle = { onExpandBookshelves() },
+//                onItemClick = onBookshelfClicked,
+//                showBookshelvesState = showBookshelves,
+//                onConfirm = onConfirm
+//            )
+//        }
 
         // Display the book authors, if available
         volumeInfo.authors.let { authors ->
