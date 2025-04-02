@@ -24,7 +24,7 @@ class UserProgressRepositoryImpl(
     override suspend fun fetchBookProgressByUserAndBook(
         userId: String,
         bookId: String
-    ): NetworkResult<UserProgressResponse> {
+    ): NetworkResult<UserProgressResponse?> {
         return userProgressNetworkClass.fetchBookProgressByUserAndBook(userId = userId, bookId =bookId).also { result ->
             if (result is NetworkResult.Error){
                 Toast.makeText(context, "${result.message} ${result.hint}", Toast.LENGTH_SHORT).show()

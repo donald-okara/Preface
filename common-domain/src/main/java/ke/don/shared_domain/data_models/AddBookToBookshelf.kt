@@ -26,7 +26,9 @@ data class AddBookToBookshelf(
     val maturityRating: String = "", // New field
     val language: String = "", // New field
     @SerialName("preview_link")
-    val previewLink: String = "" // New field
+    val previewLink: String = "", // New field
+    @SerialName("page_count")
+    val pageCount: Int = 0
 )
 
 @Serializable
@@ -50,6 +52,8 @@ data class SupabaseBook(
     val maturityRating: String = "", // New field
     val language: String = "", // New field
     @SerialName("preview_link")
-    val previewLink: String = "" // New field
+    val previewLink: String = "", // New field
+    @SerialName("page_count")
+    val pageCount: Int = 0
 )
 

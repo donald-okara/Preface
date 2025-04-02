@@ -8,12 +8,16 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ke.don.common_datasource.remote.domain.repositories.BooksRepository
+import ke.don.common_datasource.remote.domain.repositories.ProfileRepository
+import ke.don.common_datasource.remote.domain.repositories.UserProgressRepository
 import ke.don.common_datasource.remote.domain.states.BookUiState
 import ke.don.common_datasource.remote.domain.states.BookshelvesState
 import ke.don.common_datasource.remote.domain.states.ShowOptionState
 import ke.don.common_datasource.remote.domain.states.toAddBookToBookshelf
 import ke.don.common_datasource.remote.domain.states.toBookshelfBookDetails
 import ke.don.common_datasource.remote.domain.usecases.BooksUseCases
+import ke.don.shared_domain.data_models.ImageLinks
+import ke.don.shared_domain.data_models.UserProgressResponse
 import ke.don.shared_domain.logger.Logger
 import ke.don.shared_domain.states.NetworkResult
 import ke.don.shared_domain.states.ResultState
@@ -35,7 +39,9 @@ import kotlin.random.Random
 
 @HiltViewModel
 class BookDetailsViewModel @Inject constructor(
-    private val repository: BooksRepository,
+    private val booksRepository: BooksRepository,
+    private val profileRepository: ProfileRepository,
+    private val progressRepository: UserProgressRepository,
     private val logger : Logger,
     private val colorPaletteExtractor: ColorPaletteExtractor,
     private val booksUseCases : BooksUseCases
@@ -46,6 +52,9 @@ class BookDetailsViewModel @Inject constructor(
 
     private val _showBookshelves= MutableStateFlow(ShowOptionState())
     val showBookshelves: StateFlow<ShowOptionState> = _showBookshelves
+
+    private val _showBookProgress= MutableStateFlow(ShowOptionState())
+    val showBookProgress: StateFlow<ShowOptionState> = _showBookProgress
 
     private val _showBookSheetOptions = MutableStateFlow(ShowOptionState())
     val showBookSheetOptions: StateFlow<ShowOptionState> = _showBookSheetOptions
@@ -95,46 +104,62 @@ class BookDetailsViewModel @Inject constructor(
 
     private fun observeBookDetails() {
         viewModelScope.launch {
-            updateBookState(
-                BookUiState(
-                    resultState = ResultState.Loading
-                )
-            )
-
             _volumeId.filterNotNull().collectLatest { id ->
-                when (val result = booksUseCases.getBookDetails(id)){
-                    is NetworkResult.Error -> {
-                        updateBookState(
-                            BookUiState(
-                                resultState = ResultState.Error(result.message)
-                            )
-                        )
-                    }
+                val result = booksUseCases.getBookDetails(id)
+                val newState = when (result) {
+                    is NetworkResult.Error -> _bookState.value.copy(
+                        resultState = ResultState.Error(result.message)
+                    )
                     is NetworkResult.Success -> {
-                        val highestImageUrl = result.data.volumeInfo.imageLinks.let {
-                            it.extraLarge ?: it.large ?: it.medium ?: it.small ?: it.thumbnail
-                            ?: it.smallThumbnail
-                        }?.replace("http", "https")
+                        val imageLinks = result.data.volumeInfo.imageLinks
+                        val highestImageUrl = imageLinks.getHighestQualityUrl()?.replace("http", "https")
 
-                        Log.d(TAG, "observeBookDetails: $highestImageUrl")
-                        updateBookState(
-                            BookUiState(
-                                bookDetails = result.data,
-                                resultState = ResultState.Success,
-                                highestImageUrl = highestImageUrl,
-                                colorPallet = if (highestImageUrl.isNullOrEmpty()) {
-                                    ColorPallet()
-                                } else {
-                                    colorPaletteExtractor.extractColorPalette(highestImageUrl)
-                                }
-                            )
-                        )
-                        observeBookshelves()
+                        // Fetch progress synchronously within the same state update
+                        val progress = fetchBookProgressSync(result.data.id, result.data.volumeInfo.pageCount)
 
+                        _bookState.value.copy(
+                            bookDetails = result.data,
+                            resultState = ResultState.Success,
+                            highestImageUrl = highestImageUrl,
+                            bookProgress = progress, // Set progress directly here
+                            colorPallet = highestImageUrl?.let {
+                                colorPaletteExtractor.extractColorPalette(it)
+                            } ?: ColorPallet()
+                        ).also {
+                            observeBookshelves()
+                        }
                     }
                 }
+                Log.d(TAG, "Book progress ::: ${newState.bookProgress} of total pages ::: ${newState.bookDetails.volumeInfo.pageCount}")
+                _bookState.value = newState
             }
+        }
+    }
 
+    // Synchronous helper function to fetch progress within the same coroutine
+    private suspend fun fetchBookProgressSync(bookId: String, totalPages: Int): UserProgressResponse {
+        val userId = profileRepository.fetchProfileFromDataStore().authId
+        val progressResult = progressRepository.fetchBookProgressByUserAndBook(userId, bookId)
+
+        return if (progressResult is NetworkResult.Success && progressResult.data != null) {
+            progressResult.data!!.copy(totalPages = totalPages)
+        } else {
+            UserProgressResponse(
+                userId = userId,
+                bookId = bookId,
+                currentPage = 0,
+                lastUpdated = "not read yet",
+                totalPages = totalPages
+            )
+        }
+    }
+
+    // Keep this for external calls if needed, but not used in observeBookDetails
+    fun fetchBookProgress() {
+        viewModelScope.launch {
+            val bookDetails = _bookState.value.bookDetails ?: return@launch
+            val progress = fetchBookProgressSync(bookDetails.id, bookDetails.volumeInfo.pageCount)
+            _bookState.value = _bookState.value.copy(bookProgress = progress)
         }
     }
 
@@ -143,7 +168,7 @@ class BookDetailsViewModel @Inject constructor(
             bookState.collectLatest { state ->
                 val bookId = state.bookDetails.id
                 if (bookId.isNotBlank()) {
-                    repository.fetchBookshelves()
+                    booksRepository.fetchBookshelves()
                         .firstOrNull() // Get only the first emitted value to avoid multiple updates
                         ?.let { bookshelves ->
                             val bookshelfDetails = bookshelves.map { bookshelf ->
@@ -222,7 +247,7 @@ class BookDetailsViewModel @Inject constructor(
             .filter { cb -> !initialBookshelves.any { it.bookshelfBookDetails.id == cb.bookshelfBookDetails.id && it.isBookPresent } && cb.isBookPresent }
             .map { it.bookshelfBookDetails.toAddBookToBookshelf(bookState.value.bookDetails) }
 
-        when (repository.pushEditedBookshelfBooks(bookId, bookshelfIdsToRemove, addBookToBookshelfList)) {
+        when (booksRepository.pushEditedBookshelfBooks(bookId, bookshelfIdsToRemove, addBookToBookshelfList)) {
             is NetworkResult.Success -> {
                 initialBookshelfState = _bookshelvesState.value.copy()
                 _showBookshelves.update { ShowOptionState(isLoading = false, showOption = false) }

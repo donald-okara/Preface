@@ -29,7 +29,7 @@ class UserProgressNetworkClass(
     /**
      * READ
      */
-    suspend fun fetchBookProgressByUserAndBook(userId: String, bookId: String) : NetworkResult<UserProgressResponse>{
+    suspend fun fetchBookProgressByUserAndBook(userId: String, bookId: String) : NetworkResult<UserProgressResponse?>{
         return try {
             val result = supabaseClient.from(USERPROGRESS)
                 .select {
@@ -38,7 +38,7 @@ class UserProgressNetworkClass(
                         UserProgressResponse::bookId eq bookId
                     }
                 }
-                .decodeSingle<UserProgressResponse>()
+                .decodeSingleOrNull<UserProgressResponse>()
             NetworkResult.Success(result)
             } catch (e: Exception) {
             e.printStackTrace()
