@@ -22,7 +22,7 @@ interface ProfileRepository {
 
     suspend fun fetchProfileFromDataStore(): Profile
 
-    suspend fun fetchProfileDetails(userId: String): NetworkResult<ProfileDetails>
+    suspend fun fetchProfileDetails(userId: String): NetworkResult<ProfileDetails?>
 
     suspend fun signOut(): NetworkResult<NoDataReturned>
 

@@ -5,4 +5,6 @@
     <string name="delete_profile_message">Are you sure you want to delete your profile? It can never be recovered</string>
     <string name="sign_out">Sign out</string>
     <string name="sign_out_message">Are you sure you want to sign out?</string>
+    <string name="no_profile_message">No profile found</string>
+    <string name="sign_in">Navigate back to sign in</string>
 </resources>

@@ -9,7 +9,11 @@ import io.github.jan.supabase.auth.providers.Google
 import io.github.jan.supabase.auth.providers.builtin.IDToken
 import io.github.jan.supabase.auth.status.SessionStatus
 import io.github.jan.supabase.auth.user.UserInfo
+import io.github.jan.supabase.functions.functions
 import io.github.jan.supabase.postgrest.from
+import io.ktor.client.call.body
+import io.ktor.http.Headers
+import io.ktor.http.HttpHeaders
 import ke.don.common_datasource.local.datastore.profile.profileDataStore
 import ke.don.common_datasource.local.datastore.token.TokenData
 import ke.don.common_datasource.local.datastore.token.TokenDatastoreManager
@@ -30,8 +34,10 @@ import ke.don.shared_domain.values.PROFILESTABLE
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.withTimeoutOrNull
 
 
 class ProfileNetworkClass(
@@ -143,7 +149,7 @@ class ProfileNetworkClass(
         }
     }
 
-    suspend fun fetchProfileDetails(userId: String): NetworkResult<ProfileDetails> {
+    suspend fun fetchProfileDetails(userId: String): NetworkResult<ProfileDetails?> {
         return try {
             val response = supabase.from("profile_discovered_books")
                 .select {
@@ -156,13 +162,7 @@ class ProfileNetworkClass(
                 .decodeSingleOrNull<ProfileDetails>()
 
             Log.d(TAG, "Profile fetched from supabase:: $response")
-            if(response != null){
-                NetworkResult.Success(response)
-            }else{
-                NetworkResult.Error(
-                    message = "No profile found"
-                )
-            }
+            NetworkResult.Success(response)
         }catch (e: Exception){
             NetworkResult.Error(
                 message = e.message.toString()
@@ -199,13 +199,14 @@ class ProfileNetworkClass(
 
     suspend fun deleteProfile(userId: String): NetworkResult<NoDataReturned> {
         return try {
-            supabase.from("profiles").delete {
+            supabase.from("profiles").update(
+                mapOf("delete_account_request" to true)
+            ){
                 filter {
                     Profile::authId eq userId
-                    //Or
-                    eq("auth_id", userId)
                 }
             }
+            supabase.auth.signOut()
 
             NetworkResult.Success(NoDataReturned())
         }catch (e: Exception){
@@ -225,10 +226,16 @@ suspend fun Context.reloadSession(
 ): Boolean {
 
     try {
+        val localProfile =  withTimeoutOrNull(5_000) { // 5-second timeout
+            profileDataStore.data
+                .filter { it.authId.isNotEmpty() }
+                .first()
+        } ?: Profile(authId = "", /* other default fields */) // or throw an exception
+
         val sessionStatus = supabase.auth.sessionStatus
             .first { it !is SessionStatus.Initializing }
 
-        return sessionStatus is SessionStatus.Authenticated
+        return (sessionStatus is SessionStatus.Authenticated && localProfile.authId.isNotEmpty())
 
     } catch (e: Exception) {
         Log.e("Context", "Error reloading session", e)
