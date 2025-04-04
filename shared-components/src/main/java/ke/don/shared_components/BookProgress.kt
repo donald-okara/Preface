@@ -32,6 +32,7 @@ import ke.don.shared_components.mbuku_theme.ui.theme.MbukuTheme
 @Composable
 fun IndividualReadingProgressCard(
     modifier: Modifier = Modifier,
+    color: Color = MaterialTheme.colorScheme.primary,
     currentPage: Int,
     totalPages: Int
 ) {
@@ -46,8 +47,7 @@ fun IndividualReadingProgressCard(
     val (progress, completedPages, pagesLeft) = derivedValues
     Card(
         modifier = modifier
-            .fillMaxWidth()
-            .padding(16.dp),
+            .fillMaxWidth(),
         shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
         elevation = CardDefaults.cardElevation(4.dp)
@@ -75,28 +75,29 @@ fun IndividualReadingProgressCard(
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
 
-                Spacer(modifier = modifier.weight(1f))
+                Spacer(modifier = Modifier.weight(1f))
 
                 Text(
-                    text = "$currentPage of $totalPages pages",
+                    text = "$completedPages of $totalPages pages",
                     style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary
+                    color = color
                 )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = modifier.height(8.dp))
 
             RoundedProgressBar(
                 progress = progress,
+                progressColor = color,
                 modifier = modifier
                     .fillMaxWidth()
                     .height(8.dp)
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = modifier.height(16.dp))
 
             Row(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Column(
@@ -106,7 +107,7 @@ fun IndividualReadingProgressCard(
                     Text(
                         text = "${(progress * 100).toInt()}%",
                         style = MaterialTheme.typography.titleLarge,
-                        color = MaterialTheme.colorScheme.primary
+                        color = color
                     )
 
                     Text(
@@ -120,7 +121,7 @@ fun IndividualReadingProgressCard(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ){
                     Text(
-                        text = pagesLeft.toString(),
+                        text = totalPages.toString(),
                         style = MaterialTheme.typography.titleLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

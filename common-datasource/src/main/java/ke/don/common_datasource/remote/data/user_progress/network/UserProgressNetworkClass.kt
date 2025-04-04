@@ -77,12 +77,10 @@ class UserProgressNetworkClass(
     /**
      * UPDATE
      */
-    suspend fun updateUserProgress(userId: String, bookId: String, userProgress: CreateUserProgressDTO) : NetworkResult<NoDataReturned> {
+    suspend fun updateUserProgress(userId: String, bookId: String, newCurrentPage: Int) : NetworkResult<NoDataReturned> {
         return try {
             supabaseClient.from(USERPROGRESS).update(
-                {
-                    UserProgressResponse::totalPages setTo userProgress.totalPages
-                }
+                mapOf("current_page" to newCurrentPage)
             ){
                 filter {
                     UserProgressResponse::bookId eq bookId

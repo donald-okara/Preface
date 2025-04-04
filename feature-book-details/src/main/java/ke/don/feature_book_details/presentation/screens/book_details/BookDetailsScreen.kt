@@ -61,6 +61,7 @@ import ke.don.common_datasource.remote.domain.utils.getDominantColor
 import ke.don.feature_book_details.presentation.screens.book_details.components.AboutVolume
 import ke.don.feature_book_details.presentation.screens.book_details.components.BookCoverPreview
 import ke.don.feature_book_details.presentation.screens.book_details.components.BookDetailsSheet
+import ke.don.feature_book_details.presentation.screens.book_details.components.BookProgressTab
 import ke.don.feature_book_details.presentation.screens.book_details.components.PublishDetails
 import ke.don.feature_book_details.presentation.screens.book_details.components.TitleHeader
 import ke.don.shared_domain.data_models.VolumeInfoDet
@@ -161,10 +162,18 @@ fun BookDetailsScreen(
                 onBookshelfClicked = {bookshelfId->
                     bookDetailsViewModel.onSelectBookshelf(bookshelfId)
                 },
+                onSaveProgress = bookDetailsViewModel::onSaveBookProgress,
                 onExpandBookshelves = bookDetailsViewModel::onShowBookshelves,
                 showBookshelves = showBookshelves,
                 onConfirm = bookDetailsViewModel::onPushEditedBookshelfBooks,
-                onResetSuccess = bookDetailsViewModel::resetPushSuccess
+                onResetSuccess = bookDetailsViewModel::resetPushSuccess,
+                currentPage = bookUiState.value.userProgressState.bookProgress.currentPage,
+                totalPages = bookUiState.value.userProgressState.bookProgress.totalPages,
+                newProgress = bookUiState.value.userProgressState.newProgress,
+                onBookProgressUpdate = {bookDetailsViewModel.onBookProgressUpdate(it)},
+                progressIsError = bookUiState.value.userProgressState.isError,
+                onShowProgressDialog = {bookDetailsViewModel.updateProgressDialogState(toggle = true)},
+                showAddProgressDialog = bookUiState.value.userProgressState.showUpdateProgressDialog
             )
 
             BookDetailsSheet(
@@ -210,15 +219,23 @@ fun BookDetailsContent(
     dominantColor : Color,
     showBookshelves: ShowOptionState,
     onExpandBookshelves: () -> Unit,
+    newProgress: Int,
+    totalPages: Int,
+    currentPage: Int,
+    showAddProgressDialog: ShowOptionState,
+    onShowProgressDialog: () -> Unit,
     imageUrl: String? = null,
     onResetSuccess: () -> Unit,
+    onSaveProgress : () -> Unit,
+    progressIsError: Boolean,
     isLoading: Boolean = true,
     onConfirm: () -> Unit,
+    onBookProgressUpdate: (Int) -> Unit,
     isGradientVisible: Boolean,
     onSearchAuthor: (String) -> Unit,
     uniqueBookshelves: List<BookshelfBookDetailsState>
 ) {
-    val tabs = listOf("About", "Publish details")
+    val tabs = listOf("About", "Publish details", "Read progress")
     val scrollState = rememberScrollState()
 
     val showPreview = remember{ mutableStateOf(false) }
@@ -327,6 +344,19 @@ fun BookDetailsContent(
 
                     1 -> PublishDetails(
                         volumeInfo = volumeInfo,
+                        modifier = modifier
+                            .align(Alignment.CenterHorizontally)
+                    )
+                    2 -> BookProgressTab(
+                        progressColor = dominantColor,
+                        currentPage = currentPage,
+                        totalPages = totalPages,
+                        isError = progressIsError,
+                        onBookProgressUpdate= onBookProgressUpdate ,
+                        showAddProgressDialog = showAddProgressDialog,
+                        onShowOptionsDialog = onShowProgressDialog,
+                        onSaveProgress = onSaveProgress,
+                        newProgress = newProgress,
                         modifier = modifier
                             .align(Alignment.CenterHorizontally)
                     )

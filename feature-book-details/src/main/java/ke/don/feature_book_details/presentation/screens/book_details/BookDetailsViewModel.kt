@@ -12,11 +12,13 @@ import ke.don.common_datasource.remote.domain.repositories.ProfileRepository
 import ke.don.common_datasource.remote.domain.repositories.UserProgressRepository
 import ke.don.common_datasource.remote.domain.states.BookUiState
 import ke.don.common_datasource.remote.domain.states.BookshelvesState
+import ke.don.common_datasource.remote.domain.states.NoDataReturned
 import ke.don.common_datasource.remote.domain.states.ShowOptionState
+import ke.don.common_datasource.remote.domain.states.UserProgressState
 import ke.don.common_datasource.remote.domain.states.toAddBookToBookshelf
 import ke.don.common_datasource.remote.domain.states.toBookshelfBookDetails
 import ke.don.common_datasource.remote.domain.usecases.BooksUseCases
-import ke.don.shared_domain.data_models.ImageLinks
+import ke.don.shared_domain.data_models.CreateUserProgressDTO
 import ke.don.shared_domain.data_models.UserProgressResponse
 import ke.don.shared_domain.logger.Logger
 import ke.don.shared_domain.states.NetworkResult
@@ -121,7 +123,7 @@ class BookDetailsViewModel @Inject constructor(
                             bookDetails = result.data,
                             resultState = ResultState.Success,
                             highestImageUrl = highestImageUrl,
-                            bookProgress = progress, // Set progress directly here
+                            userProgressState =   progress,
                             colorPallet = highestImageUrl?.let {
                                 colorPaletteExtractor.extractColorPalette(it)
                             } ?: ColorPallet()
@@ -130,38 +132,37 @@ class BookDetailsViewModel @Inject constructor(
                         }
                     }
                 }
-                Log.d(TAG, "Book progress ::: ${newState.bookProgress} of total pages ::: ${newState.bookDetails.volumeInfo.pageCount}")
+                Log.d(TAG, "Book progress ::: ${newState.userProgressState} of total pages ::: ${newState.bookDetails.volumeInfo.pageCount}")
                 _bookState.value = newState
             }
         }
     }
 
     // Synchronous helper function to fetch progress within the same coroutine
-    private suspend fun fetchBookProgressSync(bookId: String, totalPages: Int): UserProgressResponse {
+    private suspend fun fetchBookProgressSync(bookId: String, totalPages: Int): UserProgressState {
         val userId = profileRepository.fetchProfileFromDataStore().authId
         val progressResult = progressRepository.fetchBookProgressByUserAndBook(userId, bookId)
 
         return if (progressResult is NetworkResult.Success && progressResult.data != null) {
-            progressResult.data!!.copy(totalPages = totalPages)
-        } else {
-            UserProgressResponse(
-                userId = userId,
-                bookId = bookId,
-                currentPage = 0,
-                lastUpdated = "not read yet",
-                totalPages = totalPages
+            UserProgressState(
+                bookProgress = progressResult.data!!.copy(totalPages = totalPages),
+                isPresent = true
             )
+        } else {
+            UserProgressState(
+                bookProgress =  UserProgressResponse(
+                    userId = userId,
+                    bookId = bookId,
+                    currentPage = 0,
+                    lastUpdated = "not read yet",
+                    totalPages = totalPages
+                ),
+                isPresent = false
+            )
+
         }
     }
 
-    // Keep this for external calls if needed, but not used in observeBookDetails
-    fun fetchBookProgress() {
-        viewModelScope.launch {
-            val bookDetails = _bookState.value.bookDetails ?: return@launch
-            val progress = fetchBookProgressSync(bookDetails.id, bookDetails.volumeInfo.pageCount)
-            _bookState.value = _bookState.value.copy(bookProgress = progress)
-        }
-    }
 
     private fun observeBookshelves() {
         viewModelScope.launch {
@@ -274,6 +275,70 @@ class BookDetailsViewModel @Inject constructor(
         }
     }
 
+    fun onBookProgressUpdate(progress: Int){
+        if (progress <= bookState.value.bookDetails.volumeInfo.pageCount){
+            _bookState.value = _bookState.value.copy(
+                userProgressState = _bookState.value.userProgressState.copy(
+                    isError = false
+                )
+            )
+        }else {
+            _bookState.value = _bookState.value.copy(
+                userProgressState = _bookState.value.userProgressState.copy(
+                    isError = false
+                )
+            )
+        }
+
+        Log.d(TAG, "Progress updated :: $progress")
+        _bookState.value = _bookState.value.copy(
+            userProgressState = _bookState.value.userProgressState.copy(
+                newProgress = progress
+            )
+        )
+    }
+
+    fun updateProgressDialogState(
+        isLoading: Boolean? = null,
+        toggle: Boolean = false
+    ) {
+        val currentState = _bookState.value.userProgressState.showUpdateProgressDialog
+
+        _bookState.value = _bookState.value.copy(
+            userProgressState = _bookState.value.userProgressState.copy(
+                showUpdateProgressDialog = currentState.copy(
+                    isLoading = isLoading ?: currentState.isLoading,
+                    showOption = if (toggle) !currentState.showOption else currentState.showOption
+                )
+            )
+        )
+    }
+
+    fun onSaveBookProgress() {
+        viewModelScope.launch {
+            // Show loading
+            updateProgressDialogState(isLoading = true)
+
+            val userId = profileRepository.fetchProfileFromDataStore().authId
+            val bookId = volumeId.value ?: return@launch
+            val newPage = _bookState.value.userProgressState.newProgress
+            val totalPages = _bookState.value.bookDetails.volumeInfo.pageCount
+
+            val result: NetworkResult<NoDataReturned> = if (_bookState.value.userProgressState.isPresent) {
+                progressRepository.updateUserProgress(bookId, userId, newPage)
+            } else {
+                val dto = CreateUserProgressDTO(bookId, newPage, totalPages)
+                progressRepository.addUserProgress(dto)
+            }
+
+            if (result is NetworkResult.Success){
+                fetchBookProgressSync(bookId, totalPages)
+            }
+
+            // Hide loading
+            updateProgressDialogState(isLoading = false, toggle = true)
+        }
+    }
 
     fun resetPushSuccess() {
         _showBookshelves.update {

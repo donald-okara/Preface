@@ -51,9 +51,9 @@ class UserProgressRepositoryImpl(
     override suspend fun updateUserProgress(
         userId: String,
         bookId: String,
-        userProgress: CreateUserProgressDTO
+        newCurrentPage: Int
     ): NetworkResult<NoDataReturned> {
-        return userProgressNetworkClass.updateUserProgress(userId = userId, bookId = bookId, userProgress = userProgress).also { result ->
+        return userProgressNetworkClass.updateUserProgress(userId = userId, bookId = bookId, newCurrentPage = newCurrentPage).also { result ->
             if (result is NetworkResult.Error){
                 Toast.makeText(context, "${result.message} ${result.hint}", Toast.LENGTH_SHORT).show()
             }

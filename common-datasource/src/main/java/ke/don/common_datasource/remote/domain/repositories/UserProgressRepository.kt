@@ -12,7 +12,7 @@ interface UserProgressRepository {
     suspend fun fetchBookProgressByUser(userId: String) : NetworkResult<List<UserProgressResponse>>
     suspend fun fetchBookProgressByBook(bookId: String) : NetworkResult<List<UserProgressResponse>>
 
-    suspend fun updateUserProgress(userId: String, bookId: String, userProgress: CreateUserProgressDTO) : NetworkResult<NoDataReturned>
+    suspend fun updateUserProgress(userId: String, bookId: String, newCurrentPage: Int) : NetworkResult<NoDataReturned>
 
     suspend fun deleteUserProgress(userId: String, bookId: String) : NetworkResult<NoDataReturned>
 }

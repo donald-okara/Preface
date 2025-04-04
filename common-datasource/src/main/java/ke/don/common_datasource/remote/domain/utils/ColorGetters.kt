@@ -38,7 +38,7 @@ fun getDominantColor(
                 else -> MaterialTheme.colorScheme.secondary
             }
         }
-        else -> MaterialTheme.colorScheme.secondary
+        else -> MaterialTheme.colorScheme.primary
     }
 }
 

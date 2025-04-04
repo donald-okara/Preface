@@ -67,7 +67,5 @@ class GoogleSignInClient(
                 return NetworkResult.Error(message = e.message ?: "Unknown error")
             }
         }
-        // Should never reach here; return a default failure if it does.
-
 
 }

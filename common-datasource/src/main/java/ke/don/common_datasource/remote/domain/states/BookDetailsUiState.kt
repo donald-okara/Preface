@@ -12,13 +12,20 @@ import ke.don.shared_domain.utils.color_utils.model.ColorPallet
 
 data class BookUiState(
     val bookDetails: BookDetailsResponse = BookDetailsResponse(),
-    val bookProgress: UserProgressResponse = UserProgressResponse(),
+    val userProgressState: UserProgressState = UserProgressState(),
     val colorPallet: ColorPallet = ColorPallet(),
     val highestImageUrl: String? = null,
     val resultState: ResultState = ResultState.Loading,
 )
 
 
+data class UserProgressState(
+    val bookProgress: UserProgressResponse = UserProgressResponse(),
+    val isPresent : Boolean = false,
+    val isError: Boolean = true,
+    val newProgress: Int = 0,
+    val showUpdateProgressDialog: ShowOptionState = ShowOptionState()
+)
 
 data class BookshelfBookDetailsState(
     val bookshelfBookDetails: BookshelfEntity = BookshelfEntity(),
