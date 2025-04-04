@@ -325,7 +325,7 @@ class BookDetailsViewModel @Inject constructor(
             val totalPages = _bookState.value.bookDetails.volumeInfo.pageCount
 
             val result: NetworkResult<NoDataReturned> = if (_bookState.value.userProgressState.isPresent) {
-                progressRepository.updateUserProgress(bookId, userId, newPage)
+                progressRepository.updateUserProgress(bookId = bookId, userId = userId, newCurrentPage = newPage)
             } else {
                 val dto = CreateUserProgressDTO(bookId, newPage, totalPages)
                 progressRepository.addUserProgress(dto)

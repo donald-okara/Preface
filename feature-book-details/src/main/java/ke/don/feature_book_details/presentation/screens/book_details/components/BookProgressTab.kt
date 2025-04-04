@@ -30,21 +30,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import ke.don.common_datasource.remote.domain.states.ShowOptionState
+import ke.don.common_datasource.remote.domain.states.UserProgressState
 import ke.don.shared_components.IndividualReadingProgressCard
 
 @Composable
 fun BookProgressTab(
     modifier: Modifier = Modifier,
     progressColor: Color,
-    currentPage: Int,
-    isError: Boolean,
-    newProgress: Int,
+    userProgressState: UserProgressState,
     onBookProgressUpdate: (Int) -> Unit,
     onSaveProgress : () -> Unit,
-    showAddProgressDialog: ShowOptionState,
     onShowOptionsDialog: () -> Unit,
-    totalPages: Int
 ){
     Column(
         modifier = modifier.padding(8.dp),
@@ -54,8 +50,8 @@ fun BookProgressTab(
         IndividualReadingProgressCard(
             modifier = modifier,
             color = progressColor,
-            currentPage = currentPage,
-            totalPages = totalPages
+            currentPage = userProgressState.bookProgress.currentPage,
+            totalPages = userProgressState.bookProgress.totalPages
         )
 
         Spacer(modifier = modifier.height(16.dp))
@@ -80,18 +76,18 @@ fun BookProgressTab(
         }
     }
 
-    if (showAddProgressDialog.showOption){
+    if (userProgressState.showUpdateProgressDialog.showOption){
         AddProgressDialog(
             modifier = modifier,
             onDismissRequest = {onShowOptionsDialog()},
             onConfirmation = {onSaveProgress()},
-            bookProgress = newProgress,
+            bookProgress = userProgressState.newProgress,
             onBookProgressUpdate = onBookProgressUpdate,
             dialogTitle = "Add Progress",
             icon = Icons.Outlined.AutoStories,
             dialogText = "Book progress",
-            enabled = !isError,
-            maxProgress = totalPages
+            enabled = !userProgressState.isError,
+            maxProgress = userProgressState.bookProgress.totalPages
         )
     }
 
