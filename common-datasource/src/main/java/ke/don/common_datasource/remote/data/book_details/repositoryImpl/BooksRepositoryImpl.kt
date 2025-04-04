@@ -7,11 +7,8 @@ import ke.don.common_datasource.local.roomdb.dao.BookshelfDao
 import ke.don.common_datasource.local.roomdb.entities.BookshelfEntity
 import ke.don.common_datasource.remote.data.book_details.network.GoogleBooksApi
 import ke.don.common_datasource.remote.data.bookshelf.network.BookshelfNetworkClass
-import ke.don.common_datasource.remote.data.bookshelf.network.BookshelfNetworkClass.Companion
 import ke.don.common_datasource.remote.domain.repositories.BooksRepository
 import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
-import ke.don.common_datasource.remote.domain.states.BookUiState
-import ke.don.common_datasource.remote.domain.states.BookshelfBookDetailsState
 import ke.don.common_datasource.remote.domain.states.NoDataReturned
 import ke.don.shared_domain.data_models.AddBookToBookshelf
 import ke.don.shared_domain.data_models.BookDetailsResponse

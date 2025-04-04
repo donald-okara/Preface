@@ -16,6 +16,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -48,6 +49,11 @@ fun BookshelfDetailsRoute(
         bookshelfDetailsViewModel.onBookshelfIdPassed(bookshelfId)
     }
 
+    DisposableEffect(Unit) {
+        onDispose {
+            bookshelfDetailsViewModel.onCleared()
+        }
+    }
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
@@ -83,7 +89,7 @@ fun BookshelfDetailsRoute(
         ) {
             when (val state = bookshelfUiState.resultState) {
                 is ResultState.Success -> {
-                    if (bookshelf.id == -1) { // Loading state indicator
+                    if (bookshelf.id == -1 || bookshelf.name == "") { // Loading state indicator
                         CircularProgressIndicator()
                     } else {
                         BookList(

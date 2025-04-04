@@ -34,15 +34,10 @@ class ProfileRepositoryImpl(
 
     override suspend fun signInAndInsertProfile(
         idToken: String,
-        displayName: String?,
-        profilePictureUri: String?
+        displayName: String,
+        profilePictureUri: String
     ): NetworkResult<NoDataReturned> {
-        val profile = Profile(
-            name = displayName.orEmpty(),
-            avatarUrl = profilePictureUri.orEmpty()
-        )
-
-        return try {
+      return try {
             val signInResult = profileNetworkClass.signIn(idToken, rawNonce)
 
             if (signInResult is NetworkResult.Error) {
@@ -53,6 +48,13 @@ class ProfileRepositoryImpl(
             }
 
             val userId = (signInResult as NetworkResult.Success).data.id
+
+            val profile = Profile(
+                name = displayName,
+                avatarUrl = profilePictureUri,
+                email = signInResult.data.email ?: "",
+            )
+
             val profileIsPresentResult = profileNetworkClass.checkIfProfileIsPresent(userId)
 
             if (profileIsPresentResult is NetworkResult.Error) {
@@ -101,7 +103,7 @@ class ProfileRepositoryImpl(
 
     override suspend fun fetchProfileFromDataStore(): Profile = profileDataStoreManager.getProfileFromDatastore()
 
-    override suspend fun fetchProfileDetails(userId: String): NetworkResult<ProfileDetails> {
+    override suspend fun fetchProfileDetails(userId: String): NetworkResult<ProfileDetails?> {
         return profileNetworkClass.fetchProfileDetails(userId).also { result ->
             if (result is NetworkResult.Error) {
                 Toast.makeText(context, "${'$'}{result.message} ${'$'}{result.hint}", Toast.LENGTH_SHORT).show()
@@ -124,6 +126,8 @@ class ProfileRepositoryImpl(
     override suspend fun deleteUser(userId: String): NetworkResult<NoDataReturned> {
         return profileNetworkClass.deleteProfile(userId).also {
             if(it is NetworkResult.Success){
+                Toast.makeText(context, "Request successful. This may take a while",Toast.LENGTH_SHORT).show()
+
                 profileDataStoreManager.clearProfileDataStore()
                 bookshelfDao.deleteAllBookshelves()
             }else{

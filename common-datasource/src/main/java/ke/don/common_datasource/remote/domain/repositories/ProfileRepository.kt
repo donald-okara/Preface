@@ -12,8 +12,8 @@ interface ProfileRepository {
 
     suspend fun signInAndInsertProfile(
         idToken: String,
-        displayName: String?,
-        profilePictureUri: String?
+        displayName: String,
+        profilePictureUri: String
     ): NetworkResult<NoDataReturned>
 
     suspend fun syncUserProfile(userId: String): NetworkResult<NoDataReturned>
@@ -22,7 +22,7 @@ interface ProfileRepository {
 
     suspend fun fetchProfileFromDataStore(): Profile
 
-    suspend fun fetchProfileDetails(userId: String): NetworkResult<ProfileDetails>
+    suspend fun fetchProfileDetails(userId: String): NetworkResult<ProfileDetails?>
 
     suspend fun signOut(): NetworkResult<NoDataReturned>
 

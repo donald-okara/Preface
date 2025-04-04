@@ -99,4 +99,10 @@ class BookshelfDetailsViewModel @Inject constructor(
         }
     }
 
+    public override fun onCleared() {
+        super.onCleared()
+        _bookshelfUiState.update {
+            BookshelfUiState()
+        }
+    }
 }

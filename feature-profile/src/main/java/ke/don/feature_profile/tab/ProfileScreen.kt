@@ -16,10 +16,12 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material.icons.outlined.PersonRemove
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -51,6 +53,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import ke.don.feature_profile.R
 import ke.don.shared_components.ConfirmationDialog
+import ke.don.shared_components.DialogType
+import ke.don.shared_components.EmptyScreen
 import ke.don.shared_components.SheetOptionItem
 import ke.don.shared_components.ShimmerEffect
 import ke.don.shared_domain.states.ResultState
@@ -88,10 +92,19 @@ fun ProfileScreen(
                     onDismissSheet = viewModel::updateShowSheet
                 )
             }
+            is ResultState.Empty -> {
+                EmptyScreen(
+                    icon = Icons.Default.Person,
+                    message = stringResource(R.string.no_profile_message),
+                    action = onNavigateToSignIn,
+                    actionText = stringResource(R.string.sign_in)
+
+                )
+            }
 
             else -> {
-                ProfileHeaderLoading(
-                    modifier = modifier
+                CircularProgressIndicator(
+                    modifier = modifier.align(Alignment.Center)
                 )
             }
         }
@@ -181,7 +194,7 @@ fun ProfileHeader(
                 fontWeight = FontWeight.Bold
             )
 
-            if(!isPrivate){
+            if(!isPrivate || email.isNotEmpty()){
                 Text(
                     text = email,
                     style = MaterialTheme.typography.titleMedium,
@@ -265,6 +278,7 @@ fun ProfileBottomSheet(
                 onDeleteProfile()
                 showDeleteDialog = false
             },
+            dialogType = DialogType.DANGER,
             dialogTitle = stringResource(R.string.delete_profile),
             dialogText = stringResource(R.string.delete_profile_message),
             icon = Icons.Outlined.PersonRemove
@@ -278,6 +292,7 @@ fun ProfileBottomSheet(
                 onSignOut()
                 showSignOutDialog = false
             },
+            dialogType = DialogType.WARNING,
             dialogTitle = stringResource(R.string.sign_out),
             dialogText = stringResource(R.string.sign_out_message),
             icon = Icons.Outlined.Logout

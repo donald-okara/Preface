@@ -34,7 +34,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ke.don.feature_bookshelf.R
+import ke.don.shared_components.BookStack
 import ke.don.shared_components.ConfirmationDialog
+import ke.don.shared_components.DialogType
 import ke.don.shared_components.SheetOptionItem
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
@@ -101,6 +103,7 @@ fun BookshelfOptionsSheet(
                 onDeleteBookshelf(bookshelfId)
                 showDeleteDialog = false
             },
+            dialogType = DialogType.DANGER,
             dialogTitle = "Delete Bookshelf",
             dialogText = "Are you sure you want to delete this bookshelf?",
             icon = Icons.Outlined.Close
@@ -129,30 +132,21 @@ fun BookshelfSheetHeader(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.Start
         ) {
-            Card(
-                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
-                elevation = CardDefaults.cardElevation(defaultElevation = 16.dp),
-                modifier = modifier
-                    .padding(4.dp)
-                    .size(imageSize)
-            ) {
-                if (bookCovers.isNotEmpty()) {
-                    Bookstack(
-                        bookCoverUrls = bookCovers,
-                        modifier = modifier,
-                        size = imageSize
-                    )
-                } else {
-                    Image(
-                        painter = painterResource(R.drawable.bookshelf_placeholder),
-                        contentDescription = "Bookshelf item",
-                        modifier = modifier
-                            .fillMaxWidth()
-                            .height(imageSize)
-                    )
-                }
+            if (bookCovers.isNotEmpty()) {
+                BookStack(
+                    bookCoverUrls = bookCovers,
+                    modifier = modifier,
+                    size = imageSize
+                )
+            } else {
+                Image(
+                    painter = painterResource(R.drawable.bookshelf_placeholder),
+                    contentDescription = "Bookshelf item",
+                    modifier = modifier
+                        .fillMaxWidth()
+                        .height(imageSize)
+                )
             }
-
             Spacer(modifier = modifier.width(12.dp))
 
             Column(

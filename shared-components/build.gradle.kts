@@ -51,6 +51,12 @@ dependencies {
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.kotlinx.coroutines.core)
 
+    //Coil
+    implementation(libs.coil)
+    implementation(libs.coil.gif)
+    implementation(libs.coil.compose)
+    implementation(libs.androidx.core.splashscreen)
+
     implementation(libs.androidx.foundation)
 
     testImplementation(libs.junit)

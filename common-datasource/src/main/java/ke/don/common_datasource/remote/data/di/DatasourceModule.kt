@@ -17,8 +17,11 @@ import ke.don.common_datasource.remote.data.bookshelf.network.BookshelfNetworkCl
 import ke.don.common_datasource.remote.data.bookshelf.repositoryImpl.BookshelfRepositoryImpl
 import ke.don.common_datasource.remote.data.profile.network.ProfileNetworkClass
 import ke.don.common_datasource.remote.data.profile.repositoryImpl.ProfileRepositoryImpl
+import ke.don.common_datasource.remote.data.user_progress.network.UserProgressNetworkClass
+import ke.don.common_datasource.remote.data.user_progress.repositoryImpl.UserProgressRepositoryImpl
 import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
 import ke.don.common_datasource.remote.domain.repositories.ProfileRepository
+import ke.don.common_datasource.remote.domain.repositories.UserProgressRepository
 import ke.don.shared_domain.data_models.Profile
 import kotlinx.coroutines.runBlocking
 import javax.inject.Singleton
@@ -34,7 +37,6 @@ object DatasourceModule {
     @Provides
     @Singleton
     fun provideUserProfile(profileDataStoreManager: ProfileDataStoreManager): Profile = runBlocking {
-        Log.d("DatasourceModule", "Fetching User profile")
         profileDataStoreManager.getProfileFromDatastore()
     }
 
@@ -99,4 +101,19 @@ object DatasourceModule {
         bookshelfDao = bookshelfDao
     )
 
+    @Provides
+    @Singleton
+    fun provideUserProgressNetworkClass(
+        supabaseClient: SupabaseClient
+    ): UserProgressNetworkClass = UserProgressNetworkClass(supabaseClient)
+
+    @Provides
+    @Singleton
+    fun provideUserProgressRepository(
+        @ApplicationContext context: Context,
+        userProgressNetworkClass: UserProgressNetworkClass
+    ) : UserProgressRepository = UserProgressRepositoryImpl(
+        context = context,
+        userProgressNetworkClass = userProgressNetworkClass
+    )
 }

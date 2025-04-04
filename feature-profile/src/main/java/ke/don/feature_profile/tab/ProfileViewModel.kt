@@ -55,14 +55,20 @@ class ProfileViewModel @Inject constructor(
         viewModelScope.launch {
             val userId = profileRepository.fetchProfileFromDataStore().authId
 
-            updateProfileState(ProfileTabState(resultState = ResultState.Loading))
+            //updateProfileState(ProfileTabState(resultState = ResultState.Loading))
             when (val profile = profileRepository.fetchProfileDetails(userId)){
                 is NetworkResult.Error -> {
                     updateProfileState(ProfileTabState(resultState = ResultState.Error()))
                 }
 
                 is NetworkResult.Success -> {
-                    updateProfileState(ProfileTabState(profile = profile.data, resultState = ResultState.Success))
+                    if (profile.data != null){
+                        updateProfileState(ProfileTabState(profile = profile.data!!, resultState = ResultState.Success))
+
+                    }else{
+                        updateProfileState(ProfileTabState(resultState = ResultState.Empty))
+                        //onSuccessfulSignOut()
+                    }
 
                 }
             }

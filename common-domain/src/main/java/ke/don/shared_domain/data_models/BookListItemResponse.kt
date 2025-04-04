@@ -41,4 +41,9 @@ data class ImageLinks(
     val medium: String? = null,
     val large: String? = null,
     val extraLarge: String? = null
-): Parcelable
+): Parcelable {
+    fun getHighestQualityUrl(): String? = this.let {
+        extraLarge ?: large ?: medium ?: small ?: thumbnail ?: smallThumbnail
+    }
+
+}

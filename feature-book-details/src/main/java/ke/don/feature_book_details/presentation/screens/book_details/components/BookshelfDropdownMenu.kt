@@ -12,8 +12,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.LibraryBooks
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
@@ -28,16 +28,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import ke.don.common_datasource.remote.domain.states.BookshelfBookDetailsState
-import ke.don.common_datasource.remote.domain.states.ShowBookshelvesState
+import ke.don.common_datasource.remote.domain.states.ShowOptionState
+import ke.don.shared_components.SheetOptionItem
 
 @Composable
 fun BookshelfDropdownMenu(
     modifier: Modifier = Modifier,
     uniqueBookshelves: List<BookshelfBookDetailsState>,
-    showBookshelvesState: ShowBookshelvesState,
+    showBookshelvesState: ShowOptionState,
     onConfirm: () -> Unit,
     onExpandToggle: () -> Unit,
-    defaultColor: Color,
     onItemClick: (Int) -> Unit = {},
 ) {
 
@@ -47,11 +47,16 @@ fun BookshelfDropdownMenu(
     Box(
         modifier = modifier
     ) {
-        IconButton(onClick = { onExpandToggle() }) {
-            Icon(Icons.AutoMirrored.Filled.LibraryBooks, contentDescription = "Add to library")
-        }
+        SheetOptionItem(
+            modifier = modifier,
+            icon = Icons.AutoMirrored.Filled.LibraryBooks,
+            title = "Add to library",
+            onOptionClick = {
+                onExpandToggle()
+            }
+        )
         DropdownMenu(
-            expanded = showBookshelvesState.showBooksheves,
+            expanded = showBookshelvesState.showOption,
             onDismissRequest = { onExpandToggle() },
             modifier = modifier
                 .padding(8.dp)
@@ -98,8 +103,7 @@ fun BookshelfDropdownMenu(
                 isLoading = showBookshelvesState.isLoading,
                 onConfirm = {
                     onConfirm()
-                },
-                buttonColor = defaultColor
+                }
             )
         }
 
@@ -141,7 +145,6 @@ fun BookshelfItem(
 fun AddBookRow(
     modifier: Modifier = Modifier,
     onCancel: () -> Unit,
-    buttonColor : Color,
     isLoading: Boolean,
     onConfirm: () -> Unit,
 ){

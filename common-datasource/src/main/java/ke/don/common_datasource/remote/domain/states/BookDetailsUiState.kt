@@ -7,15 +7,25 @@ import ke.don.shared_domain.data_models.BookDetailsResponse
 import ke.don.shared_domain.data_models.BookShelf
 import ke.don.shared_domain.data_models.BookshelfRef
 import ke.don.shared_domain.data_models.SupabaseBook
+import ke.don.shared_domain.data_models.UserProgressResponse
 import ke.don.shared_domain.utils.color_utils.model.ColorPallet
 
 data class BookUiState(
     val bookDetails: BookDetailsResponse = BookDetailsResponse(),
+    val userProgressState: UserProgressState = UserProgressState(),
     val colorPallet: ColorPallet = ColorPallet(),
     val highestImageUrl: String? = null,
-    val resultState: ResultState = ResultState.Empty,
+    val resultState: ResultState = ResultState.Loading,
 )
 
+
+data class UserProgressState(
+    val bookProgress: UserProgressResponse = UserProgressResponse(),
+    val isPresent : Boolean = false,
+    val isError: Boolean = true,
+    val newProgress: Int = 0,
+    val showUpdateProgressDialog: ShowOptionState = ShowOptionState()
+)
 
 data class BookshelfBookDetailsState(
     val bookshelfBookDetails: BookshelfEntity = BookshelfEntity(),
@@ -27,8 +37,8 @@ data class BookshelvesState(
     val bookshelves: List<BookshelfBookDetailsState> = emptyList(),
 )
 
-data class ShowBookshelvesState(
-    val showBooksheves : Boolean = false,
+data class ShowOptionState(
+    val showOption : Boolean = false,
     val isLoading : Boolean = false,
 )
 //
@@ -86,7 +96,8 @@ fun BookUiState.toAddBookToBookshelf(
         publisher = bookUiState.bookDetails.volumeInfo.publisher,
         maturityRating = bookUiState.bookDetails.volumeInfo.maturityRating,
         language = bookUiState.bookDetails.volumeInfo.language,
-        previewLink = bookUiState.bookDetails.volumeInfo.previewLink
+        previewLink = bookUiState.bookDetails.volumeInfo.previewLink,
+        pageCount = bookUiState.bookDetails.volumeInfo.pageCount
     )
 }
 
@@ -106,7 +117,8 @@ fun BookUiState.toSupabaseBook(): SupabaseBook{
         publisher = this.bookDetails.volumeInfo.publisher,
         maturityRating = this.bookDetails.volumeInfo.maturityRating,
         language = this.bookDetails.volumeInfo.language,
-        previewLink = this.bookDetails.volumeInfo.previewLink
+        previewLink = this.bookDetails.volumeInfo.previewLink,
+        pageCount = this.bookDetails.volumeInfo.pageCount
     )
 }
 
@@ -123,7 +135,8 @@ fun AddBookToBookshelf.toSupabaseBook(): SupabaseBook{
         publisher = this.publisher,
         maturityRating = this.maturityRating,
         language = this.language,
-        previewLink = this.previewLink
+        previewLink = this.previewLink,
+        pageCount = this.pageCount
     )
 }
 
@@ -152,7 +165,8 @@ fun BookDetailsResponse.toAddBookToBookshelf(
         publisher = this.volumeInfo.publisher,
         maturityRating = this.volumeInfo.maturityRating,
         language = this.volumeInfo.language,
-        previewLink = this.volumeInfo.previewLink
+        previewLink = this.volumeInfo.previewLink,
+        pageCount = this.volumeInfo.pageCount
     )
 }
 
@@ -184,7 +198,8 @@ fun BookshelfEntity.toAddBookToBookshelf(
         publisher = book.volumeInfo.publisher,
         maturityRating = book.volumeInfo.maturityRating,
         language = book.volumeInfo.language,
-        previewLink = book.volumeInfo.previewLink
+        previewLink = book.volumeInfo.previewLink,
+        pageCount = book.volumeInfo.pageCount
     )
 }
 

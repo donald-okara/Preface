@@ -28,8 +28,8 @@ class BookshelfNetworkClass(
         bookshelf :BookshelfRef
     ): NetworkResult<NoDataReturned>{
         return try {
-            supabaseClient.from(BOOKSHELFTABLE).insert(bookshelf)
-            Log.d(TAG, "Bookshelf inserted successfully")
+            val response = supabaseClient.from(BOOKSHELFTABLE).insert(bookshelf){select()}.decodeSingleOrNull<BookshelfRef>()
+            Log.d(TAG, "Bookshelf inserted successfully::: $response")
             NetworkResult.Success(NoDataReturned())
         }catch (e: Exception){
             e.printStackTrace()
