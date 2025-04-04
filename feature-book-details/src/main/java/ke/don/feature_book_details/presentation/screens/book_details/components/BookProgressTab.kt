@@ -30,6 +30,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import ke.don.common_datasource.remote.domain.states.BookUiState
 import ke.don.common_datasource.remote.domain.states.UserProgressState
 import ke.don.shared_components.IndividualReadingProgressCard
 
@@ -37,7 +38,7 @@ import ke.don.shared_components.IndividualReadingProgressCard
 fun BookProgressTab(
     modifier: Modifier = Modifier,
     progressColor: Color,
-    userProgressState: UserProgressState,
+    bookUiState: BookUiState,
     onBookProgressUpdate: (Int) -> Unit,
     onSaveProgress : () -> Unit,
     onShowOptionsDialog: () -> Unit,
@@ -50,8 +51,8 @@ fun BookProgressTab(
         IndividualReadingProgressCard(
             modifier = modifier,
             color = progressColor,
-            currentPage = userProgressState.bookProgress.currentPage,
-            totalPages = userProgressState.bookProgress.totalPages
+            currentPage = bookUiState.userProgressState.bookProgress.currentPage,
+            totalPages = bookUiState.userProgressState.bookProgress.totalPages
         )
 
         Spacer(modifier = modifier.height(16.dp))
@@ -76,18 +77,18 @@ fun BookProgressTab(
         }
     }
 
-    if (userProgressState.showUpdateProgressDialog.showOption){
+    if (bookUiState.showUpdateProgressDialog.showOption){
         AddProgressDialog(
             modifier = modifier,
             onDismissRequest = {onShowOptionsDialog()},
             onConfirmation = {onSaveProgress()},
-            bookProgress = userProgressState.newProgress,
+            bookProgress = bookUiState.userProgressState.newProgress,
             onBookProgressUpdate = onBookProgressUpdate,
             dialogTitle = "Add Progress",
             icon = Icons.Outlined.AutoStories,
             dialogText = "Book progress",
-            enabled = !userProgressState.isError,
-            maxProgress = userProgressState.bookProgress.totalPages
+            enabled = !bookUiState.userProgressState.isError,
+            maxProgress = bookUiState.userProgressState.bookProgress.totalPages
         )
     }
 

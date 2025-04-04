@@ -76,9 +76,6 @@ fun BookDetailsScreen(
     val bookUiState by bookDetailsViewModel.bookState.collectAsState()
     val bookshelvesState by bookDetailsViewModel.bookshelvesState.collectAsState()
     val loadingJoke = bookDetailsViewModel.loadingJoke
-    val imageUrl = bookUiState.highestImageUrl
-    val showBookshelves by bookDetailsViewModel.showBookshelves.collectAsState()
-    val showOptionState by bookDetailsViewModel.showBookSheetOptions.collectAsState()
 
     val bookshelfList = bookshelvesState.bookshelves
 
@@ -122,7 +119,7 @@ fun BookDetailsScreen(
                 actions = {
                     if (bookUiState.resultState == ResultState.Success) {
                         IconButton(
-                            onClick = bookDetailsViewModel::onShowBookOptions
+                            onClick = bookDetailsViewModel::onShowBottomSheet
                         ) {
                             Icon(
                                 imageVector = Icons.Default.MoreVert,
@@ -159,15 +156,15 @@ fun BookDetailsScreen(
                 modifier = modifier,
                 bookUrl = bookUiState.highestImageUrl,
                 title = bookUiState.bookDetails.volumeInfo.title,
-                showBottomSheet = showOptionState.showOption,
-                showBookshelves = showBookshelves,
+                showBottomSheet = bookUiState.showBottomSheet.showOption,
+                showBookshelves = bookUiState.showBookshelvesDropDown,
                 onConfirm = bookDetailsViewModel::onPushEditedBookshelfBooks,
                 onExpandBookshelves = bookDetailsViewModel::onShowBookshelves,
                 onBookshelfClicked = {bookshelfId->
                     bookDetailsViewModel.onSelectBookshelf(bookshelfId)
                 },
                 uniqueBookshelves = bookshelfList,
-                onDismissSheet = bookDetailsViewModel::onShowBookOptions
+                onDismissSheet = bookDetailsViewModel::onShowBottomSheet
             )
 
             if (bookUiState.resultState != ResultState.Success) {
@@ -282,7 +279,7 @@ fun BookDetailsContent(
                     )
                     2 -> BookProgressTab(
                         progressColor = dominantColor,
-                        userProgressState = bookUiState.userProgressState,
+                        bookUiState = bookUiState,
                         onBookProgressUpdate= onBookProgressUpdate ,
                         onShowOptionsDialog = onShowProgressDialog,
                         onSaveProgress = onSaveProgress,
@@ -315,20 +312,18 @@ fun DetailsLoadingScreen(
             .fillMaxHeight(),
         verticalArrangement = Arrangement.Center
     ) {
-        // Display the book title
         Text(
             text = "Loading",
-            style = MaterialTheme.typography.headlineSmall, // Use appropriate text style
-            modifier = modifier.padding(bottom = 8.dp) // Space below the title
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = modifier.padding(bottom = 8.dp)
         )
 
-        // Display the book authors, if available
         Text(
-            text = text, // Join authors with a comma
+            text = text,
             color = textColor,
-            style = MaterialTheme.typography.bodyLarge, // Use appropriate text style
+            style = MaterialTheme.typography.bodyLarge,
             modifier = modifier
-                .padding(bottom = 16.dp) // Space below the authors
+                .padding(bottom = 16.dp)
                 .clickable {
                     onRetryAction()
                 }
@@ -350,17 +345,15 @@ fun DetailsErrorScreen(
             .fillMaxHeight(),
         verticalArrangement = Arrangement.Center
     ) {
-        // Display the book title
         Text(
             text = "Error",
-            style = MaterialTheme.typography.headlineSmall, // Use appropriate text style
-            modifier = modifier.padding(bottom = 8.dp) // Space below the title
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = modifier.padding(bottom = 8.dp)
         )
 
-        // Display the book authors, if available
         Text(
-            text = text, // Join authors with a comma
-            style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onTertiaryContainer), // Use appropriate text style
+            text = text,
+            style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onTertiaryContainer),
             modifier = modifier
                 .padding(bottom = 16.dp)
                 .clickable {
@@ -379,12 +372,12 @@ fun BookGradientBrush(
 ){
     val gradientBrush = Brush.verticalGradient(
         colors = listOf(
-            dominantColor.copy(alpha = 1f), // Start with dominant color from below
-            dominantColor.copy(alpha = 0.8f), // Start with dominant color from below
-            dominantColor.copy(alpha = 0.6f), // Start with dominant color from below
-            dominantColor.copy(alpha = 0.4f), // Start with dominant color from below
-            dominantColor.copy(alpha = 0.2f), // Start with dominant color from below
-            Color.Transparent // Transition to transparent at the top
+            dominantColor.copy(alpha = 1f),
+            dominantColor.copy(alpha = 0.8f),
+            dominantColor.copy(alpha = 0.6f),
+            dominantColor.copy(alpha = 0.4f),
+            dominantColor.copy(alpha = 0.2f),
+            Color.Transparent
         ),
         startY = 0f, // Start from the bottom
         endY = 1500f // Adjust this value to control the gradient's end position (height)
