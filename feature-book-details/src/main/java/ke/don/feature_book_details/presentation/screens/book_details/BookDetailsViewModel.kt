@@ -70,10 +70,7 @@ class BookDetailsViewModel @Inject constructor(
         )
 
 
-    var loadingJoke: String by mutableStateOf("")
-        private set
-
-    var initialBookshelfState = BookshelvesState()
+    private var initialBookshelfState = BookshelvesState()
 
     init {
         onLoading()
@@ -218,8 +215,11 @@ class BookDetailsViewModel @Inject constructor(
 
 
     private fun onLoading() {
-        loadingJoke = loadingBookJokes[Random.nextInt(loadingBookJokes.size)]
-        logger.logDebug(TAG, "Loading joke: $loadingJoke")
+        updateBookState(
+            BookUiState(
+                loadingJoke = loadingBookJokes[Random.nextInt(loadingBookJokes.size)]
+            )
+        )
     }
 
     fun onPushEditedBookshelfBooks() = viewModelScope.launch {
@@ -363,5 +363,3 @@ class BookDetailsViewModel @Inject constructor(
     }
 
 }
-
-

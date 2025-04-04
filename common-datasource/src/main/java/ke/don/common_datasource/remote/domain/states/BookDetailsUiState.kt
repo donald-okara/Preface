@@ -15,6 +15,7 @@ data class BookUiState(
     val showBottomSheet: ShowOptionState = ShowOptionState(),
     val colorPallet: ColorPallet = ColorPallet(),
     val highestImageUrl: String? = null,
+    val loadingJoke: String = "",
     val resultState: ResultState = ResultState.Loading,
 )
 
