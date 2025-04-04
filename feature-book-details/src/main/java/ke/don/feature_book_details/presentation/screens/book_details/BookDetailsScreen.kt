@@ -75,8 +75,6 @@ fun BookDetailsScreen(
 ){
     val bookUiState by bookDetailsViewModel.bookState.collectAsState()
     val bookshelvesState by bookDetailsViewModel.bookshelvesState.collectAsState()
-    val loadingJoke = bookDetailsViewModel.loadingJoke
-
     val bookshelfList = bookshelvesState.bookshelves
 
     val colorPallet = bookUiState.colorPallet
@@ -171,7 +169,7 @@ fun BookDetailsScreen(
                 DetailsLoadingScreen(
                     modifier = modifier
                         .padding(16.dp),
-                    text = if(bookUiState.resultState != ResultState.Error()) loadingJoke else "Failed to load your book. Please try again",
+                    text = if(bookUiState.resultState != ResultState.Error()) bookUiState.loadingJoke else "Failed to load your book. Please try again",
                     onRetryAction = bookDetailsViewModel::refreshAction,
                     textColor = if(bookUiState.resultState == ResultState.Loading) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onTertiaryContainer
                 )
