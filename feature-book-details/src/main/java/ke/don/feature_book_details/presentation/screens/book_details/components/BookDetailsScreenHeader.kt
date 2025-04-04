@@ -2,10 +2,13 @@ package ke.don.feature_book_details.presentation.screens.book_details.components
 
 import android.util.Log
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -28,26 +31,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import ke.don.common_datasource.remote.domain.states.BookshelfBookDetailsState
-import ke.don.common_datasource.remote.domain.states.ShowOptionState
 import ke.don.feature_book_details.R
 import ke.don.shared_domain.data_models.VolumeInfoDet
 
 @Composable
 fun TitleHeader(
     modifier: Modifier = Modifier,
-    onImageClick: () -> Unit,
     volumeInfo: VolumeInfoDet,
-    imageUrl: String? = null,
-    onConfirm: () -> Unit,
-    showBookshelves : ShowOptionState,
-    isLoading: Boolean = true,
-    onExpandBookshelves: () -> Unit,
-    onBookshelfClicked: (Int) -> Unit,
+    onImageClick: () -> Unit,
+    imageUrl: String?,
     onSearchAuthor: (String) -> Unit,
-    onResetSuccess: () -> Unit,
-    uniqueBookshelves: List<BookshelfBookDetailsState>,
-    textColor: Color = MaterialTheme.colorScheme.onTertiaryContainer
+    textColor: Color = MaterialTheme.colorScheme.primary
 ) {
     Column(
         modifier = modifier
@@ -71,15 +65,6 @@ fun TitleHeader(
             modifier = modifier.padding(bottom = 4.dp) // Minor padding if needed
         )
 
-//        if(!isLoading){
-//            BookshelfDropdownMenu(
-//                uniqueBookshelves = uniqueBookshelves,
-//                onExpandToggle = { onExpandBookshelves() },
-//                onItemClick = onBookshelfClicked,
-//                showBookshelvesState = showBookshelves,
-//                onConfirm = onConfirm
-//            )
-//        }
 
         // Display the book authors, if available
         volumeInfo.authors.let { authors ->
@@ -162,20 +147,45 @@ fun BookImage(
 
 @Composable
 fun BookCoverPreview(
-    modifier: Modifier = Modifier,
-    highestImageUrl: String?
+    imageUrl: String?,
+    onDismiss: () -> Unit,
+    showPreview: Boolean
 ) {
-    AsyncImage(
-        model = ImageRequest.Builder(context = LocalContext.current)
-            .data(highestImageUrl)
-            .crossfade(true)
-            .build(),
-        contentScale = ContentScale.Fit,
-        contentDescription = stringResource(R.string.book_cover),
-        placeholder = painterResource(R.drawable.undraw_writer_q06d),
-        modifier = modifier
+    if (showPreview) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer {
+                    alpha = 0.5f // Adjust transparency to enhance blur effect
+                    shadowElevation = 8.dp.toPx() // Simulates depth for blur effect
+                    shape = RoundedCornerShape(0) // Apply shape for additional control
+                    clip = true // Required for proper blur clipping
+                }
+                .background(Color.Black.copy(alpha = 0.6f)) // Semi-transparent overlay
+        )
 
-    )
+        // Fullscreen Book Cover Preview
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.Transparent)
+                .clickable { onDismiss() } // Dismiss the preview when clicked
+        ) {
+            AsyncImage(
+                model = ImageRequest.Builder(context = LocalContext.current)
+                    .data(imageUrl)
+                    .crossfade(true)
+                    .build(),
+                contentScale = ContentScale.FillWidth,
+                contentDescription = stringResource(R.string.book_cover),
+                placeholder = painterResource(R.drawable.undraw_writer_q06d),
+                modifier = Modifier.fillMaxSize()
+
+            )
+        }
+    }
+
+
 }
 
 

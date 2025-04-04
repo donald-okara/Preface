@@ -25,7 +25,7 @@ import ke.don.shared_domain.utils.formatting_utils.formatHtmlToAnnotatedString
 fun AboutVolume(
     modifier: Modifier = Modifier,
     volumeInfo: VolumeInfoDet,
-    textColor: Color = MaterialTheme.colorScheme.onTertiaryContainer
+    textColor: Color = MaterialTheme.colorScheme.primary
 ){
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
