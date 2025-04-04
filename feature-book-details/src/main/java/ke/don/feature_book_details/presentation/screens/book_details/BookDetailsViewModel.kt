@@ -52,15 +52,6 @@ class BookDetailsViewModel @Inject constructor(
     private val _volumeId = MutableStateFlow<String?>(null)
     private val volumeId: StateFlow<String?> = _volumeId
 
-    private val _showBookshelves= MutableStateFlow(ShowOptionState())
-    val showBookshelves: StateFlow<ShowOptionState> = _showBookshelves
-
-    private val _showBookProgress= MutableStateFlow(ShowOptionState())
-    val showBookProgress: StateFlow<ShowOptionState> = _showBookProgress
-
-    private val _showBookSheetOptions = MutableStateFlow(ShowOptionState())
-    val showBookSheetOptions: StateFlow<ShowOptionState> = _showBookSheetOptions
-
     private val _bookState = MutableStateFlow(BookUiState())
     val bookState = _bookState
         .onStart { observeBookDetails() }
@@ -133,7 +124,7 @@ class BookDetailsViewModel @Inject constructor(
                     }
                 }
                 Log.d(TAG, "Book progress ::: ${newState.userProgressState} of total pages ::: ${newState.bookDetails.volumeInfo.pageCount}")
-                _bookState.value = newState
+                updateBookState(newState)
             }
         }
     }
@@ -232,7 +223,11 @@ class BookDetailsViewModel @Inject constructor(
     }
 
     fun onPushEditedBookshelfBooks() = viewModelScope.launch {
-        _showBookshelves.update { ShowOptionState(isLoading = true) }
+        updateBookState(
+            BookUiState(
+                showBookshelvesDropDown = ShowOptionState(isLoading = true)
+            )
+        )
 
         val bookId = bookState.value.bookDetails.id
         val currentBookshelves = _bookshelvesState.value.bookshelves
@@ -251,49 +246,60 @@ class BookDetailsViewModel @Inject constructor(
         when (booksRepository.pushEditedBookshelfBooks(bookId, bookshelfIdsToRemove, addBookToBookshelfList)) {
             is NetworkResult.Success -> {
                 initialBookshelfState = _bookshelvesState.value.copy()
-                _showBookshelves.update { ShowOptionState(isLoading = false, showOption = false) }
+                updateBookState(
+                    BookUiState(
+                        showBookshelvesDropDown = ShowOptionState(isLoading = false, showOption = false)
+                    )
+                )
             }
             is NetworkResult.Error -> {
-                _showBookshelves.update { ShowOptionState(isLoading = false) }
+                updateBookState(
+                    BookUiState(
+                        showBookshelvesDropDown = ShowOptionState(isLoading = false)
+                    )
+                )
             }
         }
     }
 
     fun onShowBookshelves(){
-        _showBookshelves.update {
-            ShowOptionState(
-                showOption = !it.showOption
+        updateBookState(
+            _bookState.value.copy(
+                showBookshelvesDropDown = ShowOptionState(
+                    showOption = !_bookState.value.showBookshelvesDropDown.showOption
+                )
             )
-        }
+        )
     }
 
-    fun onShowBookOptions(){
-        _showBookSheetOptions.update {
-            ShowOptionState(
-                showOption = !it.showOption
+    fun onShowBottomSheet(){
+        updateBookState(
+            _bookState.value.copy(
+                showBottomSheet = ShowOptionState(
+                    showOption = !_bookState.value.showBottomSheet.showOption
+                )
             )
-        }
+        )
     }
 
     fun onBookProgressUpdate(progress: Int){
         if (progress <= bookState.value.bookDetails.volumeInfo.pageCount){
-            _bookState.value = _bookState.value.copy(
-                userProgressState = _bookState.value.userProgressState.copy(
-                    isError = false
+            updateBookState(
+                BookUiState(
+                    userProgressState = UserProgressState(isError = true)
                 )
             )
         }else {
-            _bookState.value = _bookState.value.copy(
-                userProgressState = _bookState.value.userProgressState.copy(
-                    isError = false
+            updateBookState(
+                BookUiState(
+                    userProgressState = UserProgressState(isError = false)
                 )
             )
         }
 
-        Log.d(TAG, "Progress updated :: $progress")
-        _bookState.value = _bookState.value.copy(
-            userProgressState = _bookState.value.userProgressState.copy(
-                newProgress = progress
+        updateBookState(
+            BookUiState(
+                userProgressState = UserProgressState(newProgress = progress)
             )
         )
     }
@@ -302,11 +308,11 @@ class BookDetailsViewModel @Inject constructor(
         isLoading: Boolean? = null,
         toggle: Boolean = false
     ) {
-        val currentState = _bookState.value.userProgressState.showUpdateProgressDialog
+        val currentState = _bookState.value.showUpdateProgressDialog
 
-        _bookState.value = _bookState.value.copy(
-            userProgressState = _bookState.value.userProgressState.copy(
-                showUpdateProgressDialog = currentState.copy(
+        updateBookState(
+            BookUiState(
+                showUpdateProgressDialog = _bookState.value.showUpdateProgressDialog.copy(
                     isLoading = isLoading ?: currentState.isLoading,
                     showOption = if (toggle) !currentState.showOption else currentState.showOption
                 )
@@ -340,11 +346,6 @@ class BookDetailsViewModel @Inject constructor(
         }
     }
 
-    fun resetPushSuccess() {
-        _showBookshelves.update {
-            ShowOptionState()
-        }
-    }
     public override fun onCleared() {
         super.onCleared()
         _volumeId.update {
