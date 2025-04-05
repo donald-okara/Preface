@@ -8,8 +8,11 @@ import ke.don.shared_domain.data_models.UserProgressResponse
 import ke.don.shared_domain.utils.color_utils.model.ColorPallet
 
 data class BookUiState(
+    val volumeId : String? = null,
+    val userId: String? = null,
     val bookDetails: BookDetailsResponse = BookDetailsResponse(),
     val userProgressState: UserProgressState = UserProgressState(),
+    val bookshelvesState: BookshelvesState = BookshelvesState(),
     val showUpdateProgressDialog: ShowOptionState = ShowOptionState(),
     val showBookshelvesDropDown: ShowOptionState = ShowOptionState(),
     val showBottomSheet: ShowOptionState = ShowOptionState(),
@@ -22,6 +25,7 @@ data class BookUiState(
 
 data class UserProgressState(
     val bookProgress: UserProgressResponse = UserProgressResponse(),
+    val resultState: ResultState = ResultState.Loading,
     val isPresent : Boolean = false,
     val isError: Boolean = true,
     val newProgress: Int = 0,
@@ -35,6 +39,7 @@ data class BookshelfBookDetailsState(
 
 data class BookshelvesState(
     val bookshelves: List<BookshelfBookDetailsState> = emptyList(),
+    val resultState: ResultState = ResultState.Loading
 )
 
 data class ShowOptionState(

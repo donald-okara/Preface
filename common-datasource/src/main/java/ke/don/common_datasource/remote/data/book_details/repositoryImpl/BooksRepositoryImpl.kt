@@ -58,8 +58,8 @@ class BooksRepositoryImpl(
         }
     }
 
-     override suspend fun fetchBookshelves(): Flow<List<BookshelfEntity>> {
-         return bookshelfDao.getAllBookshelvesFlow()
+     override suspend fun fetchBookshelves(): List<BookshelfEntity> {
+         return bookshelfDao.getAllBookshelves()
     }
 
 

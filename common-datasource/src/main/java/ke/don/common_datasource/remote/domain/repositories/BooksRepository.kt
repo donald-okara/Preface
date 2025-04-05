@@ -14,7 +14,7 @@ interface BooksRepository {
 
     suspend fun getBookDetails(bookId: String): NetworkResult<BookDetailsResponse>
 
-    suspend fun fetchBookshelves() : Flow<List<BookshelfEntity>>
+    suspend fun fetchBookshelves() : List<BookshelfEntity>
 
     suspend fun pushEditedBookshelfBooks(bookId: String, bookshelfIds: List<Int>, addBookshelves: List<AddBookToBookshelf>) : NetworkResult<NoDataReturned>
 }
