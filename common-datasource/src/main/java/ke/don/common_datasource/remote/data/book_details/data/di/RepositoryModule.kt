@@ -13,6 +13,7 @@ import ke.don.common_datasource.remote.data.bookshelf.network.BookshelfNetworkCl
 import ke.don.common_datasource.remote.domain.repositories.BooksRepository
 import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
 import ke.don.common_datasource.remote.domain.usecases.BooksUseCases
+import ke.don.common_datasource.remote.domain.usecases.BooksUseCasesImpl
 import ke.don.shared_domain.BuildConfig
 import ke.don.shared_domain.utils.color_utils.ColorPaletteExtractor
 import ke.don.shared_domain.utils.color_utils.DefaultColorPaletteExtractor
@@ -52,7 +53,7 @@ object RepositoryModule {
         booksRepository: BooksRepository,
         bookshelfRepository: BookshelfRepository
     ): BooksUseCases {
-        return BooksUseCases(
+        return BooksUseCasesImpl(
             booksRepository = booksRepository,
             bookshelfRepository = bookshelfRepository
         )

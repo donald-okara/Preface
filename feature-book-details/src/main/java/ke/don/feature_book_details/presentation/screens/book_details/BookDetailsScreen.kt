@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -74,8 +75,6 @@ fun BookDetailsScreen(
     onBackPressed: () -> Unit
 ){
     val bookUiState by bookDetailsViewModel.bookState.collectAsState()
-    val bookshelvesState by bookDetailsViewModel.bookshelvesState.collectAsState()
-    val bookshelfList = bookshelvesState.bookshelves
 
     val colorPallet = bookUiState.colorPallet
     val dominantColor =
@@ -85,7 +84,7 @@ fun BookDetailsScreen(
         )
 
     LaunchedEffect(volumeId){
-        bookDetailsViewModel.onVolumeIdPassed(volumeId)
+        bookDetailsViewModel.fetchAndUpdateBookUiState(volumeId)
     }
 
     DisposableEffect(Unit) {
@@ -137,43 +136,56 @@ fun BookDetailsScreen(
                 .fillMaxSize(),
             contentAlignment = Alignment.TopCenter,
         ) {
-            BookDetailsContent(
-                modifier = modifier.align(Alignment.TopCenter),
-                onSearchAuthor = { author ->
-                    bookDetailsViewModel.onSearchAuthor(author = author)
-                    onNavigateToSearch()
-                },
-                dominantColor = dominantColor,
-                onSaveProgress = bookDetailsViewModel::onSaveBookProgress,
-                onBookProgressUpdate = { bookDetailsViewModel.onBookProgressUpdate(it) },
-                onShowProgressDialog = { bookDetailsViewModel.updateProgressDialogState(toggle = true) },
-                bookUiState = bookUiState,
-            )
+            when(bookUiState.resultState) {
+                is ResultState.Success -> {
+                    BookDetailsContent(
+                        modifier = modifier.align(Alignment.TopCenter),
+                        onSearchAuthor = { author ->
+                            bookDetailsViewModel.onSearchAuthor(author = author)
+                            onNavigateToSearch()
+                        },
+                        dominantColor = dominantColor,
+                        onSaveProgress = bookDetailsViewModel::onSaveBookProgress,
+                        onBookProgressUpdate = { bookDetailsViewModel.onBookProgressUpdate(it) },
+                        onShowProgressDialog = {
+                            bookDetailsViewModel.updateProgressDialogState(
+                                toggle = true
+                            )
+                        },
+                        bookUiState = bookUiState,
+                    )
 
-            BookDetailsSheet(
-                modifier = modifier,
-                bookUrl = bookUiState.highestImageUrl,
-                title = bookUiState.bookDetails.volumeInfo.title,
-                showBottomSheet = bookUiState.showBottomSheet.showOption,
-                showBookshelves = bookUiState.showBookshelvesDropDown,
-                onConfirm = bookDetailsViewModel::onPushEditedBookshelfBooks,
-                onExpandBookshelves = bookDetailsViewModel::onShowBookshelves,
-                onBookshelfClicked = {bookshelfId->
-                    bookDetailsViewModel.onSelectBookshelf(bookshelfId)
-                },
-                uniqueBookshelves = bookshelfList,
-                onDismissSheet = bookDetailsViewModel::onShowBottomSheet
-            )
+                    BookDetailsSheet(
+                        modifier = modifier,
+                        bookUrl = bookUiState.highestImageUrl,
+                        title = bookUiState.bookDetails.volumeInfo.title,
+                        showBottomSheet = bookUiState.showBottomSheet.showOption,
+                        showBookshelves = bookUiState.showBookshelvesDropDown,
+                        onConfirm = bookDetailsViewModel::onPushEditedBookshelfBooks,
+                        onExpandBookshelves = bookDetailsViewModel::onShowBookshelves,
+                        onBookshelfClicked = { bookshelfId ->
+                            bookDetailsViewModel.onSelectBookshelf(bookshelfId)
+                        },
+                        uniqueBookshelves = bookUiState.bookshelvesState.bookshelves,
+                        onDismissSheet = bookDetailsViewModel::onShowBottomSheet
+                    )
+                }
 
-            if (bookUiState.resultState != ResultState.Success) {
-                DetailsLoadingScreen(
-                    modifier = modifier
-                        .padding(16.dp),
-                    text = if(bookUiState.resultState != ResultState.Error()) bookUiState.loadingJoke else "Failed to load your book. Please try again",
-                    onRetryAction = bookDetailsViewModel::refreshAction,
-                    textColor = if(bookUiState.resultState == ResultState.Loading) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onTertiaryContainer
-                )
+                else -> {
+                    DetailsLoadingScreen(
+                        modifier = modifier
+                            .padding(16.dp),
+                        text = if (bookUiState.resultState != ResultState.Error()) bookUiState.loadingJoke else "Failed to load your book. Please try again",
+                        onRetryAction = bookDetailsViewModel::refreshAction,
+                        bookUiState = bookUiState,
+                        textColor = if (bookUiState.resultState == ResultState.Loading) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onTertiaryContainer
+                    )
+
+
+                }
             }
+
+
         }
     }
 }
@@ -303,21 +315,28 @@ fun DetailsLoadingScreen(
     modifier: Modifier = Modifier,
     onRetryAction: () -> Unit,
     textColor: Color,
+    bookUiState: BookUiState,
     text: String
 ) {
+    LaunchedEffect(Unit) {
+        Log.d(
+            "BookDetailsScreen",
+            "Loading joke:: ${bookUiState.loadingJoke}, result state:: ${bookUiState.resultState}"
+        )
+    }
     Column(
         modifier = modifier
             .fillMaxHeight(),
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = "Loading",
+            text = if (bookUiState.resultState is ResultState.Error) "Error" else "Loading",
             style = MaterialTheme.typography.headlineSmall,
             modifier = modifier.padding(bottom = 8.dp)
         )
 
         Text(
-            text = text,
+            text = if (bookUiState.resultState is ResultState.Error) "Something went wrong" else bookUiState.loadingJoke,
             color = textColor,
             style = MaterialTheme.typography.bodyLarge,
             modifier = modifier
