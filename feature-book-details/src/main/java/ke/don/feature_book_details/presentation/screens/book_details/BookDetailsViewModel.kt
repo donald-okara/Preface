@@ -76,6 +76,16 @@ class BookDetailsViewModel @Inject constructor(
         onLoading()
     }
 
+    /**
+     * Backend implementation events
+     * TODO
+     */
+
+
+    /**
+     * Ui events
+     * TODO
+     */
 
     private fun updateBookState(newState: BookUiState) {
         _bookState.update { newState }
