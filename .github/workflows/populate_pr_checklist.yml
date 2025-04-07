@@ -1,4 +1,4 @@
-name: Populate PR body from linked issue
+name: Populate PR deliverables from linked issue
 
 on:
   pull_request:
@@ -22,7 +22,8 @@ jobs:
             const issueNumber = titleMatch?.[1] || bodyMatch?.[1];
 
             if (!prBodyIsEmpty || !issueNumber) {
-              return; // Skip if PR has content or no issue found
+              console.log("PR body is not empty or issue number not found. Skipping.");
+              return;
             }
 
             const issue = await github.rest.issues.get({
@@ -47,25 +48,33 @@ jobs:
 
             const prBody = `
             ## Description ✨
-            
-            <!-- What does this PR do? -->
-            
-            ## Related Issue 🐛
-            
-            Closes #${issueNumber}
+              
+              <!-- What does this PR do? -->
+              
+              ## Related Issue 🐛
+              
+              Closes #${issueNumber}
+              
+              ## Deliverables from Issue 📦
+              
+              ${deliverablesLines}
             
             ## Checklist ✅
             
-            ${deliverablesLines}
+            - [ ] The codebase compiles and builds successfully without errors 💻
+            - [ ] Relevant unit and/or integration tests have been added or updated 🧪
+            - [ ] All tests pass consistently across environments 🏆
+            - [ ] Documentation has been updated to reflect code changes (if applicable) 📚
+            - [ ] At least one reviewer has been assigned to this pull request 👀
             
             ## Additional Notes 💬
-            
-            <!-- Any additional context for the reviewer? -->
-                        `;
-
-            await github.rest.pulls.update({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: pr.number,
-              body: prBody
+              
+              <!-- Any additional context for the reviewer? -->
+              `;
+              
+              await github.rest.pulls.update({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: pr.number,
+            body: prBody
             });
