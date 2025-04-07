@@ -1,7 +1,6 @@
 package ke.don.common_datasource.remote.data.bookshelf.repositoryImpl
 
 import android.content.Context
-import android.util.Log
 import android.widget.Toast
 import ke.don.common_datasource.local.roomdb.dao.BookshelfDao
 import ke.don.common_datasource.local.roomdb.entities.BookshelfEntity
@@ -10,12 +9,10 @@ import ke.don.common_datasource.remote.data.bookshelf.network.BookshelfNetworkCl
 import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
 import ke.don.common_datasource.remote.domain.states.NoDataReturned
 import ke.don.common_datasource.remote.domain.states.toEntity
-import ke.don.shared_domain.data_models.AddBookToBookshelf
 import ke.don.shared_domain.data_models.BookShelf
 import ke.don.shared_domain.data_models.BookshelfRef
 import ke.don.shared_domain.data_models.Profile
 import ke.don.shared_domain.states.NetworkResult
-import ke.don.shared_domain.states.ResultState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
@@ -105,8 +102,8 @@ class BookshelfRepositoryImpl(
         }
     }
 
-    override suspend fun addBookToBookshelf(addBookToBookshelf: AddBookToBookshelf): NetworkResult<NoDataReturned> {
-        return bookshelfNetworkClass.addBookToBookshelf(addBookToBookshelf).also { result ->
+    override suspend fun addBookToBookshelf(bookshelfId: Int, bookId: String): NetworkResult<NoDataReturned> {
+        return bookshelfNetworkClass.addBookToBookshelf(bookshelfId, bookId).also { result ->
             if (result is NetworkResult.Error) {
                 Toast.makeText(context, "${result.message} ${result.hint}", Toast.LENGTH_SHORT).show()
             }

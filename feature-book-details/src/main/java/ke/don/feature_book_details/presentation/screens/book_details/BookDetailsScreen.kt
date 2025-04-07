@@ -146,7 +146,7 @@ fun BookDetailsScreen(
                         },
                         dominantColor = dominantColor,
                         onSaveProgress = bookDetailsViewModel::onSaveBookProgress,
-                        onBookProgressUpdate = { bookDetailsViewModel.onBookProgressUpdate(it) },
+                        onBookProgressUpdate = { bookDetailsViewModel.onCurrentPageUpdate(it) },
                         onShowProgressDialog = {
                             bookDetailsViewModel.updateProgressDialogState(
                                 toggle = true

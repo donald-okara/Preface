@@ -1,11 +1,12 @@
 package ke.don.common_datasource.remote.domain.states
 
 import ke.don.common_datasource.local.roomdb.entities.BookshelfEntity
-import ke.don.shared_domain.states.ResultState
-import ke.don.shared_domain.data_models.AddBookToBookshelf
 import ke.don.shared_domain.data_models.BookDetailsResponse
 import ke.don.shared_domain.data_models.UserProgressResponse
+import ke.don.shared_domain.states.ResultState
+import ke.don.shared_domain.states.loadingBookJokes
 import ke.don.shared_domain.utils.color_utils.model.ColorPallet
+import kotlin.random.Random
 
 data class BookUiState(
     val volumeId : String? = null,
@@ -18,7 +19,7 @@ data class BookUiState(
     val showBottomSheet: ShowOptionState = ShowOptionState(),
     val colorPallet: ColorPallet = ColorPallet(),
     val highestImageUrl: String? = null,
-    val loadingJoke: String = "",
+    val loadingJoke: String = loadingBookJokes[Random.nextInt(loadingBookJokes.size)],
     val resultState: ResultState = ResultState.Loading,
 )
 
@@ -47,34 +48,4 @@ data class ShowOptionState(
     val isLoading : Boolean = false,
 )
 
-
-fun BookshelfEntity.toAddBookToBookshelf(
-    book : BookDetailsResponse
-): AddBookToBookshelf {
-    val lowestImageUrl = book.volumeInfo.imageLinks.let {
-        it.extraLarge ?: it.large ?: it.medium ?: it.small ?: it.thumbnail
-        ?: it.smallThumbnail
-    }?.replace("http", "https")
-    val highestImageUrl = book.volumeInfo.imageLinks.let {
-        it.extraLarge ?: it.large ?: it.medium ?: it.small ?: it.thumbnail
-        ?: it.smallThumbnail
-    }?.replace("http", "https")
-
-    return AddBookToBookshelf(
-        bookshelfId = this.id,
-        bookId = book.id,
-        title = book.volumeInfo.title,
-        description = book.volumeInfo.description,
-        highestImageUrl = highestImageUrl,
-        lowestImageUrl = lowestImageUrl,
-        authors = book.volumeInfo.authors,
-        categories = book.volumeInfo.categories,
-        publishedDate = book.volumeInfo.publishedDate,
-        publisher = book.volumeInfo.publisher,
-        maturityRating = book.volumeInfo.maturityRating,
-        language = book.volumeInfo.language,
-        previewLink = book.volumeInfo.previewLink,
-        pageCount = book.volumeInfo.pageCount
-    )
-}
 

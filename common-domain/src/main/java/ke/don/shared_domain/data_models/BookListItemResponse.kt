@@ -46,4 +46,8 @@ data class ImageLinks(
         extraLarge ?: large ?: medium ?: small ?: thumbnail ?: smallThumbnail
     }
 
+    fun getLowestQualityUrl(): String? = this.let {
+        smallThumbnail ?: thumbnail ?: small ?: medium ?: large ?: extraLarge
+    }
+
 }

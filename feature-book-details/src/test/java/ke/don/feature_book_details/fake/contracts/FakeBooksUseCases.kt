@@ -1,0 +1,51 @@
+package ke.don.feature_book_details.fake.contracts
+
+import ke.don.common_datasource.remote.domain.states.BookshelvesState
+import ke.don.common_datasource.remote.domain.states.NoDataReturned
+import ke.don.common_datasource.remote.domain.states.UserProgressState
+import ke.don.common_datasource.remote.domain.usecases.BooksUseCases
+import ke.don.shared_domain.data_models.BookDetailsResponse
+import ke.don.shared_domain.data_models.CreateUserProgressDTO
+import ke.don.shared_domain.states.NetworkResult
+
+class FakeBooksUseCases: BooksUseCases {
+    override suspend fun checkAndAddBook(book: BookDetailsResponse): NetworkResult<NoDataReturned> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun addUserProgress(userProgress: CreateUserProgressDTO): NetworkResult<NoDataReturned> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun updateUserProgress(
+        userId: String,
+        bookId: String,
+        newCurrentPage: Int
+    ): NetworkResult<NoDataReturned> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun fetchProfileId(): String {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun pushEditedBookshelfBooks(
+        bookId: String,
+        bookshelfIds: List<Int>,
+        addBookshelves: List<Int>
+    ): NetworkResult<NoDataReturned> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun fetchBookDetails(bookId: String): NetworkResult<BookDetailsResponse> {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun fetchAndMapBookshelves(bookId: String): BookshelvesState? {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun fetchBookProgress(bookId: String, userId: String): UserProgressState? {
+        TODO("Not yet implemented")
+    }
+}

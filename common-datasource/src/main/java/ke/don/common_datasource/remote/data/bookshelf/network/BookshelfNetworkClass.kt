@@ -5,22 +5,14 @@ import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
 import ke.don.common_datasource.local.roomdb.entities.BookshelfEntity
-import ke.don.common_datasource.local.roomdb.entities.toEntity
 import ke.don.common_datasource.remote.domain.states.NoDataReturned
-import ke.don.shared_domain.data_models.AddBookToBookshelf
-import ke.don.shared_domain.data_models.BookShelf
 import ke.don.shared_domain.data_models.BookshelfCatalog
 import ke.don.shared_domain.data_models.BookshelfRef
-import ke.don.shared_domain.data_models.SupabaseBook
-import ke.don.shared_domain.states.ResultState
 import ke.don.shared_domain.states.NetworkResult
-import ke.don.shared_domain.values.ADDBOOKSTOBOOKSHELF
-import ke.don.shared_domain.values.BOOKS
 import ke.don.shared_domain.values.BOOKSHELFCATALOG
 import ke.don.shared_domain.values.BOOKSHELFTABLE
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import io.github.jan.supabase.postgrest.postgrest
 import io.github.jan.supabase.postgrest.rpc
 
 class BookshelfNetworkClass(
@@ -85,14 +77,19 @@ class BookshelfNetworkClass(
      * UPDATE
      */
     suspend fun addBookToBookshelf(
-        addBookToBookshelf: AddBookToBookshelf
+        bookshelfId: Int,
+        bookId: String,
     ): NetworkResult<NoDataReturned>{
+        val bookshelfCatalog =
+            BookshelfCatalog(
+                bookshelfId = bookshelfId,
+                bookId = bookId,
+            )
         return try {
             Log.d(TAG, "Attempting to add book")
-
             supabaseClient.from(
-                ADDBOOKSTOBOOKSHELF
-            ).insert(addBookToBookshelf)
+                BOOKSHELFCATALOG
+            ).insert(bookshelfCatalog)
             NetworkResult.Success(NoDataReturned())
         }catch (e: Exception){
             e.printStackTrace()
@@ -104,9 +101,12 @@ class BookshelfNetworkClass(
         }
     }
 
-    suspend fun addMultipleBooksToBookshelf(books: List<AddBookToBookshelf>): NetworkResult<NoDataReturned> {
+    suspend fun addBookToMultipleBookshelves(book: String, bookshelves: List<Int>): NetworkResult<NoDataReturned> {
+        val bookshelfCatalogs = bookshelves.map { bookshelf ->
+            BookshelfCatalog(bookId = book, bookshelfId = bookshelf)
+        }
         return try {
-            if (books.isEmpty()) {
+            if (bookshelves.isEmpty()) {
                 return NetworkResult.Error(
                     message = "Book list is empty",
                     hint = "Ensure that the list contains at least one book before inserting.",
@@ -114,8 +114,8 @@ class BookshelfNetworkClass(
                 )
             }
 
-            supabaseClient.from(ADDBOOKSTOBOOKSHELF)
-                .insert(books)
+            supabaseClient.from(BOOKSHELFCATALOG)
+                .insert(bookshelfCatalogs)
 
             NetworkResult.Success(NoDataReturned())
         } catch (e: Exception) {
