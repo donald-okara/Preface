@@ -1,0 +1,70 @@
+name: Populate PR checklist
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize]
+  workflow_dispatch:  # This enables manual trigger via GitHub UI
+
+jobs:
+  populate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR body and update if empty
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const checklist = `
+            ## Description ✨
+
+            <!-- What does this PR do? -->
+            
+            ## Related Issue 🐛
+            
+            Closes #
+
+            ## Checklist ✅
+
+            - [ ] The codebase compiles and builds successfully without errors 💻
+            - [ ] Relevant unit and/or integration tests have been added or updated 🧪
+            - [ ] All tests pass consistently across environments 🏆
+            - [ ] Documentation has been updated to reflect code changes (if applicable) 📚
+            - [ ] At least one reviewer has been assigned to this pull request 👀
+
+            ## Additional Notes 💬
+            
+            <!-- Any additional context for the reviewer? -->
+            
+            `;
+            
+            const pr = context.payload.pull_request;
+            if (!pr.body || pr.body.trim() === "") {
+              await github.rest.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+                body: checklist
+              });
+            }
+
+            // Search for issue number in PR title (e.g., "Fix #123: Description")
+            const titleMatch = pr.title.match(/Fix\s+#(\d+):/i);
+            let issueNumber = titleMatch ? titleMatch[1] : null;
+            
+            // If no issue found in the title, search in PR body
+            if (!issueNumber) {
+              const bodyMatch = pr.body.match(/Closes\s+#(\d+)/i);
+              if (bodyMatch) {
+                issueNumber = bodyMatch[1];
+              }
+            }
+
+            // If an issue number is found, create a comment on the issue
+            if (issueNumber) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber,
+                body: `Checklist copied from PR #${pr.number}:\n\n${checklist}`
+              });
+            }
