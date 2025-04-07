@@ -8,7 +8,6 @@ import ke.don.common_datasource.remote.domain.states.BookshelvesState
 import ke.don.common_datasource.remote.domain.states.NoDataReturned
 import ke.don.common_datasource.remote.domain.states.UserProgressState
 import ke.don.common_datasource.remote.domain.states.toBookshelfBookDetails
-import ke.don.shared_domain.data_models.AddBookToBookshelf
 import ke.don.shared_domain.data_models.BookDetailsResponse
 import ke.don.shared_domain.data_models.CreateUserProgressDTO
 import ke.don.shared_domain.states.NetworkResult

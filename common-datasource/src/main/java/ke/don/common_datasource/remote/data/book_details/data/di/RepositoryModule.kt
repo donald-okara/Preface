@@ -6,14 +6,15 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import io.github.jan.supabase.SupabaseClient
 import ke.don.common_datasource.local.datastore.profile.ProfileDataStoreManager
 import ke.don.common_datasource.local.roomdb.dao.BookshelfDao
+import ke.don.common_datasource.remote.data.book_details.network.BookNetworkClass
 import ke.don.common_datasource.remote.data.book_details.network.GoogleBooksApi
 import ke.don.common_datasource.remote.data.book_details.repositoryImpl.BooksRepositoryImpl
 import ke.don.common_datasource.remote.data.bookshelf.network.BookshelfNetworkClass
 import ke.don.common_datasource.remote.domain.repositories.BooksRepository
 import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
-import ke.don.common_datasource.remote.domain.repositories.ProfileRepository
 import ke.don.common_datasource.remote.domain.repositories.UserProgressRepository
 import ke.don.common_datasource.remote.domain.usecases.BooksUseCases
 import ke.don.common_datasource.remote.domain.usecases.BooksUseCasesImpl
@@ -27,10 +28,15 @@ import javax.inject.Singleton
 object RepositoryModule {
     @Provides
     @Singleton
+    fun provideBookNetworkClass(supabaseClient: SupabaseClient): BookNetworkClass = BookNetworkClass(supabaseClient)
+
+    @Provides
+    @Singleton
     fun provideBooksRepository(
         googleBooksApi: GoogleBooksApi,
         bookshelfNetworkClass: BookshelfNetworkClass,
         bookshelfDao: BookshelfDao,
+        bookNetworkClass: BookNetworkClass,
         bookshelfRepository: BookshelfRepository,
         @ApplicationContext context: Context,
     ): BooksRepository {
@@ -40,6 +46,7 @@ object RepositoryModule {
             bookshelfNetworkClass = bookshelfNetworkClass,
             bookshelfDao = bookshelfDao,
             context = context,
+            bookNetworkClass = bookNetworkClass,
             bookshelfRepository = bookshelfRepository,
         )
     }
