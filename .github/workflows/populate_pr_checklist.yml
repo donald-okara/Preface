@@ -43,9 +43,14 @@ jobs:
               .split('\n')
               .map(line => line.trim())
               .filter(line => line.length > 0)
-              .map(line => `- [ ] ${line}`)
-              .join('\n');
-
+              .map(line => {
+              // If line already starts with - [ ] or - [x], leave it as-is
+              if (/^- \[.\]/.test(line)) return line;
+              return `- [ ] ${line}`;
+            })
+            .join('\n');
+      
+  
             const prBody = `
             ## Description ✨
               
