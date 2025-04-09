@@ -69,7 +69,7 @@ jobs:
                 }
               }
 
-              // If no issue number found in body, check the title (e.g., "Fix #53: R")
+              // If no issue number in body, check the title (e.g., "Fix #53: R")
               if (!issueNumber) {
                 const titleMatch = prTitle.match(/\b(fix|fixes|fixed|close|closes|closed|resolve|resolves|resolved)\s+#(\d+)/i);
                 if (titleMatch) {
@@ -97,15 +97,18 @@ jobs:
                   }
                 }
 
-                // Extract current deliverables checklist from PR body to preserve checked states
+                // Extract current deliverables checklist from PR body, handling multiple checkboxes
                 const prDeliverablesSection = prBody.match(/## 🚧 Deliverables from Issue\n([\s\S]*?)(?=\n## |$)/);
                 let prDeliverables = {};
                 if (prDeliverablesSection) {
-                  const checklistItems = prDeliverablesSection[1].match(/- \[[ x]\] .+/g);
+                  const checklistItems = prDeliverablesSection[1].match(/- (\[[ x]\]\s*)+.+/g);
                   if (checklistItems) {
                     checklistItems.forEach(item => {
-                      const checked = item.startsWith('- [x]');
-                      const text = item.replace(/^- \[[ x]\] /, '').trim();
+                      // Match all checkboxes and take the last one as the state
+                      const checkboxMatches = item.match(/\[[ x]\]/g);
+                      const lastCheckbox = checkboxMatches[checkboxMatches.length - 1];
+                      const checked = lastCheckbox === '[x]';
+                      const text = item.replace(/- (\[[ x]\]\s*)+/, '').trim();
                       prDeliverables[text] = checked;
                     });
                   }
