@@ -19,13 +19,11 @@ jobs:
             const pr = context.payload.pull_request;
             const issue = context.payload.issue;
 
-            // Get PR context (if available)
             let prNumber = pr?.number;
             let prTitle = pr?.title || '';
             let prBody = pr?.body || '';
 
             if (!pr && context.eventName === 'issues') {
-              // Manual issue edit trigger - find all PRs referencing this issue
               const issueNumber = issue.number;
               const linkedPRs = await github.paginate(
                 github.rest.issues.listEventsForTimeline,
@@ -47,7 +45,6 @@ jobs:
               return;
             }
 
-            // Otherwise, PR-based trigger: extract issue number
             const content = `${prTitle}\n${prBody}`;
             const match = content.match(/(?:Closes|Fixes|Fix)\s+#(\d+)/i);
 
@@ -59,7 +56,6 @@ jobs:
             const issueNumber = match[1];
             await updatePR(prNumber, issueNumber);
 
-            // Function: Sync deliverables to PR
             async function updatePR(prNum, issueNum) {
               const issueData = await github.rest.issues.get({
                 owner: context.repo.owner,
@@ -69,7 +65,6 @@ jobs:
 
               const issueBody = issueData.data.body || "";
 
-              // Extract deliverables section from issue
               const deliverablesMatch = issueBody.match(/##\s*Deliverables([\s\S]*?)(##|$)/i);
               const deliverablesBlock = deliverablesMatch ? deliverablesMatch[1].trim() : "";
 
@@ -84,28 +79,54 @@ jobs:
                 return `- ${isChecked ? '✅' : '❌'} ${text}`;
               }).join('\n');
 
-              const newSection = `## 🚧 Deliverables Progress (from Issue #${issueNum}) 📦\n${emojiList}`;
+              const deliverablesSection = `## 🚧 Deliverables Progress (from Issue #${issueNum}) 📦\n${emojiList}`;
 
-              // Fetch current PR body
-              const currentPR = await github.rest.pulls.get({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: prNum
-              });
-
-              let originalBody = currentPR.data.body || "";
-
-              // Remove existing deliverables section (if present)
-              const cleanedBody = originalBody.replace(/## 🚧 Deliverables Progress \(from Issue #\d+\) 📦[\s\S]*/i, '').trim();
-
-              const updatedBody = `${cleanedBody.trim()}\n\n${newSection}`.trim();
-
+              const fullTemplate = `
+            ## ✨ Description
+              
+              <!-- Clearly describe what this PR does. What feature, fix, or update are you introducing? -->
+            
+            ---
+            
+            ## 🐛 Related Issue
+            
+            Closes #${issueNum}
+            
+            ---
+            
+            ## 📦 Deliverables from Issue
+            
+            <!-- These will be auto-filled from the related issue if matched. -->
+            
+            ${emojiList}
+            
+            ---
+            
+            ## ✅ Checklist
+            
+            - [ ] 💻 Code compiles and builds successfully without errors
+            - [ ] 🧪 Relevant tests (unit/integration) are added or updated
+            - [ ] 🏆 All tests pass locally and on CI
+            - [ ] 📚 Documentation has been updated (if applicable)
+            - [ ] 👀 Reviewer(s) have been assigned
+            
+            ---
+            
+            ## 💬 Additional Notes
+            
+            <!-- Optional: Any extra context, decisions made, or things to look out for -->
+            
+            ---
+              
+              ${deliverablesSection}
+              `.trim();
+              
               await github.rest.pulls.update({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                pull_number: prNum,
-                body: updatedBody
-              });
-
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: prNum,
+            body: fullTemplate
+            });
+              
               console.log(`Updated PR #${prNum} with deliverables from Issue #${issueNum}`);
             }
