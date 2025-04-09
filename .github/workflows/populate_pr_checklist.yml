@@ -2,86 +2,51 @@ name: Sync Deliverables from Issue to PR
 
 on:
   issues:
-    types: [edited]
+    types: [edited]  # Trigger when the issue is edited
   pull_request:
-    types: [opened, edited, synchronize]
-  workflow_dispatch:
+    types: [opened, synchronize, edited]  # Trigger when PR is opened, synced, or edited
+  workflow_dispatch:  # Allow manual runs
 
 jobs:
   sync-deliverables:
     runs-on: ubuntu-latest
     steps:
-      - name: Sync Deliverables Section from Issue to PR
+      - name: Sync Deliverables from Linked Issue
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const pr = context.payload.pull_request;
-            const issue = context.payload.issue;
+            const prBody = pr.body || "";
 
-            let prNumber = pr?.number;
-            let prTitle = pr?.title || '';
-            let prBody = pr?.body || '';
+            // Extract linked issue number from PR title or body
+            const titleMatch = pr.title.match(/#(\d+)/);
+            const bodyMatch = prBody.match(/Closes\s+#(\d+)/i);
+            const issueNum = titleMatch?.[1] || bodyMatch?.[1];
 
-            if (!pr && context.eventName === 'issues') {
-              const issueNumber = issue.number;
-              const linkedPRs = await github.paginate(
-                github.rest.issues.listEventsForTimeline,
-                {
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  issue_number: issueNumber,
-                  per_page: 100,
-                }
-              );
-
-              const prNumbers = linkedPRs
-                .filter(event => event.event === 'cross-referenced' && event.source?.issue?.pull_request)
-                .map(event => event.source.issue.number);
-
-              for (const prNum of prNumbers) {
-                await updatePR(prNum, issueNumber);
-              }
+            if (!issueNum) {
+              console.log("No linked issue found in PR.");
               return;
             }
 
-            const content = `${prTitle}\n${prBody}`;
-            const match = content.match(/(?:Closes|Fixes|Fix)\s+#(\d+)/i);
+            // Fetch the linked issue
+            const issue = await github.rest.issues.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issueNum
+            });
 
-            if (!match) {
-              console.log("No linked issue found in PR title/body.");
-              return;
-            }
+            const issueBody = issue.data.body || "";
+            const checklistItems = issueBody.match(/- \[.\] .+/g) || [];
 
-            const issueNumber = match[1];
-            await updatePR(prNumber, issueNumber);
+            // Convert checklist to emoji format
+            const emojiList = checklistItems.map(line => {
+              const checked = line.includes('[x]');
+              return `- ${checked ? '✅' : '❌'} ${line.replace(/- \[.\] /, '')}`;
+            }).join('\n');
 
-            async function updatePR(prNum, issueNum) {
-              const issueData = await github.rest.issues.get({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: issueNum
-              });
-
-              const issueBody = issueData.data.body || "";
-
-              const deliverablesMatch = issueBody.match(/##\s*Deliverables([\s\S]*?)(##|$)/i);
-              const deliverablesBlock = deliverablesMatch ? deliverablesMatch[1].trim() : "";
-
-              const lines = deliverablesBlock
-                .split('\n')
-                .map(line => line.trim())
-                .filter(line => line);
-
-              let emojiList = lines.map(line => {
-                const isChecked = line.startsWith('- [x]');
-                const text = line.replace(/^- \[[ xX]\] /, '');
-                return `- ${isChecked ? '✅' : '❌'} ${text}`;
-              }).join('\n');
-
-              const deliverablesSection = `## 🚧 Deliverables Progress (from Issue #${issueNum}) 📦\n${emojiList}`;
-
-              const fullTemplate = `
+            // Define PR body structure with injected deliverables
+            const fullTemplate = `
             ## ✨ Description
               
               <!-- Clearly describe what this PR does. What feature, fix, or update are you introducing? -->
@@ -95,8 +60,6 @@ jobs:
             ---
             
             ## 🚧 Deliverables from Issue
-            
-            <!-- These will be auto-filled from the related issue if matched. -->
             
             ${emojiList}
             
@@ -117,16 +80,12 @@ jobs:
             <!-- Optional: Any extra context, decisions made, or things to look out for -->
             
             ---
-              
-              ${deliverablesSection}
               `.trim();
               
+              // Update PR body
               await github.rest.pulls.update({
             owner: context.repo.owner,
             repo: context.repo.repo,
-            pull_number: prNum,
+            pull_number: pr.number,
             body: fullTemplate
             });
-              
-              console.log(`Updated PR #${prNum} with deliverables from Issue #${issueNum}`);
-            }
