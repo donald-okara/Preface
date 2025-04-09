@@ -38,11 +38,11 @@ jobs:
 
             ## ✅ Checklist
 
-            - [ ] 💻 Code compiles and builds successfully without errors
-            - [ ] 🧪 Relevant tests (unit/integration) are added or updated
-            - [ ] 🏆 All tests pass locally and on CI
-            - [ ] 📚 Documentation has been updated (if applicable)
-            - [ ] 👀 Reviewer(s) have been assigned
+            - ❌ 💻 Code compiles and builds successfully without errors
+            - ❌ 🧪 Relevant tests (unit/integration) are added or updated
+            - ❌ 🏆 All tests pass locally and on CI
+            - ❌ 📚 Documentation has been updated (if applicable)
+            - ❌ 👀 Reviewer(s) have been assigned
 
             ---
 
@@ -59,25 +59,19 @@ jobs:
                 body: template
               });
             } else {
-              // Try to extract issue number, prioritizing the "Related Issue" section in the body
+              // Extract issue number from "Related Issue" section or PR title
               let issueNumber = null;
               const relatedIssueSection = prBody.match(/## 🐛 Related Issue\n([\s\S]*?)(?=\n## |$)/);
               if (relatedIssueSection) {
                 const closesMatch = relatedIssueSection[1].match(/closes\s+#(\d+)/i);
-                if (closesMatch) {
-                  issueNumber = closesMatch[1];
-                }
+                if (closesMatch) issueNumber = closesMatch[1];
               }
-
-              // If no issue number in body, check the title (e.g., "Fix #53: R")
               if (!issueNumber) {
                 const titleMatch = prTitle.match(/\b(fix|fixes|fixed|close|closes|closed|resolve|resolves|resolved)\s+#(\d+)/i);
-                if (titleMatch) {
-                  issueNumber = titleMatch[2];
-                }
+                if (titleMatch) issueNumber = titleMatch[2];
               }
 
-              // If an issue number is found, fetch and update deliverables
+              // If an issue number is found, update deliverables
               if (issueNumber) {
                 // Fetch the issue body
                 const issue = await github.rest.issues.get({
@@ -97,36 +91,33 @@ jobs:
                   }
                 }
 
-                // Extract current deliverables checklist from PR body, handling multiple checkboxes
+                // Parse current PR deliverables, looking for ✅ or ❌
                 const prDeliverablesSection = prBody.match(/## 🚧 Deliverables from Issue\n([\s\S]*?)(?=\n## |$)/);
                 let prDeliverables = {};
                 if (prDeliverablesSection) {
-                  const checklistItems = prDeliverablesSection[1].match(/- (\[[ x]\]\s*)+.+/g);
+                  const checklistItems = prDeliverablesSection[1].match(/- [✅❌]\s*.+/g);
                   if (checklistItems) {
                     checklistItems.forEach(item => {
-                      // Match all checkboxes and take the last one as the state
-                      const checkboxMatches = item.match(/\[[ x]\]/g);
-                      const lastCheckbox = checkboxMatches[checkboxMatches.length - 1];
-                      const checked = lastCheckbox === '[x]';
-                      const text = item.replace(/- (\[[ x]\]\s*)+/, '').trim();
+                      const checked = item.startsWith('- ✅');
+                      const text = item.replace(/^- [✅❌]\s*/, '').trim();
                       prDeliverables[text] = checked;
                     });
                   }
                 }
 
-                // Build the new deliverables checklist, keeping existing checked states
+                // Build new deliverables checklist with emojis
                 let newDeliverables = issueDeliverables.map(item => {
-                  const checked = prDeliverables[item] ? 'x' : ' ';
-                  return `- [${checked}] ${item}`;
+                  const checked = prDeliverables[item] ? '✅' : '❌';
+                  return `- ${checked} ${item}`;
                 }).join('\n');
 
-                // Update the PR body with the new deliverables section
+                // Update PR body with new deliverables
                 const newPrBody = prBody.replace(
                   /(## 🚧 Deliverables from Issue\n)[\s\S]*?(?=\n## |$)/,
                   `$1${newDeliverables}\n`
                 );
 
-                // Update the PR only if the body has changed
+                // Update PR only if body has changed
                 if (newPrBody !== prBody) {
                   await github.rest.pulls.update({
                     owner,
