@@ -2,10 +2,10 @@ name: Sync Deliverables from Issue to PR
 
 on:
   issues:
-    types: [edited]  # Trigger when the issue is edited
+    types: [edited]
   pull_request:
-    types: [opened, synchronize, edited]  # Trigger when PR is opened, synced, or edited
-  workflow_dispatch:  # Allow manual runs
+    types: [opened, synchronize, edited]
+  workflow_dispatch:
 
 jobs:
   sync-deliverables:
@@ -17,10 +17,10 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const pr = context.payload.pull_request;
-            const prBody = pr.body || "";
+            let prBody = pr?.body || "";
 
             // Extract linked issue number from PR title or body
-            const titleMatch = pr.title.match(/#(\d+)/);
+            const titleMatch = pr?.title.match(/#(\d+)/);
             const bodyMatch = prBody.match(/Closes\s+#(\d+)/i);
             const issueNum = titleMatch?.[1] || bodyMatch?.[1];
 
@@ -29,7 +29,7 @@ jobs:
               return;
             }
 
-            // Fetch the linked issue
+            // Fetch linked issue
             const issue = await github.rest.issues.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -45,47 +45,53 @@ jobs:
               return `- ${checked ? '✅' : '❌'} ${line.replace(/- \[.\] /, '')}`;
             }).join('\n');
 
-            // Define PR body structure with injected deliverables
-            const fullTemplate = `
-            ## ✨ Description
-              
-              <!-- Clearly describe what this PR does. What feature, fix, or update are you introducing? -->
+            // Only update the "Deliverables from Issue" section if it exists
+            const deliverablesSectionRegex = /(## 🚧 Deliverables from Issue\n\n)([^]*?)(\n---)/;
             
-            ---
+            if (deliverablesSectionRegex.test(prBody)) {
+              // Replace existing deliverables content
+              prBody = prBody.replace(
+                deliverablesSectionRegex,
+                `$1${emojiList}$3`
+              );
+            } else {
+              // If section doesn't exist, prepend new structure (for new PRs)
+              const fullTemplate = `
+                ## ✨ Description
             
-            ## 🐛 Related Issue
+                <!-- Describe what this PR does -->
             
-            Closes #${issueNum}
+                ---
             
-            ---
+                ## 🐛 Related Issue
             
-            ## 🚧 Deliverables from Issue
+                Closes #${issueNum}
             
-            ${emojiList}
+                ---
             
-            ---
+                ## 🚧 Deliverables from Issue
             
-            ## ✅ Checklist
+                ${emojiList}
             
-            - [ ] 💻 Code compiles and builds successfully without errors
-            - [ ] 🧪 Relevant tests (unit/integration) are added or updated
-            - [ ] 🏆 All tests pass locally and on CI
-            - [ ] 📚 Documentation has been updated (if applicable)
-            - [ ] 👀 Reviewer(s) have been assigned
+                ---
             
-            ---
+                ## ✅ Checklist
             
-            ## 💬 Additional Notes
+                - [ ] Code compiles
+                - [ ] Tests updated
+                - [ ] Documentation updated
             
-            <!-- Optional: Any extra context, decisions made, or things to look out for -->
-            
-            ---
-              `.trim();
-              
-              // Update PR body
+                ---
+                `.trim();
+              prBody = fullTemplate + '\n\n' + prBody;
+            }
+
+            // Update PR body only if changes are detected
+            if (prBody !== pr.body) {
               await github.rest.pulls.update({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            pull_number: pr.number,
-            body: fullTemplate
-            });
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: pr.number,
+                body: prBody
+              });
+            }
