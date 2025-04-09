@@ -1,84 +1,119 @@
-name: Sync Deliverables Between Issues and PRs
+name: PR Template and Deliverables
 
 on:
-  issues:
-    types: [edited]
   pull_request:
-    types: [opened, edited, synchronize]
-  workflow_dispatch:
+    types: [opened, edited]
 
 jobs:
-  sync-deliverables:
+  update-pr-body:
     runs-on: ubuntu-latest
     steps:
-      - name: Sync Checklist <> Deliverables
-        uses: actions/github-script@v7
+      - name: Update PR Body
+        uses: actions/github-script@v6
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const { issue, pull_request: pr } = context.payload;
-            const isIssueEvent = !!issue;
-            const repoInfo = { 
-              owner: context.repo.owner, 
-              repo: context.repo.repo 
-            };
+            const { owner, repo } = context.repo;
+            const prNumber = context.payload.pull_request.number;
+            const prBody = context.payload.pull_request.body || '';
 
-            // Get target issue number
-            let targetIssueNumber;
-            if (isIssueEvent) {
-              targetIssueNumber = issue.number;
-            } else if (pr) {
-              const prBody = pr.body || "";
-              const titleMatch = pr.title.match(/#(\d+)/);
-              const bodyMatch = prBody.match(/(Closes|Fixes)\s+#(\d+)/i);
-              targetIssueNumber = titleMatch?.[1] || bodyMatch?.[2];
-            }
+            // Define the template for a blank PR body
+            const template = `## ✨ Description
 
-            if (!targetIssueNumber) {
-              console.log('No linked issue found');
-              return;
-            }
+            <!-- Clearly describe what this PR does. What feature, fix, or update are you introducing? -->
 
-            // Get all PRs linked to this issue
-            const searchQuery = `is:pr Closes #${targetIssueNumber} repo:${repoInfo.owner}/${repoInfo.repo}`;
-            const searchResults = await github.rest.search.issuesAndPullRequests({
-              q: searchQuery
-            });
+            ---
 
-            const linkedPRs = searchResults.data.items;
+            ## 🐛 Related Issue
 
-            // Process issue checklist
-            const targetIssue = await github.rest.issues.get({
-              ...repoInfo,
-              issue_number: targetIssueNumber
-            });
-            
-            const issueBody = targetIssue.data.body || "";
-            const checklistItems = issueBody.match(/- \[.\] .+/g) || [];
-            const emojiList = checklistItems.map(line => {
-              const checked = line.includes('[x]');
-              return `- ${checked ? '✅' : '❌'} ${line.replace(/- \[.\] /, '')}`;
-            }).join('\n');
+            Closes #
 
-            // Update all linked PRs
-            for (const linkedPR of linkedPRs) {
-              let prBody = linkedPR.body || "";
-              const deliverablesPattern = /(## 🚧 Deliverables from Issue\n)([^]*?)(\n---)/s;
+            ---
 
-              if (deliverablesPattern.test(prBody)) {
-                const updatedBody = prBody.replace(
-                  deliverablesPattern,
-                  `$1${emojiList}\n$3`
+            ## 🚧 Deliverables from Issue
+
+            <!-- These will be auto-filled from the related issue if matched. -->
+
+            ---
+
+            ## ✅ Checklist
+
+            - [ ] 💻 Code compiles and builds successfully without errors
+            - [ ] 🧪 Relevant tests (unit/integration) are added or updated
+            - [ ] 🏆 All tests pass locally and on CI
+            - [ ] 📚 Documentation has been updated (if applicable)
+            - [ ] 👀 Reviewer(s) have been assigned
+
+            ---
+
+            ## 💬 Additional Notes
+
+            <!-- Optional: Any extra context, decisions made, or things to look out for -->`;
+
+            // If PR body is blank, insert the template
+            if (!prBody.trim()) {
+              await github.rest.pulls.update({
+                owner,
+                repo,
+                pull_number: prNumber,
+                body: template
+              });
+            } else {
+              // Check for "Closes #issue_number" (case-insensitive, flexible spacing)
+              const closesMatch = prBody.match(/closes\s+#(\d+)/i);
+              if (closesMatch) {
+                const issueNumber = closesMatch[1];
+                // Fetch the issue body
+                const issue = await github.rest.issues.get({
+                  owner,
+                  repo,
+                  issue_number: issueNumber
+                });
+                const issueBody = issue.data.body || '';
+
+                // Extract deliverables from the issue
+                const deliverablesSection = issueBody.match(/## Deliverables\n([\s\S]*?)(?=\n## |$)/);
+                let issueDeliverables = [];
+                if (deliverablesSection) {
+                  const listItems = deliverablesSection[1].match(/- .+/g);
+                  if (listItems) {
+                    issueDeliverables = listItems.map(item => item.replace(/^- /, '').trim());
+                  }
+                }
+
+                // Extract current deliverables checklist from PR body
+                const prDeliverablesSection = prBody.match(/## 🚧 Deliverables from Issue\n([\s\S]*?)(?=\n## |$)/);
+                let prDeliverables = {};
+                if (prDeliverablesSection) {
+                  const checklistItems = prDeliverablesSection[1].match(/- \[[ x]\] .+/g);
+                  if (checklistItems) {
+                    checklistItems.forEach(item => {
+                      const checked = item.startsWith('- [x]');
+                      const text = item.replace(/^- \[[ x]\] /, '').trim();
+                      prDeliverables[text] = checked;
+                    });
+                  }
+                }
+
+                // Construct the new deliverables checklist
+                let newDeliverables = issueDeliverables.map(item => {
+                  const checked = prDeliverables[item] ? 'x' : ' ';
+                  return `- [${checked}] ${item}`;
+                }).join('\n');
+
+                // Update the deliverables section in the PR body
+                const newPrBody = prBody.replace(
+                  /(## 🚧 Deliverables from Issue\n)[\s\S]*?(?=\n## |$)/,
+                  `$1${newDeliverables}\n`
                 );
-            
-                // Only update if changes detected
-                if (updatedBody !== prBody) {
+
+                // Update the PR body only if it has changed
+                if (newPrBody !== prBody) {
                   await github.rest.pulls.update({
-                    ...repoInfo,
-                    pull_number: linkedPR.number,
-                    body: updatedBody
+                    owner,
+                    repo,
+                    pull_number: prNumber,
+                    body: newPrBody
                   });
-                  console.log(`Updated PR #${linkedPR.number}`);
                 }
               }
             }
