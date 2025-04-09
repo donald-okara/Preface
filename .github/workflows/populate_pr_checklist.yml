@@ -15,6 +15,7 @@ jobs:
             const { owner, repo } = context.repo;
             const prNumber = context.payload.pull_request.number;
             const prBody = context.payload.pull_request.body || '';
+            const prTitle = context.payload.pull_request.title || '';
 
             // Define the template for a blank PR body
             const template = `## ✨ Description
@@ -58,10 +59,26 @@ jobs:
                 body: template
               });
             } else {
-              // Check for "Closes #issue_number" (case-insensitive, flexible spacing)
-              const closesMatch = prBody.match(/closes\s+#(\d+)/i);
-              if (closesMatch) {
-                const issueNumber = closesMatch[1];
+              // Try to extract issue number, prioritizing the "Related Issue" section in the body
+              let issueNumber = null;
+              const relatedIssueSection = prBody.match(/## 🐛 Related Issue\n([\s\S]*?)(?=\n## |$)/);
+              if (relatedIssueSection) {
+                const closesMatch = relatedIssueSection[1].match(/closes\s+#(\d+)/i);
+                if (closesMatch) {
+                  issueNumber = closesMatch[1];
+                }
+              }
+
+              // If no issue number found in body, check the title (e.g., "Fix #53: R")
+              if (!issueNumber) {
+                const titleMatch = prTitle.match(/\b(fix|fixes|fixed|close|closes|closed|resolve|resolves|resolved)\s+#(\d+)/i);
+                if (titleMatch) {
+                  issueNumber = titleMatch[2];
+                }
+              }
+
+              // If an issue number is found, fetch and update deliverables
+              if (issueNumber) {
                 // Fetch the issue body
                 const issue = await github.rest.issues.get({
                   owner,
@@ -80,7 +97,7 @@ jobs:
                   }
                 }
 
-                // Extract current deliverables checklist from PR body
+                // Extract current deliverables checklist from PR body to preserve checked states
                 const prDeliverablesSection = prBody.match(/## 🚧 Deliverables from Issue\n([\s\S]*?)(?=\n## |$)/);
                 let prDeliverables = {};
                 if (prDeliverablesSection) {
@@ -94,19 +111,19 @@ jobs:
                   }
                 }
 
-                // Construct the new deliverables checklist
+                // Build the new deliverables checklist, keeping existing checked states
                 let newDeliverables = issueDeliverables.map(item => {
                   const checked = prDeliverables[item] ? 'x' : ' ';
                   return `- [${checked}] ${item}`;
                 }).join('\n');
 
-                // Update the deliverables section in the PR body
+                // Update the PR body with the new deliverables section
                 const newPrBody = prBody.replace(
                   /(## 🚧 Deliverables from Issue\n)[\s\S]*?(?=\n## |$)/,
                   `$1${newDeliverables}\n`
                 );
 
-                // Update the PR body only if it has changed
+                // Update the PR only if the body has changed
                 if (newPrBody !== prBody) {
                   await github.rest.pulls.update({
                     owner,
