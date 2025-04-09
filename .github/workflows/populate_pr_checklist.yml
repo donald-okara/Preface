@@ -1,93 +1,84 @@
-name: Sync Deliverables from Issue to PR
+name: Sync Deliverables Between Issues and PRs
 
 on:
   issues:
     types: [edited]
   pull_request:
-    types: [opened, synchronize, edited]
+    types: [opened, edited, synchronize]
   workflow_dispatch:
 
 jobs:
   sync-deliverables:
     runs-on: ubuntu-latest
     steps:
-      - name: Sync Deliverables from Linked Issue
+      - name: Sync Checklist <> Deliverables
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const pr = context.payload.pull_request;
-            let prBody = pr?.body || "";
+            const { issue, pull_request: pr } = context.payload;
+            const isIssueEvent = !!issue;
+            const repoInfo = { 
+              owner: context.repo.owner, 
+              repo: context.repo.repo 
+            };
 
-            // Extract linked issue number
-            const titleMatch = pr?.title.match(/#(\d+)/);
-            const bodyMatch = prBody.match(/Closes\s+#(\d+)/i);
-            const issueNum = titleMatch?.[1] || bodyMatch?.[1];
+            // Get target issue number
+            let targetIssueNumber;
+            if (isIssueEvent) {
+              targetIssueNumber = issue.number;
+            } else if (pr) {
+              const prBody = pr.body || "";
+              const titleMatch = pr.title.match(/#(\d+)/);
+              const bodyMatch = prBody.match(/(Closes|Fixes)\s+#(\d+)/i);
+              targetIssueNumber = titleMatch?.[1] || bodyMatch?.[2];
+            }
 
-            if (!issueNum) {
-              console.log("No linked issue found in PR.");
+            if (!targetIssueNumber) {
+              console.log('No linked issue found');
               return;
             }
 
-            // Fetch linked issue
-            const issue = await github.rest.issues.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issueNum
+            // Get all PRs linked to this issue
+            const searchQuery = `is:pr Closes #${targetIssueNumber} repo:${repoInfo.owner}/${repoInfo.repo}`;
+            const searchResults = await github.rest.search.issuesAndPullRequests({
+              q: searchQuery
             });
 
-            const issueBody = issue.data.body || "";
-            const checklistItems = issueBody.match(/- \[.\] .+/g) || [];
+            const linkedPRs = searchResults.data.items;
 
-            // Convert checklist to emoji format
+            // Process issue checklist
+            const targetIssue = await github.rest.issues.get({
+              ...repoInfo,
+              issue_number: targetIssueNumber
+            });
+            
+            const issueBody = targetIssue.data.body || "";
+            const checklistItems = issueBody.match(/- \[.\] .+/g) || [];
             const emojiList = checklistItems.map(line => {
               const checked = line.includes('[x]');
               return `- ${checked ? '✅' : '❌'} ${line.replace(/- \[.\] /, '')}`;
             }).join('\n');
 
-            // Improved regex pattern with non-greedy match
-            const deliverablesPattern = /(## 🚧 Deliverables from Issue\n\s*)([^]*?)(\n\s*---)/;
+            // Update all linked PRs
+            for (const linkedPR of linkedPRs) {
+              let prBody = linkedPR.body || "";
+              const deliverablesPattern = /(## 🚧 Deliverables from Issue\n)([^]*?)(\n---)/s;
 
-            if (deliverablesPattern.test(prBody)) {
-              // Update existing section
-              prBody = prBody.replace(
-                deliverablesPattern,
-                `$1${emojiList}$3`
-              );
-            } else {
-              // Inject just the deliverables section if missing
-              const deliverablesSection = `
+              if (deliverablesPattern.test(prBody)) {
+                const updatedBody = prBody.replace(
+                  deliverablesPattern,
+                  `$1${emojiList}\n$3`
+                );
             
-            ## 🚧 Deliverables from Issue
-              
-              ${emojiList}
-            
-            ---
-              `;
-              // Find the first --- separator after Related Issue
-              const relatedIssueSection = prBody.match(/## 🐛 Related Issue\n.*?---/s);
-              if (relatedIssueSection) {
-              prBody = prBody.replace(
-              relatedIssueSection[0],
-              `${relatedIssueSection[0]}\n${deliverablesSection}`
-              );
-              } else {
-              // Fallback for PRs with unexpected structure
-              prBody = `## 🚧 Deliverables from Issue\n\n${emojiList}\n\n---\n\n${prBody}`;
+                // Only update if changes detected
+                if (updatedBody !== prBody) {
+                  await github.rest.pulls.update({
+                    ...repoInfo,
+                    pull_number: linkedPR.number,
+                    body: updatedBody
+                  });
+                  console.log(`Updated PR #${linkedPR.number}`);
+                }
               }
-              }
-              
-              // Clean up existing formatting
-              prBody = prBody
-              .replace(/^\s+</mg, '<')  // Remove leading whitespace before comments
-              .replace(/\n{3,}/g, '\n\n');  // Reduce excessive newlines
-              
-              // Update only if changes detected
-              if (prBody !== pr.body) {
-              await github.rest.pulls.update({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            pull_number: pr.number,
-            body: prBody
-            });
             }
