@@ -41,11 +41,11 @@ jobs:
 
             ## ✅ Checklist
 
-            - ❌ 💻 Code compiles and builds successfully without errors
-            - ❌ 🧪 Relevant tests (unit/integration) are added or updated
-            - ❌ 🏆 All tests pass locally and on CI
-            - ❌ 📚 Documentation has been updated (if applicable)
-            - ❌ 👀 Reviewer(s) have been assigned
+            - [ ] 💻 Code compiles and builds successfully without errors
+            - [ ] 🧪 Relevant tests (unit/integration) are added or updated
+            - [ ] 🏆 All tests pass locally and on CI
+            - [ ] 📚 Documentation has been updated (if applicable)
+            - [ ] 👀 Reviewer(s) have been assigned
 
             ---
 
@@ -71,18 +71,24 @@ jobs:
                 if (closesMatch) {
                   issueNumber = closesMatch[1];
                   console.log(`PR #${prNumber} - Found issue number ${issueNumber} in Related Issue section`);
+                } else {
+                  console.log(`PR #${prNumber} - No 'Closes #number' found in Related Issue section`);
                 }
+              } else {
+                console.log(`PR #${prNumber} - No Related Issue section found in PR body`);
               }
               if (!issueNumber) {
                 const titleMatch = prTitle.match(/\b(fix|fixes|fixed|close|closes|closed|resolve|resolves|resolved)\s+#(\d+)/i);
                 if (titleMatch) {
                   issueNumber = titleMatch[2];
                   console.log(`PR #${prNumber} - Found issue number ${issueNumber} in title`);
+                } else {
+                  console.log(`PR #${prNumber} - No issue number found in title`);
                 }
               }
 
               if (!issueNumber) {
-                console.log(`PR #${prNumber} - No issue number found in body or title`);
+                console.log(`PR #${prNumber} - No issue number found, skipping issue fetch`);
               }
 
               // If an issue number is found, update deliverables
@@ -98,7 +104,7 @@ jobs:
                   console.log(`PR #${prNumber} - Issue #${issueNumber} body: "${issueBody}"`);
 
                   // Extract deliverables from the issue
-                  const deliverablesSection = issueBody.match(/## Deliverables\n([\s\S]*?)(?=\n## |$)/);
+                  const deliverablesSection = issueBody.match(/## Deliverables\n([\s\S]*?)(?=\n## |$)/i);
                   let issueDeliverables = [];
                   if (deliverablesSection) {
                     const listItems = deliverablesSection[1].match(/- .+/g);
@@ -112,7 +118,7 @@ jobs:
                     console.log(`PR #${prNumber} - No Deliverables section found in issue`);
                   }
 
-                  // Parse current PR deliverables, looking for ✅ or ❌
+                  // Parse current PR deliverables, handling ✅ or ❌ and ignoring brackets
                   const prDeliverablesSection = prBody.match(/## 🚧 Deliverables from Issue\n([\s\S]*?)(?=\n## |$)/);
                   let prDeliverables = {};
                   if (prDeliverablesSection) {
@@ -120,7 +126,8 @@ jobs:
                     if (checklistItems) {
                       checklistItems.forEach(item => {
                         const checked = item.startsWith('- ✅');
-                        const text = item.replace(/^- [✅❌]\s*/, '').trim();
+                        // Remove emoji and any trailing brackets (e.g., [x] or [ ])
+                        const text = item.replace(/^- [✅❌]\s*/, '').replace(/\s*\[[ x]\]/g, '').trim();
                         prDeliverables[text] = checked;
                       });
                       console.log(`PR #${prNumber} - PR deliverables with states: ${JSON.stringify(prDeliverables)}`);
