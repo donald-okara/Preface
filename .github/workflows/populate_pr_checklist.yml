@@ -1,88 +1,59 @@
-name: Populate PR deliverables from linked issue
+name: Sync Deliverables from Issue to PR
 
 on:
+  issues:
+    types: [edited]
   pull_request:
-    types: [opened, edited, synchronize]
-  workflow_dispatch:  # Allows manual trigger from the UI
+    types: [opened, synchronize, edited]
+  workflow_dispatch:
 
 jobs:
-  populate:
+  sync-deliverables:
     runs-on: ubuntu-latest
     steps:
-      - name: Populate PR with issue deliverables if body is empty
+      - name: Sync Deliverables from Issue
         uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const pr = context.payload.pull_request;
-            const prBodyIsEmpty = !pr.body || pr.body.trim() === "";
-
-            // Extract issue number from the PR title or body
-            const titleMatch = pr.title.match(/Fix\s+#(\d+):/i);
-            const bodyMatch = pr.body?.match(/Closes\s+#(\d+)/i);
-            const issueNumber = titleMatch?.[1] || bodyMatch?.[1];
-
-            if (!prBodyIsEmpty || !issueNumber) {
-              console.log("PR body is not empty or issue number not found. Skipping.");
+            if (!pr) {
+              console.log("No PR found in payload.");
               return;
             }
 
-            // Fetch issue details to get the deliverables section
+            const issueMatch = pr.body.match(/(?:Closes|Fixes)\s+#(\d+)/i);
+            if (!issueMatch) {
+              console.log("No linked issue found.");
+              return;
+            }
+
+            const issueNumber = issueMatch[1];
+
             const issue = await github.rest.issues.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              issue_number: issueNumber,
+              issue_number: issueNumber
             });
 
             const issueBody = issue.data.body || "";
+            const checklistMatches = issueBody.match(/- \[( |x)\] .+/g) || [];
 
-            // Try to extract "## Deliverables" section from the issue body
-            const deliverablesMatch = issueBody.match(/## Deliverables([\s\S]*?)(##|$)/i);
-            let deliverablesSection = deliverablesMatch ? deliverablesMatch[1].trim() : issueBody.trim();
+            const deliverables = checklistMatches.map(line => {
+              const isChecked = line.includes("[x]");
+              return `- ${isChecked ? "✅" : "❌"} ${line.replace(/- \[[ x]\] /, '')}`;
+            }).join("\n");
 
-            // Convert deliverables to markdown checklist
-            const deliverablesLines = deliverablesSection
-              .split('\n')
-              .map(line => line.trim())
-              .filter(line => line.length > 0)
-              .map(line => {
-                // If line is already a checklist item, keep it as-is
-                if (/^- \[.\]/.test(line)) return line;
-                return `- [ ] ${line}`;
-              })
-              .join('\n');
-            
-            // Build the new PR body with deliverables and checklist
-            const prBody = `
-              ## Description ✨
-              
-              <!-- What does this PR do? -->
-              
-              ## Related Issue 🐛
-              
-              Closes #${issueNumber}
-              
-              ## Deliverables from Issue 📦
-              
-              ${deliverablesLines}
-            
-            ## Checklist ✅
-            
-            - [ ] The codebase compiles and builds successfully without errors 💻
-            - [ ] Relevant unit and/or integration tests have been added or updated 🧪
-            - [ ] All tests pass consistently across environments 🏆
-            - [ ] Documentation has been updated to reflect code changes (if applicable) 📚
-            - [ ] At least one reviewer has been assigned to this pull request 👀
-            
-            ## Additional Notes 💬
-              
-              <!-- Any additional context for the reviewer? -->
-              `;
-              
-              // Update the PR body with the new content
-              await github.rest.pulls.update({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            pull_number: pr.number,
-            body: prBody
+            const newDeliverablesSection = `## 🚧 Deliverables Progress (from Issue #${issueNumber}) 📦\n${deliverables}\n`;
+
+            // Remove old deliverables section if it exists
+            const bodyWithoutOld = pr.body.replace(/## 🚧 Deliverables Progress \(from Issue #\d+\) 📦[\s\S]*?(?=(##|$))/, '').trim();
+
+            const updatedBody = `${bodyWithoutOld}\n\n${newDeliverablesSection}`.trim();
+
+            await github.rest.pulls.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+              body: updatedBody
             });
