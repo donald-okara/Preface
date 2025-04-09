@@ -3,7 +3,7 @@ name: Populate PR deliverables from linked issue
 on:
   pull_request:
     types: [opened, edited, synchronize]
-  workflow_dispatch:
+  workflow_dispatch:  # Allows manual trigger from the UI
 
 jobs:
   populate:
@@ -17,6 +17,7 @@ jobs:
             const pr = context.payload.pull_request;
             const prBodyIsEmpty = !pr.body || pr.body.trim() === "";
 
+            // Extract issue number from the PR title or body
             const titleMatch = pr.title.match(/Fix\s+#(\d+):/i);
             const bodyMatch = pr.body?.match(/Closes\s+#(\d+)/i);
             const issueNumber = titleMatch?.[1] || bodyMatch?.[1];
@@ -26,6 +27,7 @@ jobs:
               return;
             }
 
+            // Fetch issue details to get the deliverables section
             const issue = await github.rest.issues.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -34,25 +36,25 @@ jobs:
 
             const issueBody = issue.data.body || "";
 
-            // Try to extract "## Deliverables" section
+            // Try to extract "## Deliverables" section from the issue body
             const deliverablesMatch = issueBody.match(/## Deliverables([\s\S]*?)(##|$)/i);
             let deliverablesSection = deliverablesMatch ? deliverablesMatch[1].trim() : issueBody.trim();
 
-            // Convert to markdown checklist
+            // Convert deliverables to markdown checklist
             const deliverablesLines = deliverablesSection
               .split('\n')
               .map(line => line.trim())
               .filter(line => line.length > 0)
               .map(line => {
-              // If line already starts with - [ ] or - [x], leave it as-is
-              if (/^- \[.\]/.test(line)) return line;
-              return `- [ ] ${line}`;
-            })
-            .join('\n');
-      
-  
+                // If line is already a checklist item, keep it as-is
+                if (/^- \[.\]/.test(line)) return line;
+                return `- [ ] ${line}`;
+              })
+              .join('\n');
+            
+            // Build the new PR body with deliverables and checklist
             const prBody = `
-            ## Description ✨
+              ## Description ✨
               
               <!-- What does this PR do? -->
               
@@ -77,6 +79,7 @@ jobs:
               <!-- Any additional context for the reviewer? -->
               `;
               
+              // Update the PR body with the new content
               await github.rest.pulls.update({
             owner: context.repo.owner,
             repo: context.repo.repo,
