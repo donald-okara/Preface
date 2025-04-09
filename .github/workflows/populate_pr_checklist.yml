@@ -1,170 +1,63 @@
-name: PR Template and Deliverables
+name: Auto Populate PR Template
 
 on:
   pull_request:
     types: [opened, edited]
+  workflow_dispatch:
 
 jobs:
-  update-pr-body:
+  populate-pr-template:
     runs-on: ubuntu-latest
     steps:
-      - name: Update PR Body
-        uses: actions/github-script@v6
+      - name: Inject PR Template if Body is Empty
+        uses: actions/github-script@v7
         with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const { owner, repo } = context.repo;
-            const prNumber = context.payload.pull_request.number;
-            const prBody = context.payload.pull_request.body || '';
-            const prTitle = context.payload.pull_request.title || '';
+            const pr = context.payload.pull_request;
+            const prBodyIsEmpty = !pr.body || pr.body.trim() === "";
 
-            console.log(`PR #${prNumber} - Title: "${prTitle}"`);
-            console.log(`PR #${prNumber} - Body: "${prBody}"`);
+            if (!prBodyIsEmpty) {
+              console.log("PR body is not empty. Skipping...");
+              return;
+            }
 
-            // Define the template for a blank PR body
-            const template = `## ✨ Description
-
-            <!-- Clearly describe what this PR does. What feature, fix, or update are you introducing? -->
-
+            const prTemplate = `
+            ## ✨ Description
+              
+              <!-- Clearly describe what this PR does. What feature, fix, or update are you introducing? -->
+            
             ---
-
+            
             ## 🐛 Related Issue
-
+            
             Closes #
-
+            
             ---
-
-            ## 🚧 Deliverables from Issue
-
-            <!-- These will be auto-filled from the related issue if matched. -->
-
+            
+            ## 📦 Deliverables from Issue
+              
+            
             ---
-
+            
             ## ✅ Checklist
-
+            
             - [ ] 💻 Code compiles and builds successfully without errors
             - [ ] 🧪 Relevant tests (unit/integration) are added or updated
             - [ ] 🏆 All tests pass locally and on CI
             - [ ] 📚 Documentation has been updated (if applicable)
             - [ ] 👀 Reviewer(s) have been assigned
-
+            
             ---
-
+            
             ## 💬 Additional Notes
-
-            <!-- Optional: Any extra context, decisions made, or things to look out for -->`;
-
-            // If PR body is blank, insert the template
-            if (!prBody.trim()) {
-              console.log(`PR #${prNumber} - Body is blank, inserting template`);
+            
+            <!-- Optional: Any extra context, decisions made, or things to look out for -->
+              `;
+              
               await github.rest.pulls.update({
-                owner,
-                repo,
-                pull_number: prNumber,
-                body: template
-              });
-            } else {
-              // Extract issue number from "Related Issue" section or PR title
-              let issueNumber = null;
-              const relatedIssueSection = prBody.match(/## 🐛 Related Issue\n([\s\S]*?)(?=\n## |$)/);
-              if (relatedIssueSection) {
-                const closesMatch = relatedIssueSection[1].match(/closes\s+#(\d+)/i);
-                if (closesMatch) {
-                  issueNumber = closesMatch[1];
-                  console.log(`PR #${prNumber} - Found issue number ${issueNumber} in Related Issue section`);
-                } else {
-                  console.log(`PR #${prNumber} - No 'Closes #number' found in Related Issue section`);
-                }
-              } else {
-                console.log(`PR #${prNumber} - No Related Issue section found in PR body`);
-              }
-              if (!issueNumber) {
-                const titleMatch = prTitle.match(/\b(fix|fixes|fixed|close|closes|closed|resolve|resolves|resolved)\s+#(\d+)/i);
-                if (titleMatch) {
-                  issueNumber = titleMatch[2];
-                  console.log(`PR #${prNumber} - Found issue number ${issueNumber} in title`);
-                } else {
-                  console.log(`PR #${prNumber} - No issue number found in title`);
-                }
-              }
-
-              if (!issueNumber) {
-                console.log(`PR #${prNumber} - No issue number found, skipping issue fetch`);
-              }
-
-              // If an issue number is found, update deliverables
-              if (issueNumber) {
-                console.log(`PR #${prNumber} - Fetching issue #${issueNumber}`);
-                try {
-                  const issue = await github.rest.issues.get({
-                    owner,
-                    repo,
-                    issue_number: issueNumber
-                  });
-                  const issueBody = issue.data.body || '';
-                  console.log(`PR #${prNumber} - Issue #${issueNumber} body: "${issueBody}"`);
-
-                  // Extract deliverables from the issue
-                  const deliverablesSection = issueBody.match(/## Deliverables\n([\s\S]*?)(?=\n## |$)/i);
-                  let issueDeliverables = [];
-                  if (deliverablesSection) {
-                    const listItems = deliverablesSection[1].match(/- .+/g);
-                    if (listItems) {
-                      issueDeliverables = listItems.map(item => item.replace(/^- /, '').trim());
-                      console.log(`PR #${prNumber} - Issue deliverables: ${JSON.stringify(issueDeliverables)}`);
-                    } else {
-                      console.log(`PR #${prNumber} - No list items found under Deliverables in issue`);
-                    }
-                  } else {
-                    console.log(`PR #${prNumber} - No Deliverables section found in issue`);
-                  }
-
-                  // Parse current PR deliverables, handling ✅ or ❌ and ignoring brackets
-                  const prDeliverablesSection = prBody.match(/## 🚧 Deliverables from Issue\n([\s\S]*?)(?=\n## |$)/);
-                  let prDeliverables = {};
-                  if (prDeliverablesSection) {
-                    const checklistItems = prDeliverablesSection[1].match(/- [✅❌]\s*.+/g);
-                    if (checklistItems) {
-                      checklistItems.forEach(item => {
-                        const checked = item.startsWith('- ✅');
-                        // Remove emoji and any trailing brackets (e.g., [x] or [ ])
-                        const text = item.replace(/^- [✅❌]\s*/, '').replace(/\s*\[[ x]\]/g, '').trim();
-                        prDeliverables[text] = checked;
-                      });
-                      console.log(`PR #${prNumber} - PR deliverables with states: ${JSON.stringify(prDeliverables)}`);
-                    } else {
-                      console.log(`PR #${prNumber} - No emoji checklist items found in PR deliverables`);
-                    }
-                  } else {
-                    console.log(`PR #${prNumber} - No Deliverables from Issue section found in PR`);
-                  }
-
-                  // Build new deliverables checklist with emojis
-                  let newDeliverables = issueDeliverables.map(item => {
-                    const checked = prDeliverables[item] ? '✅' : '❌';
-                    return `- ${checked} ${item}`;
-                  }).join('\n');
-                  console.log(`PR #${prNumber} - New deliverables section: "${newDeliverables}"`);
-
-                  // Update PR body with new deliverables
-                  const newPrBody = prBody.replace(
-                    /(## 🚧 Deliverables from Issue\n)[\s\S]*?(?=\n## |$)/,
-                    `$1${newDeliverables}\n`
-                  );
-
-                  // Update PR only if body has changed
-                  if (newPrBody !== prBody) {
-                    console.log(`PR #${prNumber} - Updating PR body with new deliverables`);
-                    await github.rest.pulls.update({
-                      owner,
-                      repo,
-                      pull_number: prNumber,
-                      body: newPrBody
-                    });
-                  } else {
-                    console.log(`PR #${prNumber} - No changes needed to PR body`);
-                  }
-                } catch (error) {
-                  console.error(`PR #${prNumber} - Error fetching issue #${issueNumber}: ${error.message}`);
-                }
-              }
-            }
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: pr.number,
+            body: prTemplate
+            });
