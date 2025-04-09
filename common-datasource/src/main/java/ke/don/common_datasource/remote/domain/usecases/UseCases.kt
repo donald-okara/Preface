@@ -32,9 +32,9 @@ class BooksUseCasesImpl(
 
     override suspend fun pushEditedBookshelfBooks(
         bookId: String,
-        bookshelfIds: List<Int>,
+        removeBookshelfIds: List<Int>,
         addBookshelves: List<Int>
-    ): NetworkResult<NoDataReturned> = booksRepository.pushEditedBookshelfBooks(bookId, bookshelfIds, addBookshelves)
+    ): NetworkResult<NoDataReturned> = booksRepository.pushEditedBookshelfBooks(bookId, removeBookshelfIds, addBookshelves)
 
     override suspend fun fetchBookDetails(bookId: String): NetworkResult<BookDetailsResponse> = booksRepository.getBookDetails(bookId)
 
@@ -87,7 +87,7 @@ interface BooksUseCases {
     suspend fun addUserProgress(userProgress: CreateUserProgressDTO): NetworkResult<NoDataReturned>
     suspend fun updateUserProgress(userId: String, bookId: String, newCurrentPage: Int) : NetworkResult<NoDataReturned>
     suspend fun fetchProfileId() : String
-    suspend fun pushEditedBookshelfBooks(bookId: String, bookshelfIds: List<Int>, addBookshelves: List<Int>): NetworkResult<NoDataReturned>
+    suspend fun pushEditedBookshelfBooks(bookId: String, removeBookshelfIds: List<Int>, addBookshelves: List<Int>): NetworkResult<NoDataReturned>
     suspend fun fetchBookDetails(bookId: String): NetworkResult<BookDetailsResponse>
     suspend fun fetchAndMapBookshelves(bookId: String): BookshelvesState?
     suspend fun fetchBookProgress(bookId: String, userId: String): UserProgressState?

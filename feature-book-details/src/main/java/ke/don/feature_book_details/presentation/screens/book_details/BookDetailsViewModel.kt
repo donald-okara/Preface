@@ -1,6 +1,5 @@
 package ke.don.feature_book_details.presentation.screens.book_details
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -35,7 +34,7 @@ class BookDetailsViewModel @Inject constructor(
     private val _bookState = MutableStateFlow(BookUiState())
     val bookState: StateFlow<BookUiState> = _bookState
 
-    private var initialBookshelfState = BookshelvesState()
+    var initialBookshelfState = BookshelvesState()
     /**
      * BookDetails
      */
@@ -125,7 +124,7 @@ class BookDetailsViewModel @Inject constructor(
         TODO()
     }
 
-    private fun onLoading() {
+    fun onLoading() {
         updateBookState(
             _bookState.value.copy(
                 loadingJoke = loadingBookJokes[Random.nextInt(loadingBookJokes.size)]
@@ -137,25 +136,17 @@ class BookDetailsViewModel @Inject constructor(
      * UserProgress
      */
 
-    fun onCurrentPageUpdate(progress: Int){
-        if (progress <= bookState.value.bookDetails.volumeInfo.pageCount){
-            updateBookState(
-                _bookState.value.copy(
-                    userProgressState = UserProgressState(isError = true)
-                )
-            )
-        }else {
-            updateBookState(
-                _bookState.value.copy(
-                    userProgressState = UserProgressState(isError = false)
-                )
-            )
+    fun onCurrentPageUpdate(progress: Int) {
+        val pageCount = bookState.value.bookDetails.volumeInfo.pageCount
+
+        val newState = if (progress <= pageCount) {
+            UserProgressState(newProgress = progress, isError = false)
+        } else {
+            UserProgressState(isError = true)
         }
 
         updateBookState(
-            _bookState.value.copy(
-                userProgressState = UserProgressState(newProgress = progress)
-            )
+            _bookState.value.copy(userProgressState = newState)
         )
     }
 
@@ -163,9 +154,10 @@ class BookDetailsViewModel @Inject constructor(
         fetchUserProgress()
     }
 
-    private fun fetchUserProgress() {
+    fun fetchUserProgress() {
         viewModelScope.launch {
             val state = bookState.value
+
             if (state.userProgressState.resultState !is ResultState.Success &&
                 state.volumeId != null &&
                 state.userId != null
@@ -175,19 +167,23 @@ class BookDetailsViewModel @Inject constructor(
                         userId = state.userId!!,
                         bookId = state.volumeId!!
                     )
+
                     updateBookState(
                         _bookState.value.copy(
                             userProgressState = newProgressState ?: UserProgressState(resultState = ResultState.Error())
                         )
                     )
+
                 } catch (e: Exception) {
-                    Log.e(TAG, "Error fetching bookshelves: ${e.message}", e)
                     updateBookState(
                         _bookState.value.copy(
                             userProgressState = UserProgressState(resultState = ResultState.Error("Failed to fetch bookshelves"))
                         )
                     )
+
                 }
+            } else {
+                println("fetchUserProgress: Either progress state is success or userId/bookId is null, skipping fetch")
             }
         }
     }
@@ -203,9 +199,10 @@ class BookDetailsViewModel @Inject constructor(
                 showUpdateProgressDialog = _bookState.value.showUpdateProgressDialog.copy(
                     isLoading = isLoading ?: currentState.isLoading,
                     showOption = if (toggle) !currentState.showOption else currentState.showOption
-                )
+                ),
             )
         )
+
     }
 
     fun onSaveBookProgress() {
@@ -217,14 +214,21 @@ class BookDetailsViewModel @Inject constructor(
 
             updateBookState(
                 _bookState.value.copy(
-                    userProgressState = UserProgressState(resultState = ResultState.Loading)
+                    userProgressState = _bookState.value.userProgressState.copy(
+                        resultState = ResultState.Loading
+                    )
                 )
             )
 
-            val userId = bookState.value.userId?: return@launch
-            val bookId = bookState.value.volumeId?: return@launch
+            val userId = bookState.value.userId
+            val bookId = bookState.value.volumeId
             val newPage = _bookState.value.userProgressState.newProgress
             val totalPages = _bookState.value.bookDetails.volumeInfo.pageCount
+
+
+            if (userId == null || bookId == null) {
+                return@launch
+            }
 
             val result: NetworkResult<NoDataReturned> = if (_bookState.value.userProgressState.isPresent) {
                 booksUseCases.updateUserProgress(bookId = bookId, userId = userId, newCurrentPage = newPage)
@@ -233,8 +237,16 @@ class BookDetailsViewModel @Inject constructor(
                 booksUseCases.addUserProgress(dto)
             }
 
-            if (result is NetworkResult.Success){
+            if (result is NetworkResult.Success) {
                 fetchUserProgress()
+            } else {
+                updateBookState(
+                    _bookState.value.copy(
+                        userProgressState = _bookState.value.userProgressState.copy(
+                            resultState = ResultState.Error()
+                        )
+                    )
+                )
             }
 
             // Hide loading
@@ -261,7 +273,7 @@ class BookDetailsViewModel @Inject constructor(
         )
     }
 
-    fun onShowBookshelves() {
+    fun onToggleBookshelfDropDown() {
         updateBookState(
             _bookState.value.copy(
                 showBookshelvesDropDown = _bookState.value.showBookshelvesDropDown.copy(
@@ -269,20 +281,25 @@ class BookDetailsViewModel @Inject constructor(
                 )
             )
         )
+
+        fetchBookshelves()
     }
 
     fun onShowBottomSheet() {
         // Toggle the bottom sheet visibility
-        onShowBookshelves()
-
-        // Fetch bookshelves if conditions are met
-        fetchBookshelves()
+        updateBookState(
+            _bookState.value.copy(
+                showBottomSheet = _bookState.value.showBottomSheet.copy(
+                    showOption = !_bookState.value.showBottomSheet.showOption
+                )
+            )
+        )
     }
 
-    private fun fetchBookshelves() {
+    fun fetchBookshelves() {
         viewModelScope.launch {
             val currentState = bookState.value
-            if (currentState.userProgressState.resultState !is ResultState.Success && currentState.volumeId != null) {
+            if (currentState.bookshelvesState.resultState !is ResultState.Success && currentState.volumeId != null) {
                 try {
                     val newBookshelvesState = booksUseCases.fetchAndMapBookshelves(currentState.volumeId!!)
                     updateBookState(
@@ -293,7 +310,6 @@ class BookDetailsViewModel @Inject constructor(
                     )
                     initialBookshelfState = bookState.value.bookshelvesState
                 } catch (e: Exception) {
-                    Log.e(TAG, "Error fetching bookshelves: ${e.message}", e)
                     updateBookState(
                         _bookState.value.copy(
                             bookshelvesState = currentState.bookshelvesState.copy(resultState = ResultState.Error("Failed to fetch bookshelves"))
@@ -347,9 +363,9 @@ class BookDetailsViewModel @Inject constructor(
 
     public override fun onCleared() {
         super.onCleared()
-       _bookState.update {
+        updateBookState(
             BookUiState()
-        }
+        )
     }
 
 

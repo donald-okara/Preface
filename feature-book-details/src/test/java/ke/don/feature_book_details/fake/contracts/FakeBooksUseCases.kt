@@ -5,6 +5,8 @@ import ke.don.common_datasource.remote.domain.states.NoDataReturned
 import ke.don.common_datasource.remote.domain.states.UserProgressState
 import ke.don.common_datasource.remote.domain.usecases.BooksUseCases
 import ke.don.feature_book_details.fake.data.FakeBookDetailsDataSource.fakeBookDetailsResponse
+import ke.don.feature_book_details.fake.data.FakeBookshelfState.fakeBookshelvesState
+import ke.don.feature_book_details.fake.data.FakeUserProgress.fakeUserProgressState
 import ke.don.shared_domain.data_models.BookDetailsResponse
 import ke.don.shared_domain.data_models.CreateUserProgressDTO
 import ke.don.shared_domain.states.NetworkResult
@@ -19,7 +21,11 @@ class FakeBooksUseCases(): BooksUseCases {
     }
 
     override suspend fun addUserProgress(userProgress: CreateUserProgressDTO): NetworkResult<NoDataReturned> {
-        TODO("Not yet implemented")
+        return if (userProgress.currentPage != 0){
+            NetworkResult.Success(NoDataReturned())
+        }else{
+            NetworkResult.Error(message = "Something went wrong in add")
+        }
     }
 
     override suspend fun updateUserProgress(
@@ -27,7 +33,11 @@ class FakeBooksUseCases(): BooksUseCases {
         bookId: String,
         newCurrentPage: Int
     ): NetworkResult<NoDataReturned> {
-        TODO("Not yet implemented")
+        return if (newCurrentPage != 0){
+            NetworkResult.Success(NoDataReturned())
+        }else{
+            NetworkResult.Error(message = "Something went wrong in update")
+        }
     }
 
     override suspend fun fetchProfileId(): String = "fakeUserId"
@@ -35,10 +45,10 @@ class FakeBooksUseCases(): BooksUseCases {
 
     override suspend fun pushEditedBookshelfBooks(
         bookId: String,
-        bookshelfIds: List<Int>,
+        removeBookshelfIds: List<Int>,
         addBookshelves: List<Int>
     ): NetworkResult<NoDataReturned> {
-        TODO("Not yet implemented")
+        return NetworkResult.Success(NoDataReturned())
     }
 
     override suspend fun fetchBookDetails(bookId: String): NetworkResult<BookDetailsResponse> {
@@ -50,10 +60,14 @@ class FakeBooksUseCases(): BooksUseCases {
     }
 
     override suspend fun fetchAndMapBookshelves(bookId: String): BookshelvesState? {
-        TODO("Not yet implemented")
+        return fakeBookshelvesState
     }
 
     override suspend fun fetchBookProgress(bookId: String, userId: String): UserProgressState? {
-        TODO("Not yet implemented")
+        return if(bookId != "null" && userId != "null"){
+            fakeUserProgressState
+        }else{
+            null
+        }
     }
 }

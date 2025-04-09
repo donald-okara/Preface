@@ -162,7 +162,7 @@ fun BookDetailsScreen(
                         showBottomSheet = bookUiState.showBottomSheet.showOption,
                         showBookshelves = bookUiState.showBookshelvesDropDown,
                         onConfirm = bookDetailsViewModel::onPushEditedBookshelfBooks,
-                        onExpandBookshelves = bookDetailsViewModel::onShowBookshelves,
+                        onExpandBookshelves = bookDetailsViewModel::onToggleBookshelfDropDown,
                         onBookshelfClicked = { bookshelfId ->
                             bookDetailsViewModel.onSelectBookshelf(bookshelfId)
                         },
