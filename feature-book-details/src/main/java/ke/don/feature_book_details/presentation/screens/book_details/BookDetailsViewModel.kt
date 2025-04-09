@@ -28,7 +28,7 @@ import kotlin.random.Random
 
 @HiltViewModel
 class BookDetailsViewModel @Inject constructor(
-     private val colorPaletteExtractor: ColorPaletteExtractor,
+    private val colorPaletteExtractor: ColorPaletteExtractor,
     private val booksUseCases : BooksUseCases
 ) : ViewModel() {
 
@@ -39,69 +39,67 @@ class BookDetailsViewModel @Inject constructor(
     /**
      * BookDetails
      */
-    private fun updateBookState(newState: BookUiState) {
-        _bookState.update { newState }
+    fun updateBookState(newState: BookUiState) {
+        _bookState.update {
+            newState
+        }
     }
 
     fun fetchAndUpdateBookUiState(volumeId: String) {
         viewModelScope.launch {
             val userId = booksUseCases.fetchProfileId()
+
             updateBookState(
-                BookUiState(
+                _bookState.value.copy(
                     volumeId = volumeId,
                     userId = userId
                 )
             )
+
             try {
-                Log.d(TAG, "Attempting to fetch bookUiState",)
-
-
-
                 val bookDetailsResult = fetchBookDetails()
 
-                if (bookDetailsResult == null){
-                    updateBookState(BookUiState(resultState = ResultState.Error("Failed to load book data")))
+                if (bookDetailsResult == null) {
+                    updateBookState(_bookState.value.copy(resultState = ResultState.Error("Failed to load book data")))
                     return@launch
-                }else{
-                    val bookCheckResult = booksUseCases.checkAndAddBook(bookDetailsResult)
-                    if (bookCheckResult is NetworkResult.Error){
-                        updateBookState(BookUiState(resultState = ResultState.Error("Failed to load book data")))
-                        return@launch
-                    }else(
-                        updateBookState(
-                            BookUiState(
-                                resultState = ResultState.Success
-                            )
-                        )
-                    )
                 }
 
+                val bookCheckResult = booksUseCases.checkAndAddBook(bookDetailsResult)
 
-                val highestImageUrl = bookDetailsResult.volumeInfo.imageLinks.getHighestQualityUrl()?.replace("http", "https") ?: ""
+                if (bookCheckResult is NetworkResult.Error) {
+                    updateBookState(_bookState.value.copy(resultState = ResultState.Error("Failed to load book data")))
+                    return@launch
+                }
+
+                updateBookState(_bookState.value.copy(resultState = ResultState.Success))
+
+                val highestImageUrl = bookDetailsResult.volumeInfo.imageLinks
+                    .getHighestQualityUrl()
+                    ?.replace("http", "https") ?: ""
+
                 val colorPallet = if (highestImageUrl.isNotEmpty()) {
                     withContext(Dispatchers.Default) {
                         colorPaletteExtractor.extractColorPalette(highestImageUrl)
                     }
                 } else {
-                    ColorPallet() // Default fallback
+                    ColorPallet()
                 }
 
                 updateBookState(
-                    BookUiState(
+                    _bookState.value.copy(
                         bookDetails = bookDetailsResult,
                         highestImageUrl = highestImageUrl,
                         colorPallet = colorPallet
                     )
                 )
+
             } catch (e: Exception) {
-                Log.e(TAG, "Error fetching book data", e)
-                // Optionally update state to reflect error
-                updateBookState(BookUiState(resultState = ResultState.Error("Failed to load book data")))
+                updateBookState(_bookState.value.copy(resultState = ResultState.Error("Failed to load book data")))
             }
         }
     }
 
-    private suspend fun fetchBookDetails(): BookDetailsResponse? {
+    suspend fun fetchBookDetails(): BookDetailsResponse? {
         return when (val response = bookState.value.volumeId?.let { booksUseCases.fetchBookDetails(it) }) {
             is NetworkResult.Error -> null
 
@@ -129,7 +127,7 @@ class BookDetailsViewModel @Inject constructor(
 
     private fun onLoading() {
         updateBookState(
-            BookUiState(
+            _bookState.value.copy(
                 loadingJoke = loadingBookJokes[Random.nextInt(loadingBookJokes.size)]
             )
         )
@@ -138,31 +136,24 @@ class BookDetailsViewModel @Inject constructor(
     /**
      * UserProgress
      */
-    private fun updateProgressState(newState: UserProgressState){
-        updateBookState(
-            BookUiState(
-                userProgressState = newState
-            )
-        )
-    }
 
     fun onCurrentPageUpdate(progress: Int){
         if (progress <= bookState.value.bookDetails.volumeInfo.pageCount){
             updateBookState(
-                BookUiState(
+                _bookState.value.copy(
                     userProgressState = UserProgressState(isError = true)
                 )
             )
         }else {
             updateBookState(
-                BookUiState(
+                _bookState.value.copy(
                     userProgressState = UserProgressState(isError = false)
                 )
             )
         }
 
         updateBookState(
-            BookUiState(
+            _bookState.value.copy(
                 userProgressState = UserProgressState(newProgress = progress)
             )
         )
@@ -184,13 +175,17 @@ class BookDetailsViewModel @Inject constructor(
                         userId = state.userId!!,
                         bookId = state.volumeId!!
                     )
-                    updateProgressState(
-                        newProgressState ?: UserProgressState(resultState = ResultState.Error())
+                    updateBookState(
+                        _bookState.value.copy(
+                            userProgressState = newProgressState ?: UserProgressState(resultState = ResultState.Error())
+                        )
                     )
                 } catch (e: Exception) {
                     Log.e(TAG, "Error fetching bookshelves: ${e.message}", e)
-                    updateProgressState(
-                        UserProgressState(resultState = ResultState.Error("Failed to fetch bookshelves"))
+                    updateBookState(
+                        _bookState.value.copy(
+                            userProgressState = UserProgressState(resultState = ResultState.Error("Failed to fetch bookshelves"))
+                        )
                     )
                 }
             }
@@ -204,7 +199,7 @@ class BookDetailsViewModel @Inject constructor(
         val currentState = _bookState.value.showUpdateProgressDialog
 
         updateBookState(
-            BookUiState(
+            _bookState.value.copy(
                 showUpdateProgressDialog = _bookState.value.showUpdateProgressDialog.copy(
                     isLoading = isLoading ?: currentState.isLoading,
                     showOption = if (toggle) !currentState.showOption else currentState.showOption
@@ -220,9 +215,9 @@ class BookDetailsViewModel @Inject constructor(
                 isLoading = true
             )
 
-            updateProgressState(
-                UserProgressState(
-                    resultState = ResultState.Loading
+            updateBookState(
+                _bookState.value.copy(
+                    userProgressState = UserProgressState(resultState = ResultState.Loading)
                 )
             )
 
@@ -250,33 +245,26 @@ class BookDetailsViewModel @Inject constructor(
     /**
      * Bookshelf
      */
-    private fun updateBookshelvesState(newState: BookshelvesState) {
-        updateBookState(
-            BookUiState(bookshelvesState = newState)
-        )
-    }
-
     fun onSelectBookshelf(bookshelfId: Int) = viewModelScope.launch {
-        updateBookshelvesState(
-            BookshelvesState(
-                bookshelves = bookState.value.bookshelvesState.bookshelves.map { bookshelf ->
-                    if (bookshelf.bookshelfBookDetails.id == bookshelfId) {
-                        bookshelf.copy(isBookPresent = !bookshelf.isBookPresent)
-                    } else {
-                        bookshelf
-                    }
-                }
-
-            )
-        )
-
-
-    }
-
-    fun onShowBookshelves(){
         updateBookState(
             _bookState.value.copy(
-                showBookshelvesDropDown = ShowOptionState(
+                bookshelvesState = bookState.value.bookshelvesState.copy(
+                    bookshelves = bookState.value.bookshelvesState.bookshelves.map { bookshelf ->
+                        if (bookshelf.bookshelfBookDetails.id == bookshelfId) {
+                            bookshelf.copy(isBookPresent = !bookshelf.isBookPresent)
+                        } else {
+                            bookshelf
+                        }
+                    }
+                )
+            )
+        )
+    }
+
+    fun onShowBookshelves() {
+        updateBookState(
+            _bookState.value.copy(
+                showBookshelvesDropDown = _bookState.value.showBookshelvesDropDown.copy(
                     showOption = !_bookState.value.showBookshelvesDropDown.showOption
                 )
             )
@@ -298,16 +286,17 @@ class BookDetailsViewModel @Inject constructor(
                 try {
                     val newBookshelvesState = booksUseCases.fetchAndMapBookshelves(currentState.volumeId!!)
                     updateBookState(
-                        BookUiState(
-                            bookshelvesState = newBookshelvesState ?: BookshelvesState(resultState = ResultState.Error())
+                        _bookState.value.copy(
+                            bookshelvesState = newBookshelvesState?.copy()
+                                ?: currentState.bookshelvesState.copy(resultState = ResultState.Error())
                         )
                     )
                     initialBookshelfState = bookState.value.bookshelvesState
                 } catch (e: Exception) {
                     Log.e(TAG, "Error fetching bookshelves: ${e.message}", e)
                     updateBookState(
-                        BookUiState(
-                            bookshelvesState = BookshelvesState(resultState = ResultState.Error("Failed to fetch bookshelves"))
+                        _bookState.value.copy(
+                            bookshelvesState = currentState.bookshelvesState.copy(resultState = ResultState.Error("Failed to fetch bookshelves"))
                         )
                     )
                 }
@@ -317,15 +306,17 @@ class BookDetailsViewModel @Inject constructor(
 
     fun onPushEditedBookshelfBooks() {
         viewModelScope.launch {
+            val currentState = _bookState.value  // Fetch the current state
+
             updateBookState(
-                BookUiState(
+                currentState.copy(
                     resultState = ResultState.Loading,
                     showBookshelvesDropDown = ShowOptionState(isLoading = true)
                 )
             )
 
-            val bookId = bookState.value.bookDetails.id
-            val currentBookshelves = bookState.value.bookshelvesState.bookshelves
+            val bookId = currentState.bookDetails.id
+            val currentBookshelves = currentState.bookshelvesState.bookshelves
             val initialBookshelves = initialBookshelfState.bookshelves
 
             // Bookshelves to remove the book from
@@ -344,8 +335,8 @@ class BookDetailsViewModel @Inject constructor(
                 }
                 is NetworkResult.Error -> {
                     updateBookState(
-                        BookUiState(
-                            showBookshelvesDropDown = ShowOptionState(isLoading = false)
+                        currentState.copy(
+                            showBookshelvesDropDown = currentState.showBookshelvesDropDown.copy(isLoading = false)
                         )
                     )
                 }
