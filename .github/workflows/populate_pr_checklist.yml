@@ -16,44 +16,75 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const pr = context.payload.pull_request;
-            if (!pr) {
-              console.log("No PR found in payload.");
-              return;
+            let pr = context.payload.pull_request;
+
+            // Handle both PR and issue events
+            if (!pr && context.eventName === 'issues') {
+              console.log("Triggered from issue edit, need to find linked PRs.");
+            
+              const issueNumber = context.payload.issue.number;
+
+              // Search open PRs that mention the issue
+              const searchResults = await github.rest.search.issuesAndPullRequests({
+                q: `repo:${context.repo.owner}/${context.repo.repo} is:pr is:open ${issueNumber}`
+              });
+
+              const linkedPrs = searchResults.data.items.filter(item =>
+                item.body && item.body.includes(`#${issueNumber}`)
+              );
+
+              for (const linkedPr of linkedPrs) {
+                await updatePrBody(linkedPr.number, issueNumber);
+              }
             }
 
-            const issueMatch = pr.body.match(/(?:Closes|Fixes)\s+#(\d+)/i);
-            if (!issueMatch) {
-              console.log("No linked issue found.");
-              return;
+            if (pr && context.eventName === 'pull_request') {
+              const body = pr.body || "";
+              const match = body.match(/(?:Closes|Fixes)\s+#(\d+)/i);
+              if (!match) {
+                console.log("No linked issue found in PR.");
+                return;
+              }
+              const issueNumber = match[1];
+              await updatePrBody(pr.number, issueNumber);
             }
 
-            const issueNumber = issueMatch[1];
+            async function updatePrBody(prNumber, issueNumber) {
+              const issue = await github.rest.issues.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: issueNumber
+              });
 
-            const issue = await github.rest.issues.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: issueNumber
-            });
+              const issueBody = issue.data.body || "";
+              const checklistMatches = issueBody.match(/- \[( |x)\] .+/g) || [];
 
-            const issueBody = issue.data.body || "";
-            const checklistMatches = issueBody.match(/- \[( |x)\] .+/g) || [];
+              const deliverables = checklistMatches.map(line => {
+                const isChecked = line.includes("[x]");
+                return `- ${isChecked ? "✅" : "❌"} ${line.replace(/- \[[ x]\] /, '')}`;
+              }).join("\n");
 
-            const deliverables = checklistMatches.map(line => {
-              const isChecked = line.includes("[x]");
-              return `- ${isChecked ? "✅" : "❌"} ${line.replace(/- \[[ x]\] /, '')}`;
-            }).join("\n");
+              const newDeliverablesSection = `## 🚧 Deliverables Progress (from Issue #${issueNumber}) 📦\n${deliverables}\n`;
 
-            const newDeliverablesSection = `## 🚧 Deliverables Progress (from Issue #${issueNumber}) 📦\n${deliverables}\n`;
+              const prData = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber
+              });
 
-            // Remove old deliverables section if it exists
-            const bodyWithoutOld = pr.body.replace(/## 🚧 Deliverables Progress \(from Issue #\d+\) 📦[\s\S]*?(?=(##|$))/, '').trim();
+              const originalBody = prData.data.body || "";
 
-            const updatedBody = `${bodyWithoutOld}\n\n${newDeliverablesSection}`.trim();
+              // Remove old deliverables section
+              const cleanedBody = originalBody.replace(/## 🚧 Deliverables Progress \(from Issue #\d+\) 📦[\s\S]*?(?=\n##|$)/, '').trim();
 
-            await github.rest.pulls.update({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: pr.number,
-              body: updatedBody
-            });
+              const updatedBody = `${cleanedBody}\n\n${newDeliverablesSection}`.trim();
+
+              await github.rest.pulls.update({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+                body: updatedBody
+              });
+
+              console.log(`Updated PR #${prNumber} with deliverables from Issue #${issueNumber}`);
+            }
