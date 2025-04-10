@@ -5,8 +5,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class BookshelfCatalog(
-    val id : Int = 0,
-
     @SerialName("bookshelf_id")
     val bookshelfId : Int = 0,
 

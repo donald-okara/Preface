@@ -22,29 +22,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import ke.don.common_datasource.remote.domain.states.BookUiState
 import ke.don.common_datasource.remote.domain.states.BookshelfBookDetailsState
 import ke.don.common_datasource.remote.domain.states.ShowOptionState
+import ke.don.feature_book_details.presentation.screens.book_details.BookDetailsEvent
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
 @Composable
 fun BookDetailsSheet(
     modifier: Modifier = Modifier,
-    bookUrl: String?,
-    title: String,
-    showBottomSheet: Boolean,
-    showBookshelves : ShowOptionState,
-    onConfirm: () -> Unit,
-    onExpandBookshelves: () -> Unit,
-    onBookshelfClicked: (Int) -> Unit,
-    uniqueBookshelves: List<BookshelfBookDetailsState>,
-    onDismissSheet: () -> Unit,
+    onBookDetailsEvent: (BookDetailsEvent) -> Unit,
+    bookUiState: BookUiState
 ){
     val sheetState = rememberModalBottomSheetState()
 
-    if (showBottomSheet) {
+    if (bookUiState.showBottomSheet.showOption) {
         ModalBottomSheet(
             onDismissRequest = {
-                onDismissSheet()
+                onBookDetailsEvent(BookDetailsEvent.ShowBottomSheet)
             },
             sheetState = sheetState
         ) {
@@ -54,17 +49,19 @@ fun BookDetailsSheet(
                 stickyHeader {
                     BookDetailsSheetHeader(
                         modifier = modifier,
-                        bookUrl = bookUrl,
-                        title = title
+                        bookUrl = bookUiState.highestImageUrl,
+                        title = bookUiState.bookDetails.volumeInfo.title
                     )
                 }
                 item {
                     BookshelfDropdownMenu(
-                        uniqueBookshelves = uniqueBookshelves,
-                        onExpandToggle = { onExpandBookshelves() },
-                        onItemClick = onBookshelfClicked,
-                        showBookshelvesState = showBookshelves,
-                        onConfirm = onConfirm
+                        loadingMessage = bookUiState.loadingJoke,
+                        bookshelvesState = bookUiState.bookshelvesState,
+                        showOptionState = bookUiState.showBookshelvesDropDown,
+                        onRefreshBookshelves = { onBookDetailsEvent(BookDetailsEvent.FetchBookshelves) },
+                        onExpandToggle = { onBookDetailsEvent(BookDetailsEvent.ToggleBookshelfDropDown) },
+                        onItemClick = { onBookDetailsEvent(BookDetailsEvent.SelectBookshelf(it)) },
+                        onConfirm = { onBookDetailsEvent(BookDetailsEvent.PushEditedBookshelfBooks) }
                     )
                 }
             }

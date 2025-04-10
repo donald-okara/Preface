@@ -1,204 +1,180 @@
 package ke.don.feature_book_details.presentation.screens.book_details
 
-import android.util.Log
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import ke.don.common_datasource.remote.domain.repositories.BooksRepository
-import ke.don.common_datasource.remote.domain.repositories.ProfileRepository
-import ke.don.common_datasource.remote.domain.repositories.UserProgressRepository
 import ke.don.common_datasource.remote.domain.states.BookUiState
 import ke.don.common_datasource.remote.domain.states.BookshelvesState
 import ke.don.common_datasource.remote.domain.states.NoDataReturned
 import ke.don.common_datasource.remote.domain.states.ShowOptionState
 import ke.don.common_datasource.remote.domain.states.UserProgressState
-import ke.don.common_datasource.remote.domain.states.toAddBookToBookshelf
-import ke.don.common_datasource.remote.domain.states.toBookshelfBookDetails
 import ke.don.common_datasource.remote.domain.usecases.BooksUseCases
+import ke.don.shared_domain.data_models.BookDetailsResponse
 import ke.don.shared_domain.data_models.CreateUserProgressDTO
-import ke.don.shared_domain.data_models.UserProgressResponse
-import ke.don.shared_domain.logger.Logger
 import ke.don.shared_domain.states.NetworkResult
 import ke.don.shared_domain.states.ResultState
 import ke.don.shared_domain.states.loadingBookJokes
 import ke.don.shared_domain.utils.color_utils.ColorPaletteExtractor
 import ke.don.shared_domain.utils.color_utils.model.ColorPallet
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.flow.firstOrNull
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import kotlin.random.Random
 
 @HiltViewModel
 class BookDetailsViewModel @Inject constructor(
-    private val booksRepository: BooksRepository,
-    private val profileRepository: ProfileRepository,
-    private val progressRepository: UserProgressRepository,
-    private val logger : Logger,
     private val colorPaletteExtractor: ColorPaletteExtractor,
     private val booksUseCases : BooksUseCases
 ) : ViewModel() {
 
-    private val _volumeId = MutableStateFlow<String?>(null)
-    private val volumeId: StateFlow<String?> = _volumeId
-
-    private val _showBookshelves= MutableStateFlow(ShowOptionState())
-    val showBookshelves: StateFlow<ShowOptionState> = _showBookshelves
-
-    private val _showBookProgress= MutableStateFlow(ShowOptionState())
-    val showBookProgress: StateFlow<ShowOptionState> = _showBookProgress
-
-    private val _showBookSheetOptions = MutableStateFlow(ShowOptionState())
-    val showBookSheetOptions: StateFlow<ShowOptionState> = _showBookSheetOptions
-
     private val _bookState = MutableStateFlow(BookUiState())
-    val bookState = _bookState
-        .onStart { observeBookDetails() }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = BookUiState()
-        )
-
-    private val _bookshelvesState = MutableStateFlow(BookshelvesState())
-    val bookshelvesState = _bookshelvesState
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = BookshelvesState()
-        )
-
-
-    var loadingJoke: String by mutableStateOf("")
-        private set
+    val bookState: StateFlow<BookUiState> = _bookState
 
     var initialBookshelfState = BookshelvesState()
 
-    init {
-        onLoading()
+    fun onBookDetailsEvent(event: BookDetailsEvent){
+        when(event){
+            is BookDetailsEvent.VolumeIdPassed -> {
+                loadBookDetails(event.volumeId)
+            }
+
+            is BookDetailsEvent.Refresh -> {
+                refreshAction()
+            }
+
+            is BookDetailsEvent.ChangeLoadingJoke -> {
+                onChangeLoadingJoke()
+            }
+
+            is BookDetailsEvent.ChangeCurrentPage -> {
+                onCurrentPageUpdate(event.newPage)
+            }
+
+            is BookDetailsEvent.OnNavigateToProgressTab -> {
+                onNavigateToProgressTab()
+            }
+
+            is BookDetailsEvent.ToggleUpdateProgressDialog -> {
+                onToggleUpdateProgressDialog(isLoading = event.isLoading, toggle = event.toggle)
+            }
+
+            is BookDetailsEvent.SaveBookProgress -> {
+                onSaveBookProgress()
+            }
+
+            is BookDetailsEvent.SelectBookshelf -> {
+                onSelectBookshelf(bookshelfId = event.bookshelfId)
+            }
+
+            is BookDetailsEvent.ToggleBookshelfDropDown -> {
+                onToggleBookshelfDropDown()
+            }
+
+            is BookDetailsEvent.ShowBottomSheet -> {
+                onShowBottomSheet()
+            }
+
+            is BookDetailsEvent.PushEditedBookshelfBooks -> {
+                onPushEditedBookshelfBooks()
+            }
+
+            is BookDetailsEvent.ClearState -> {
+                onCleared()
+            }
+
+            is BookDetailsEvent.FetchBookshelves -> {
+                fetchBookshelves()
+            }
+
+            is BookDetailsEvent.FetchProgress -> {
+                fetchUserProgress()
+            }
+        }
     }
-
-
-    private fun updateBookState(newState: BookUiState) {
-        _bookState.update { newState }
-    }
-
-    private fun updateBookshelvesState(newState: BookshelvesState) {
-        _bookshelvesState.update { newState }
-    }
-
-    fun onVolumeIdPassed(passedVolumeId: String) {
-        _volumeId.update {
-            passedVolumeId
+    /**
+     * BookDetails
+     */
+    fun updateBookState(newState: BookUiState) {
+        _bookState.update {
+            newState
         }
     }
 
-
-    private fun observeBookDetails() {
+    fun loadBookDetails(volumeId: String) {
         viewModelScope.launch {
-            _volumeId.filterNotNull().collectLatest { id ->
-                val result = booksUseCases.getBookDetails(id)
-                val newState = when (result) {
-                    is NetworkResult.Error -> _bookState.value.copy(
-                        resultState = ResultState.Error(result.message)
-                    )
-                    is NetworkResult.Success -> {
-                        val imageLinks = result.data.volumeInfo.imageLinks
-                        val highestImageUrl = imageLinks.getHighestQualityUrl()?.replace("http", "https")
+            val userId = booksUseCases.fetchProfileId()
 
-                        // Fetch progress synchronously within the same state update
-                        val progress = fetchBookProgressSync(result.data.id, result.data.volumeInfo.pageCount)
+            updateBookState(
+                _bookState.value.copy(
+                    volumeId = volumeId,
+                    userId = userId
+                )
+            )
 
-                        _bookState.value.copy(
-                            bookDetails = result.data,
-                            resultState = ResultState.Success,
-                            highestImageUrl = highestImageUrl,
-                            userProgressState =   progress,
-                            colorPallet = highestImageUrl?.let {
-                                colorPaletteExtractor.extractColorPalette(it)
-                            } ?: ColorPallet()
-                        ).also {
-                            observeBookshelves()
-                        }
+            try {
+                val bookDetailsResult = fetchBookDetails()
+
+                if (bookDetailsResult == null) {
+                    updateBookState(_bookState.value.copy(resultState = ResultState.Error("Failed to load book data")))
+                    return@launch
+                }
+
+                val bookCheckResult = booksUseCases.checkAndAddBook(bookDetailsResult)
+
+                if (bookCheckResult is NetworkResult.Error) {
+                    updateBookState(_bookState.value.copy(resultState = ResultState.Error("Failed to load book data")))
+                    return@launch
+                }
+
+                updateBookState(_bookState.value.copy(resultState = ResultState.Success))
+
+                val highestImageUrl = bookDetailsResult.volumeInfo.imageLinks
+                    .getHighestQualityUrl()
+                    ?.replace("http", "https") ?: ""
+
+                val colorPallet = if (highestImageUrl.isNotEmpty()) {
+                    withContext(Dispatchers.Default) {
+                        colorPaletteExtractor.extractColorPalette(highestImageUrl)
                     }
+                } else {
+                    ColorPallet()
                 }
-                Log.d(TAG, "Book progress ::: ${newState.userProgressState} of total pages ::: ${newState.bookDetails.volumeInfo.pageCount}")
-                _bookState.value = newState
+
+                updateBookState(
+                    _bookState.value.copy(
+                        bookDetails = bookDetailsResult,
+                        highestImageUrl = highestImageUrl,
+                        colorPallet = colorPallet
+                    )
+                )
+
+            } catch (e: Exception) {
+                updateBookState(_bookState.value.copy(resultState = ResultState.Error("Failed to load book data")))
             }
         }
     }
 
-    // Synchronous helper function to fetch progress within the same coroutine
-    private suspend fun fetchBookProgressSync(bookId: String, totalPages: Int): UserProgressState {
-        val userId = profileRepository.fetchProfileFromDataStore().authId
-        val progressResult = progressRepository.fetchBookProgressByUserAndBook(userId, bookId)
+    suspend fun fetchBookDetails(): BookDetailsResponse? {
+        return when (val response = bookState.value.volumeId?.let { booksUseCases.fetchBookDetails(it) }) {
+            is NetworkResult.Error -> null
 
-        return if (progressResult is NetworkResult.Success && progressResult.data != null) {
-            UserProgressState(
-                bookProgress = progressResult.data!!.copy(totalPages = totalPages),
-                isPresent = true
-            )
-        } else {
-            UserProgressState(
-                bookProgress =  UserProgressResponse(
-                    userId = userId,
-                    bookId = bookId,
-                    currentPage = 0,
-                    lastUpdated = "not read yet",
-                    totalPages = totalPages
-                ),
-                isPresent = false
-            )
-
+            is NetworkResult.Success -> response.data
+            null -> null
         }
     }
-
-
-    private fun observeBookshelves() {
-        viewModelScope.launch {
-            bookState.collectLatest { state ->
-                val bookId = state.bookDetails.id
-                if (bookId.isNotBlank()) {
-                    booksRepository.fetchBookshelves()
-                        .firstOrNull() // Get only the first emitted value to avoid multiple updates
-                        ?.let { bookshelves ->
-                            val bookshelfDetails = bookshelves.map { bookshelf ->
-                                bookshelf.toBookshelfBookDetails(
-                                    isBookPresent = bookshelf.books.any { book ->
-                                        book.bookId == bookId
-                                    }
-                                )
-                            }
-                            Log.d(TAG, "InitialState :: $bookshelfDetails")
-
-                            updateBookshelvesState(BookshelvesState(bookshelves = bookshelfDetails))
-
-                            // Ensure initialBookshelfState is set only once
-                            initialBookshelfState = BookshelvesState(bookshelves = bookshelfDetails)
-                        }
-                }
-            }
-        }
-    }
-
 
 
     fun refreshAction() = viewModelScope.launch {
-        volumeId.value?.let {
-            booksUseCases.getBookDetails(it)
+        onChangeLoadingJoke()
+        bookState.value.volumeId?.let {
+            loadBookDetails(it)
         }
-        onLoading()
     }
+
 
     fun onSearchAuthor(author: String) {
 //        booksUseCases.onSearchQueryChange(author)
@@ -208,152 +184,248 @@ class BookDetailsViewModel @Inject constructor(
         TODO()
     }
 
-    fun onSelectBookshelf(bookshelfId: Int) = viewModelScope.launch {
-        updateBookshelvesState(
-            BookshelvesState(
-                bookshelves = _bookshelvesState.value.bookshelves.map { bookshelf ->
-                    if (bookshelf.bookshelfBookDetails.id == bookshelfId) {
-                        bookshelf.copy(isBookPresent = !bookshelf.isBookPresent)
-                    } else {
-                        bookshelf
-                    }
+    fun onChangeLoadingJoke() {
+        updateBookState(
+            _bookState.value.copy(
+                loadingJoke = loadingBookJokes[Random.nextInt(loadingBookJokes.size)]
+            )
+        )
+    }
+
+    /**
+     * UserProgress
+     */
+
+    fun onCurrentPageUpdate(progress: Int) {
+        val pageCount = bookState.value.bookDetails.volumeInfo.pageCount
+
+        val newState = if (progress <= pageCount) {
+            UserProgressState(newProgress = progress, isError = false)
+        } else {
+            UserProgressState(isError = true)
+        }
+
+        updateBookState(
+            _bookState.value.copy(userProgressState = newState)
+        )
+    }
+
+    private fun onNavigateToProgressTab() {
+        fetchUserProgress()
+    }
+
+    fun fetchUserProgress() {
+        viewModelScope.launch {
+            val state = bookState.value
+
+            if (state.userProgressState.resultState !is ResultState.Success &&
+                state.volumeId != null &&
+                state.userId != null
+            ) {
+                try {
+                    val newProgressState = booksUseCases.fetchBookProgress(
+                        userId = state.userId!!,
+                        bookId = state.volumeId!!
+                    )
+
+                    updateBookState(
+                        _bookState.value.copy(
+                            userProgressState = newProgressState ?: UserProgressState(resultState = ResultState.Error())
+                        )
+                    )
+
+                } catch (e: Exception) {
+                    updateBookState(
+                        _bookState.value.copy(
+                            userProgressState = UserProgressState(resultState = ResultState.Error("Failed to fetch bookshelves"))
+                        )
+                    )
+
                 }
-
-            )
-        )
-
-
-    }
-
-
-    private fun onLoading() {
-        loadingJoke = loadingBookJokes[Random.nextInt(loadingBookJokes.size)]
-        logger.logDebug(TAG, "Loading joke: $loadingJoke")
-    }
-
-    fun onPushEditedBookshelfBooks() = viewModelScope.launch {
-        _showBookshelves.update { ShowOptionState(isLoading = true) }
-
-        val bookId = bookState.value.bookDetails.id
-        val currentBookshelves = _bookshelvesState.value.bookshelves
-        val initialBookshelves = initialBookshelfState.bookshelves
-
-        // Bookshelves to remove the book from
-        val bookshelfIdsToRemove = initialBookshelves
-            .filter { it.isBookPresent && currentBookshelves.none { cb -> cb.bookshelfBookDetails.id == it.bookshelfBookDetails.id && cb.isBookPresent } }
-            .map { it.bookshelfBookDetails.id }
-
-        // Bookshelves to add the book to
-        val addBookToBookshelfList = currentBookshelves
-            .filter { cb -> !initialBookshelves.any { it.bookshelfBookDetails.id == cb.bookshelfBookDetails.id && it.isBookPresent } && cb.isBookPresent }
-            .map { it.bookshelfBookDetails.toAddBookToBookshelf(bookState.value.bookDetails) }
-
-        when (booksRepository.pushEditedBookshelfBooks(bookId, bookshelfIdsToRemove, addBookToBookshelfList)) {
-            is NetworkResult.Success -> {
-                initialBookshelfState = _bookshelvesState.value.copy()
-                _showBookshelves.update { ShowOptionState(isLoading = false, showOption = false) }
-            }
-            is NetworkResult.Error -> {
-                _showBookshelves.update { ShowOptionState(isLoading = false) }
+            } else {
+                println("fetchUserProgress: Either progress state is success or userId/bookId is null, skipping fetch")
             }
         }
     }
 
-    fun onShowBookshelves(){
-        _showBookshelves.update {
-            ShowOptionState(
-                showOption = !it.showOption
-            )
-        }
-    }
-
-    fun onShowBookOptions(){
-        _showBookSheetOptions.update {
-            ShowOptionState(
-                showOption = !it.showOption
-            )
-        }
-    }
-
-    fun onBookProgressUpdate(progress: Int){
-        if (progress <= bookState.value.bookDetails.volumeInfo.pageCount){
-            _bookState.value = _bookState.value.copy(
-                userProgressState = _bookState.value.userProgressState.copy(
-                    isError = false
-                )
-            )
-        }else {
-            _bookState.value = _bookState.value.copy(
-                userProgressState = _bookState.value.userProgressState.copy(
-                    isError = false
-                )
-            )
-        }
-
-        Log.d(TAG, "Progress updated :: $progress")
-        _bookState.value = _bookState.value.copy(
-            userProgressState = _bookState.value.userProgressState.copy(
-                newProgress = progress
-            )
-        )
-    }
-
-    fun updateProgressDialogState(
+    fun onToggleUpdateProgressDialog(
         isLoading: Boolean? = null,
         toggle: Boolean = false
     ) {
-        val currentState = _bookState.value.userProgressState.showUpdateProgressDialog
+        val currentState = _bookState.value.showUpdateProgressDialog
 
-        _bookState.value = _bookState.value.copy(
-            userProgressState = _bookState.value.userProgressState.copy(
-                showUpdateProgressDialog = currentState.copy(
+        updateBookState(
+            _bookState.value.copy(
+                showUpdateProgressDialog = _bookState.value.showUpdateProgressDialog.copy(
                     isLoading = isLoading ?: currentState.isLoading,
                     showOption = if (toggle) !currentState.showOption else currentState.showOption
-                )
+                ),
             )
         )
+
     }
 
     fun onSaveBookProgress() {
         viewModelScope.launch {
             // Show loading
-            updateProgressDialogState(isLoading = true)
+            onToggleUpdateProgressDialog(
+                isLoading = true
+            )
 
-            val userId = profileRepository.fetchProfileFromDataStore().authId
-            val bookId = volumeId.value ?: return@launch
+            updateBookState(
+                _bookState.value.copy(
+                    userProgressState = _bookState.value.userProgressState.copy(
+                        resultState = ResultState.Loading
+                    )
+                )
+            )
+
+            val userId = bookState.value.userId
+            val bookId = bookState.value.volumeId
             val newPage = _bookState.value.userProgressState.newProgress
             val totalPages = _bookState.value.bookDetails.volumeInfo.pageCount
 
-            val result: NetworkResult<NoDataReturned> = if (_bookState.value.userProgressState.isPresent) {
-                progressRepository.updateUserProgress(bookId, userId, newPage)
-            } else {
-                val dto = CreateUserProgressDTO(bookId, newPage, totalPages)
-                progressRepository.addUserProgress(dto)
+
+            if (userId == null || bookId == null) {
+                return@launch
             }
 
-            if (result is NetworkResult.Success){
-                fetchBookProgressSync(bookId, totalPages)
+            val result: NetworkResult<NoDataReturned> = if (_bookState.value.userProgressState.isPresent) {
+                booksUseCases.updateUserProgress(bookId = bookId, userId = userId, newCurrentPage = newPage)
+            } else {
+                val dto = CreateUserProgressDTO(bookId, newPage, totalPages)
+                booksUseCases.addUserProgress(dto)
+            }
+
+            if (result is NetworkResult.Success) {
+                fetchUserProgress()
+            } else {
+                updateBookState(
+                    _bookState.value.copy(
+                        userProgressState = _bookState.value.userProgressState.copy(
+                            resultState = ResultState.Error()
+                        )
+                    )
+                )
             }
 
             // Hide loading
-            updateProgressDialogState(isLoading = false, toggle = true)
+            onToggleUpdateProgressDialog(isLoading = false, toggle = true)
         }
     }
 
-    fun resetPushSuccess() {
-        _showBookshelves.update {
-            ShowOptionState()
+    /**
+     * Bookshelf
+     */
+    fun onSelectBookshelf(bookshelfId: Int) = viewModelScope.launch {
+        updateBookState(
+            _bookState.value.copy(
+                bookshelvesState = bookState.value.bookshelvesState.copy(
+                    bookshelves = bookState.value.bookshelvesState.bookshelves.map { bookshelf ->
+                        if (bookshelf.bookshelfBookDetails.id == bookshelfId) {
+                            bookshelf.copy(isBookPresent = !bookshelf.isBookPresent)
+                        } else {
+                            bookshelf
+                        }
+                    }
+                )
+            )
+        )
+    }
+
+    fun onToggleBookshelfDropDown() {
+        updateBookState(
+            _bookState.value.copy(
+                showBookshelvesDropDown = _bookState.value.showBookshelvesDropDown.copy(
+                    showOption = !_bookState.value.showBookshelvesDropDown.showOption
+                )
+            )
+        )
+
+        fetchBookshelves()
+    }
+
+    fun onShowBottomSheet() {
+        // Toggle the bottom sheet visibility
+        updateBookState(
+            _bookState.value.copy(
+                showBottomSheet = _bookState.value.showBottomSheet.copy(
+                    showOption = !_bookState.value.showBottomSheet.showOption
+                )
+            )
+        )
+    }
+
+    fun fetchBookshelves() {
+        viewModelScope.launch {
+            val currentState = bookState.value
+            if (currentState.bookshelvesState.resultState !is ResultState.Success && currentState.volumeId != null) {
+                try {
+                    val newBookshelvesState = booksUseCases.fetchAndMapBookshelves(currentState.volumeId!!)
+                    updateBookState(
+                        _bookState.value.copy(
+                            bookshelvesState = newBookshelvesState?.copy()
+                                ?: currentState.bookshelvesState.copy(resultState = ResultState.Error())
+                        )
+                    )
+                    initialBookshelfState = bookState.value.bookshelvesState
+                } catch (e: Exception) {
+                    updateBookState(
+                        _bookState.value.copy(
+                            bookshelvesState = currentState.bookshelvesState.copy(resultState = ResultState.Error("Failed to fetch bookshelves"))
+                        )
+                    )
+                }
+            }
         }
     }
+
+    fun onPushEditedBookshelfBooks() {
+        viewModelScope.launch {
+            val currentState = _bookState.value  // Fetch the current state
+
+            updateBookState(
+                currentState.copy(
+                    resultState = ResultState.Loading,
+                    showBookshelvesDropDown = ShowOptionState(isLoading = true)
+                )
+            )
+
+            val bookId = currentState.bookDetails.id
+            val currentBookshelves = currentState.bookshelvesState.bookshelves
+            val initialBookshelves = initialBookshelfState.bookshelves
+
+            // Bookshelves to remove the book from
+            val bookshelfIdsToRemove = initialBookshelves
+                .filter { it.isBookPresent && currentBookshelves.none { cb -> cb.bookshelfBookDetails.id == it.bookshelfBookDetails.id && cb.isBookPresent } }
+                .map { it.bookshelfBookDetails.id }
+
+            // Bookshelves to add the book to
+            val addBookToBookshelfList = currentBookshelves
+                .filter { cb -> !initialBookshelves.any { it.bookshelfBookDetails.id == cb.bookshelfBookDetails.id && it.isBookPresent } && cb.isBookPresent }
+                .map { it.bookshelfBookDetails.id }
+
+            when (booksUseCases.pushEditedBookshelfBooks(bookId, bookshelfIdsToRemove, addBookToBookshelfList)) {
+                is NetworkResult.Success -> {
+                    fetchBookshelves()
+                }
+                is NetworkResult.Error -> {
+                    updateBookState(
+                        currentState.copy(
+                            showBookshelvesDropDown = currentState.showBookshelvesDropDown.copy(isLoading = false)
+                        )
+                    )
+                }
+            }
+        }
+    }
+
+
     public override fun onCleared() {
         super.onCleared()
-        _volumeId.update {
-            null
-        }
-        _bookState.update {
+        updateBookState(
             BookUiState()
-        }
-        logger.logDebug(TAG, "ViewModel cleared")
+        )
     }
 
 
@@ -362,5 +434,4 @@ class BookDetailsViewModel @Inject constructor(
     }
 
 }
-
 

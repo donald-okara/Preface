@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -21,11 +22,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.outlined.Error
+import androidx.compose.material.icons.outlined.HourglassEmpty
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -48,15 +50,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import ke.don.common_datasource.remote.domain.states.BookshelfBookDetailsState
-import ke.don.common_datasource.remote.domain.states.ShowOptionState
+import ke.don.common_datasource.remote.domain.states.BookUiState
 import ke.don.common_datasource.remote.domain.utils.getDominantColor
 import ke.don.feature_book_details.presentation.screens.book_details.components.AboutVolume
 import ke.don.feature_book_details.presentation.screens.book_details.components.BookCoverPreview
@@ -64,7 +63,7 @@ import ke.don.feature_book_details.presentation.screens.book_details.components.
 import ke.don.feature_book_details.presentation.screens.book_details.components.BookProgressTab
 import ke.don.feature_book_details.presentation.screens.book_details.components.PublishDetails
 import ke.don.feature_book_details.presentation.screens.book_details.components.TitleHeader
-import ke.don.shared_domain.data_models.VolumeInfoDet
+import ke.don.shared_components.EmptyScreen
 import ke.don.shared_domain.states.ResultState
 import kotlinx.coroutines.launch
 
@@ -73,21 +72,16 @@ import kotlinx.coroutines.launch
 @Composable
 fun BookDetailsScreen(
     modifier: Modifier = Modifier,
-    onNavigateToSearch: () -> Unit,
+    onNavigateToSearch: () -> Unit,//TODO
     volumeId: String,
     bookDetailsViewModel: BookDetailsViewModel = hiltViewModel(),
     onBackPressed: () -> Unit
 ){
-    val bookUiState = bookDetailsViewModel.bookState.collectAsState()
-    val bookshelvesState by bookDetailsViewModel.bookshelvesState.collectAsState()
-    val loadingJoke = bookDetailsViewModel.loadingJoke
-    val imageUrl = bookUiState.value.highestImageUrl
-    val showBookshelves by bookDetailsViewModel.showBookshelves.collectAsState()
-    val showOptionState by bookDetailsViewModel.showBookSheetOptions.collectAsState()
+    val bookUiState by bookDetailsViewModel.bookState.collectAsState()
 
-    val bookshelfList = bookshelvesState.bookshelves
+    val onBookDetailsEvent = bookDetailsViewModel::onBookDetailsEvent
 
-    val colorPallet = bookUiState.value.colorPallet
+    val colorPallet = bookUiState.colorPallet
     val dominantColor =
         getDominantColor(
             colorPallet,
@@ -95,7 +89,7 @@ fun BookDetailsScreen(
         )
 
     LaunchedEffect(volumeId){
-        bookDetailsViewModel.onVolumeIdPassed(volumeId)
+        onBookDetailsEvent(BookDetailsEvent.VolumeIdPassed(volumeId))
     }
 
     DisposableEffect(Unit) {
@@ -125,9 +119,9 @@ fun BookDetailsScreen(
                     }
                 },
                 actions = {
-                    if (bookUiState.value.resultState == ResultState.Success) {
+                    if (bookUiState.resultState == ResultState.Success) {
                         IconButton(
-                            onClick = bookDetailsViewModel::onShowBookOptions
+                            onClick = { onBookDetailsEvent(BookDetailsEvent.ShowBottomSheet) }
                         ) {
                             Icon(
                                 imageVector = Icons.Default.MoreVert,
@@ -147,64 +141,60 @@ fun BookDetailsScreen(
                 .fillMaxSize(),
             contentAlignment = Alignment.TopCenter,
         ) {
-            BookDetailsContent(
-                modifier = modifier.align(Alignment.TopCenter),
-                volumeInfo = bookUiState.value.bookDetails.volumeInfo,
-                onSearchAuthor = { author->
-                    bookDetailsViewModel.onSearchAuthor(author = author)
-                    onNavigateToSearch()
-                },
-                isLoading = bookUiState.value.resultState != ResultState.Success,
-                imageUrl = imageUrl,
-                dominantColor = dominantColor,
-                isGradientVisible = bookUiState.value.resultState == ResultState.Success,
-                uniqueBookshelves = bookshelfList,
-                onBookshelfClicked = {bookshelfId->
-                    bookDetailsViewModel.onSelectBookshelf(bookshelfId)
-                },
-                onSaveProgress = bookDetailsViewModel::onSaveBookProgress,
-                onExpandBookshelves = bookDetailsViewModel::onShowBookshelves,
-                showBookshelves = showBookshelves,
-                onConfirm = bookDetailsViewModel::onPushEditedBookshelfBooks,
-                onResetSuccess = bookDetailsViewModel::resetPushSuccess,
-                currentPage = bookUiState.value.userProgressState.bookProgress.currentPage,
-                totalPages = bookUiState.value.userProgressState.bookProgress.totalPages,
-                newProgress = bookUiState.value.userProgressState.newProgress,
-                onBookProgressUpdate = {bookDetailsViewModel.onBookProgressUpdate(it)},
-                progressIsError = bookUiState.value.userProgressState.isError,
-                onShowProgressDialog = {bookDetailsViewModel.updateProgressDialogState(toggle = true)},
-                showAddProgressDialog = bookUiState.value.userProgressState.showUpdateProgressDialog
-            )
+            when(bookUiState.resultState) {
+                is ResultState.Success -> {
+                    if(bookUiState.bookDetails.id.isNotEmpty()){
+                        BookDetailsContent(
+                            modifier = modifier.align(Alignment.TopCenter),
+                            dominantColor = dominantColor,
+                            onBookDetailsEvent = onBookDetailsEvent,
+                            bookUiState = bookUiState,
+                        )
 
-            BookDetailsSheet(
-                modifier = modifier,
-                bookUrl = bookUiState.value.highestImageUrl,
-                title = bookUiState.value.bookDetails.volumeInfo.title,
-                showBottomSheet = showOptionState.showOption,
-                showBookshelves = showBookshelves,
-                onConfirm = bookDetailsViewModel::onPushEditedBookshelfBooks,
-                onExpandBookshelves = bookDetailsViewModel::onShowBookshelves,
-                onBookshelfClicked = {bookshelfId->
-                    bookDetailsViewModel.onSelectBookshelf(bookshelfId)
-                },
-                uniqueBookshelves = bookshelfList,
-                onDismissSheet = bookDetailsViewModel::onShowBookOptions
-            )
+                        BookDetailsSheet(
+                            modifier = modifier
+                                .align(Alignment.Center),
+                            bookUiState = bookUiState,
+                            onBookDetailsEvent = onBookDetailsEvent,
+                        )
+                    }else{
+                        EmptyScreen(
+                            modifier = modifier
+                                .align(Alignment.Center),
+                            icon = Icons.Outlined.HourglassEmpty,
+                            message = "Loading",
+                            action = {},
+                            actionText = bookUiState.loadingJoke
+                        )
+                    }
 
-            if (bookUiState.value.resultState != ResultState.Success) {
-                DetailsLoadingScreen(
-                    modifier = modifier
-                        .padding(16.dp),
-                    text = if(bookUiState.value.resultState != ResultState.Error()) loadingJoke else "Failed to load your book. Please try again",
-                    onRetryAction = bookDetailsViewModel::refreshAction,
-                    textColor = if(bookUiState.value.resultState == ResultState.Loading) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onTertiaryContainer
-                )
+                }
 
+                is ResultState.Loading -> {
+                    EmptyScreen(
+                        modifier = modifier
+                            .align(Alignment.Center),
+                        icon = Icons.Outlined.HourglassEmpty,
+                        message = "Loading",
+                        action = {},
+                        actionText = bookUiState.loadingJoke
+                    )
+                }
 
+                else -> {
+                    EmptyScreen(
+                        modifier = modifier
+                            .align(Alignment.Center),
+                        icon = Icons.Outlined.Error,
+                        message = "Error",
+                        action = {onBookDetailsEvent(BookDetailsEvent.Refresh)},
+                        actionText = "Something went wrong. Please try again"
+                    )
+                }
             }
+
+
         }
-
-
     }
 }
 
@@ -214,26 +204,9 @@ fun BookDetailsScreen(
 @Composable
 fun BookDetailsContent(
     modifier: Modifier = Modifier,
-    volumeInfo: VolumeInfoDet,
-    onBookshelfClicked: (Int) -> Unit,
+    bookUiState: BookUiState,
+    onBookDetailsEvent: (BookDetailsEvent) -> Unit,
     dominantColor : Color,
-    showBookshelves: ShowOptionState,
-    onExpandBookshelves: () -> Unit,
-    newProgress: Int,
-    totalPages: Int,
-    currentPage: Int,
-    showAddProgressDialog: ShowOptionState,
-    onShowProgressDialog: () -> Unit,
-    imageUrl: String? = null,
-    onResetSuccess: () -> Unit,
-    onSaveProgress : () -> Unit,
-    progressIsError: Boolean,
-    isLoading: Boolean = true,
-    onConfirm: () -> Unit,
-    onBookProgressUpdate: (Int) -> Unit,
-    isGradientVisible: Boolean,
-    onSearchAuthor: (String) -> Unit,
-    uniqueBookshelves: List<BookshelfBookDetailsState>
 ) {
     val tabs = listOf("About", "Publish details", "Read progress")
     val scrollState = rememberScrollState()
@@ -244,31 +217,11 @@ fun BookDetailsContent(
         modifier = modifier
             .fillMaxSize()
     ){
-       val gradientBrush = Brush.verticalGradient(
-           colors = listOf(
-               dominantColor.copy(alpha = 1f), // Start with dominant color from below
-               dominantColor.copy(alpha = 0.8f), // Start with dominant color from below
-               dominantColor.copy(alpha = 0.6f), // Start with dominant color from below
-               dominantColor.copy(alpha = 0.4f), // Start with dominant color from below
-               dominantColor.copy(alpha = 0.2f), // Start with dominant color from below
-               Color.Transparent // Transition to transparent at the top
-           ),
-           startY = 0f, // Start from the bottom
-           endY = 1500f // Adjust this value to control the gradient's end position (height)
+       BookGradientBrush(
+           modifier = modifier,
+           isVisible = bookUiState.resultState is ResultState.Success,
+           dominantColor = dominantColor
        )
-
-        // Crossfade transition for the gradient
-        AnimatedVisibility(
-            visible = isGradientVisible,
-            enter = fadeIn(animationSpec = tween(durationMillis = 800)),
-            exit = fadeOut(animationSpec = tween(durationMillis = 800)),
-        ) {
-            Box(
-                modifier = modifier
-                    .fillMaxSize()
-                    .background(gradientBrush)
-            )
-        }
 
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -279,21 +232,13 @@ fun BookDetailsContent(
                 .fillMaxSize()
         ) {
             TitleHeader(
-                volumeInfo = volumeInfo,
-                onSearchAuthor = onSearchAuthor,
-                imageUrl = imageUrl,
+                volumeInfo = bookUiState.bookDetails.volumeInfo,
+                onSearchAuthor = {},//TODO
+                imageUrl = bookUiState.highestImageUrl,
                 textColor = dominantColor,
                 onImageClick = {
                     showPreview.value = true
                 },
-                isLoading = isLoading,
-
-                uniqueBookshelves = uniqueBookshelves,
-                onBookshelfClicked = onBookshelfClicked,
-                onConfirm = onConfirm,
-                onExpandBookshelves = onExpandBookshelves,
-                onResetSuccess = onResetSuccess,
-                showBookshelves = showBookshelves,
                 modifier = modifier
                     .padding(8.dp)
             )
@@ -321,6 +266,9 @@ fun BookDetailsContent(
                         selected = pagerState.currentPage == index,
                         onClick = {
                             coroutineScope.launch {
+                                if (index == 2){
+                                    onBookDetailsEvent(BookDetailsEvent.OnNavigateToProgressTab)
+                                }
                                 pagerState.scrollToPage(index)
                             }
                         },
@@ -337,26 +285,21 @@ fun BookDetailsContent(
                 when (page) {
                     0 -> AboutVolume(
                         textColor = dominantColor,
-                        volumeInfo = volumeInfo,
+                        volumeInfo = bookUiState.bookDetails.volumeInfo,
                         modifier = modifier
                             .align(Alignment.CenterHorizontally)
                     )
 
                     1 -> PublishDetails(
-                        volumeInfo = volumeInfo,
+                        volumeInfo = bookUiState.bookDetails.volumeInfo,
                         modifier = modifier
                             .align(Alignment.CenterHorizontally)
                     )
+
                     2 -> BookProgressTab(
                         progressColor = dominantColor,
-                        currentPage = currentPage,
-                        totalPages = totalPages,
-                        isError = progressIsError,
-                        onBookProgressUpdate= onBookProgressUpdate ,
-                        showAddProgressDialog = showAddProgressDialog,
-                        onShowOptionsDialog = onShowProgressDialog,
-                        onSaveProgress = onSaveProgress,
-                        newProgress = newProgress,
+                        bookUiState = bookUiState,
+                        onBookDetailsEvent = onBookDetailsEvent,
                         modifier = modifier
                             .align(Alignment.CenterHorizontally)
                     )
@@ -364,37 +307,11 @@ fun BookDetailsContent(
             }
         }
 
-       if (showPreview.value) {
-           Box(
-               modifier = modifier
-                   .fillMaxSize()
-                   .graphicsLayer {
-                       alpha = 0.5f // Adjust transparency to enhance blur effect
-                       shadowElevation = 8.dp.toPx() // Simulates depth for blur effect
-                       shape = RoundedCornerShape(0) // Apply shape for additional control
-                       clip = true // Required for proper blur clipping
-                   }
-                   .background(Color.Black.copy(alpha = 0.6f)) // Semi-transparent overlay
-           )
-
-           // Fullscreen Book Cover Preview
-           Box(
-               modifier = modifier
-                   .fillMaxSize()
-                   .background(Color.Transparent)
-                   .clickable { showPreview.value = false } // Dismiss the preview when clicked
-           ) {
-               BookCoverPreview(
-                   highestImageUrl = imageUrl,
-                   modifier = modifier
-                       .fillMaxSize()
-                       .scale(1f)
-                       .graphicsLayer {
-                           this.alpha = 1f // Keep the preview visible
-                       }
-               )
-           }
-       }
+       BookCoverPreview(
+           imageUrl = bookUiState.highestImageUrl,
+           onDismiss = { showPreview.value = !showPreview.value },
+           showPreview = showPreview.value
+       )
     }
 
 }
@@ -405,27 +322,31 @@ fun DetailsLoadingScreen(
     modifier: Modifier = Modifier,
     onRetryAction: () -> Unit,
     textColor: Color,
-    text: String
+    bookUiState: BookUiState,
 ) {
+    LaunchedEffect(Unit) {
+        Log.d(
+            "BookDetailsScreen",
+            "Loading joke:: ${bookUiState.loadingJoke}, result state:: ${bookUiState.resultState}"
+        )
+    }
     Column(
         modifier = modifier
             .fillMaxHeight(),
         verticalArrangement = Arrangement.Center
     ) {
-        // Display the book title
         Text(
-            text = "Loading",
-            style = MaterialTheme.typography.headlineSmall, // Use appropriate text style
-            modifier = modifier.padding(bottom = 8.dp) // Space below the title
+            text = if (bookUiState.resultState is ResultState.Error) "Error" else "Loading",
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = modifier.padding(bottom = 8.dp)
         )
 
-        // Display the book authors, if available
         Text(
-            text = text, // Join authors with a comma
+            text = if (bookUiState.resultState is ResultState.Error) "Something went wrong" else bookUiState.loadingJoke,
             color = textColor,
-            style = MaterialTheme.typography.bodyLarge, // Use appropriate text style
+            style = MaterialTheme.typography.bodyLarge,
             modifier = modifier
-                .padding(bottom = 16.dp) // Space below the authors
+                .padding(bottom = 16.dp)
                 .clickable {
                     onRetryAction()
                 }
@@ -447,17 +368,15 @@ fun DetailsErrorScreen(
             .fillMaxHeight(),
         verticalArrangement = Arrangement.Center
     ) {
-        // Display the book title
         Text(
             text = "Error",
-            style = MaterialTheme.typography.headlineSmall, // Use appropriate text style
-            modifier = modifier.padding(bottom = 8.dp) // Space below the title
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = modifier.padding(bottom = 8.dp)
         )
 
-        // Display the book authors, if available
         Text(
-            text = text, // Join authors with a comma
-            style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onTertiaryContainer), // Use appropriate text style
+            text = text,
+            style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onTertiaryContainer),
             modifier = modifier
                 .padding(bottom = 16.dp)
                 .clickable {
@@ -468,6 +387,38 @@ fun DetailsErrorScreen(
     }
 }
 
+@Composable
+fun BookGradientBrush(
+    modifier: Modifier = Modifier,
+    dominantColor: Color,
+    isVisible : Boolean
+){
+    val gradientBrush = Brush.verticalGradient(
+        colors = listOf(
+            dominantColor.copy(alpha = 1f),
+            dominantColor.copy(alpha = 0.8f),
+            dominantColor.copy(alpha = 0.6f),
+            dominantColor.copy(alpha = 0.4f),
+            dominantColor.copy(alpha = 0.2f),
+            Color.Transparent
+        ),
+        startY = 0f, // Start from the bottom
+        endY = 1500f // Adjust this value to control the gradient's end position (height)
+    )
+
+    // Crossfade transition for the gradient
+    AnimatedVisibility(
+        visible = isVisible,
+        enter = fadeIn(animationSpec = tween(durationMillis = 800)),
+        exit = fadeOut(animationSpec = tween(durationMillis = 800)),
+    ) {
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .background(gradientBrush)
+        )
+    }
+}
 
 
 fun search(url : String, context: Context) {

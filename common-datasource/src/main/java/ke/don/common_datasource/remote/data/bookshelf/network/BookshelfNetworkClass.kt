@@ -3,20 +3,17 @@ package ke.don.common_datasource.remote.data.bookshelf.network
 import android.util.Log
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.postgrest
 import ke.don.common_datasource.local.roomdb.entities.BookshelfEntity
-import ke.don.common_datasource.local.roomdb.entities.toEntity
 import ke.don.common_datasource.remote.domain.states.NoDataReturned
-import ke.don.shared_domain.data_models.AddBookToBookshelf
-import ke.don.shared_domain.data_models.BookShelf
 import ke.don.shared_domain.data_models.BookshelfCatalog
 import ke.don.shared_domain.data_models.BookshelfRef
-import ke.don.shared_domain.data_models.SupabaseBook
-import ke.don.shared_domain.states.ResultState
 import ke.don.shared_domain.states.NetworkResult
-import ke.don.shared_domain.values.ADDBOOKSTOBOOKSHELF
-import ke.don.shared_domain.values.BOOKS
 import ke.don.shared_domain.values.BOOKSHELFCATALOG
 import ke.don.shared_domain.values.BOOKSHELFTABLE
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import io.github.jan.supabase.postgrest.rpc
 
 class BookshelfNetworkClass(
     private val supabaseClient: SupabaseClient,
@@ -56,60 +53,20 @@ class BookshelfNetworkClass(
     }
 
 
-    suspend fun fetchUserBookshelves(userId: String): NetworkResult<List<BookshelfEntity>> {
-        return try {
-            Log.d(TAG, "Attempting to fetch bookshelves for user: $userId")
+    suspend fun fetchUserBookshelves(userId: String): NetworkResult<List<BookshelfEntity>> = withContext(Dispatchers.IO){
+        return@withContext try {
+            val result = supabaseClient.postgrest.rpc(
+                function = "fetch_user_bookshelves",
+                parameters = mapOf("p_user_id" to userId)
+            ).decodeList<BookshelfEntity>()
 
-            // Fetch bookshelf references for the user (includes books JSONB array)
-            val bookshelfRefs = supabaseClient.from(BOOKSHELFTABLE)
-                .select() {
-                    filter { BookshelfRef::userId eq userId }
-
-                }
-                .decodeList<BookshelfRef>()
-
-            Log.d(TAG, "Fetched bookshelfRefs: $bookshelfRefs")
-
-            // Extract book IDs from all bookshelves
-            val bookIds = bookshelfRefs.flatMap { bookshelf -> bookshelf.books.map { it.bookId } }
-                .distinct() // Avoid duplicate book queries
-
-            // Fetch all books associated with these book IDs using a single query
-            val books = if (bookIds.isNotEmpty()) {
-                supabaseClient.from(BOOKS)
-                    .select() {
-                        filter { SupabaseBook::bookId isIn bookIds }
-
-                    }
-                    .decodeList<SupabaseBook>()
-            } else {
-                emptyList()
-            }
-
-            Log.d(TAG, "Fetched books: $books")
-
-            // Map bookshelves to include their respective books
-            val bookshelvesDetailed = bookshelfRefs.map { bookshelfRef ->
-                val currentBooks = books.filter { book ->
-                    bookshelfRef.books.any { it.bookId == book.bookId }
-                }
-
-                // Return a detailed BookShelf object
-                Log.d(TAG, "Bookshelf assembled: $bookshelfRef with books: $currentBooks")
-                BookShelf(
-                    supabaseBookShelf = bookshelfRef,
-                    books = currentBooks
-                ).toEntity()
-            }
-
-            NetworkResult.Success(bookshelvesDetailed)
+            NetworkResult.Success(result)
         } catch (e: Exception) {
             e.printStackTrace()
-            Log.e(TAG, "Error fetching bookshelves for user: $userId", e)
             NetworkResult.Error(
-                message = e.message.toString(),
-                hint = e.cause.toString(),
-                details = e.stackTrace.toString()
+                message = e.message ?: "Unknown error",
+                hint = e.cause?.toString() ?: "No cause",
+                details = e.stackTraceToString()
             )
         }
     }
@@ -120,14 +77,19 @@ class BookshelfNetworkClass(
      * UPDATE
      */
     suspend fun addBookToBookshelf(
-        addBookToBookshelf: AddBookToBookshelf
+        bookshelfId: Int,
+        bookId: String,
     ): NetworkResult<NoDataReturned>{
+        val bookshelfCatalog =
+            BookshelfCatalog(
+                bookshelfId = bookshelfId,
+                bookId = bookId,
+            )
         return try {
             Log.d(TAG, "Attempting to add book")
-
             supabaseClient.from(
-                ADDBOOKSTOBOOKSHELF
-            ).insert(addBookToBookshelf)
+                BOOKSHELFCATALOG
+            ).insert(bookshelfCatalog)
             NetworkResult.Success(NoDataReturned())
         }catch (e: Exception){
             e.printStackTrace()
@@ -139,9 +101,12 @@ class BookshelfNetworkClass(
         }
     }
 
-    suspend fun addMultipleBooksToBookshelf(books: List<AddBookToBookshelf>): NetworkResult<NoDataReturned> {
+    suspend fun addBookToMultipleBookshelves(book: String, bookshelves: List<Int>): NetworkResult<NoDataReturned> {
+        val bookshelfCatalogs = bookshelves.map { bookshelf ->
+            BookshelfCatalog(bookId = book, bookshelfId = bookshelf)
+        }
         return try {
-            if (books.isEmpty()) {
+            if (bookshelves.isEmpty()) {
                 return NetworkResult.Error(
                     message = "Book list is empty",
                     hint = "Ensure that the list contains at least one book before inserting.",
@@ -149,8 +114,8 @@ class BookshelfNetworkClass(
                 )
             }
 
-            supabaseClient.from(ADDBOOKSTOBOOKSHELF)
-                .insert(books)
+            supabaseClient.from(BOOKSHELFCATALOG)
+                .insert(bookshelfCatalogs)
 
             NetworkResult.Success(NoDataReturned())
         } catch (e: Exception) {

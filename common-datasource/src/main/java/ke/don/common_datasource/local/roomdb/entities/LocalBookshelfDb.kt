@@ -5,7 +5,9 @@ import androidx.room.PrimaryKey
 import ke.don.shared_domain.data_models.BookShelf
 import ke.don.shared_domain.data_models.BookshelfRef
 import ke.don.shared_domain.data_models.SupabaseBook
+import kotlinx.serialization.Serializable
 
+@Serializable
 @Entity(tableName = "bookshelves")
 data class BookshelfEntity(
     @PrimaryKey(autoGenerate = false)

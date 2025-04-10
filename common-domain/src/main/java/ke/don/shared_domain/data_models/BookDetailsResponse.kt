@@ -11,7 +11,26 @@ data class BookDetailsResponse( // Google book api
     val volumeInfo: VolumeInfoDet = VolumeInfoDet(),
     val saleInfo: SaleInfo = SaleInfo(),
     val accessInfo: AccessInfo = AccessInfo()
-)
+) {
+    fun toSupabaseBook(): SupabaseBook {
+        return SupabaseBook(
+            bookId = id,
+            title = volumeInfo.title,
+            description = volumeInfo.description,
+            highestImageUrl = volumeInfo.imageLinks.getHighestQualityUrl()?.replace("http", "https"),
+            lowestImageUrl = volumeInfo.imageLinks.getLowestQualityUrl()?.replace("http", "https"),
+            source = BookSource.Google,
+            authors = volumeInfo.authors,
+            publisher = volumeInfo.publisher,
+            publishedDate = volumeInfo.publishedDate,
+            categories = volumeInfo.categories,
+            maturityRating = volumeInfo.maturityRating,
+            language = volumeInfo.language,
+            previewLink = volumeInfo.previewLink,
+            pageCount = volumeInfo.pageCount
+        )
+    }
+}
 
 @Serializable
 data class VolumeInfoDet(

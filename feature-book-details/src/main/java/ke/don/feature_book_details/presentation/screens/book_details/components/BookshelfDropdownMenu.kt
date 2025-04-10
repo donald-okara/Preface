@@ -13,6 +13,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.LibraryBooks
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Error
+import androidx.compose.material.icons.outlined.HourglassEmpty
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -27,22 +29,29 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import ke.don.common_datasource.remote.domain.states.BookUiState
 import ke.don.common_datasource.remote.domain.states.BookshelfBookDetailsState
+import ke.don.common_datasource.remote.domain.states.BookshelvesState
 import ke.don.common_datasource.remote.domain.states.ShowOptionState
+import ke.don.feature_book_details.presentation.screens.book_details.BookDetailsEvent
+import ke.don.shared_components.EmptyScreen
 import ke.don.shared_components.SheetOptionItem
+import ke.don.shared_domain.states.ResultState
 
 @Composable
 fun BookshelfDropdownMenu(
     modifier: Modifier = Modifier,
-    uniqueBookshelves: List<BookshelfBookDetailsState>,
-    showBookshelvesState: ShowOptionState,
+    bookshelvesState: BookshelvesState,
+    showOptionState: ShowOptionState,
     onConfirm: () -> Unit,
+    loadingMessage: String,
+    onRefreshBookshelves: () -> Unit,
     onExpandToggle: () -> Unit,
     onItemClick: (Int) -> Unit = {},
 ) {
 
-    val bookIsPresentList = uniqueBookshelves.filter { it.isBookPresent }
-    val bookIsNotPresentList = uniqueBookshelves.filter { !it.isBookPresent }
+    val bookIsPresentList = bookshelvesState.bookshelves.filter { it.isBookPresent }
+    val bookIsNotPresentList = bookshelvesState.bookshelves.filter { !it.isBookPresent }
 
     Box(
         modifier = modifier
@@ -56,56 +65,81 @@ fun BookshelfDropdownMenu(
             }
         )
         DropdownMenu(
-            expanded = showBookshelvesState.showOption,
+            expanded = showOptionState.showOption,
             onDismissRequest = { onExpandToggle() },
             modifier = modifier
                 .padding(8.dp)
-        ) {
-            DropdownMenuItem(
-                text = { Text("Add a bookshelf") },
-                onClick = { /* Do something... */ }
-            )
-            // You can wrap your content in a scrollable Column
-            Column(
-                modifier = modifier
-                    .height(200.dp) // Set your desired height
-                    .verticalScroll(rememberScrollState()) // Make it scrollable
-            ) {
-                bookIsPresentList
-                    .forEach { bookshelf ->
-                        BookshelfItem(
-                            bookshelfName = bookshelf.bookshelfBookDetails.name,
-                            isSelected = bookshelf.isBookPresent,
-                            bookshelfId = bookshelf.bookshelfBookDetails.id,
-                            onItemClick = {
-                                onItemClick(bookshelf.bookshelfBookDetails.id)
+        ){
+            when(bookshelvesState.resultState){
+                is ResultState.Success -> {
+                    DropdownMenuItem(
+                        text = { Text("Add a bookshelf") },
+                        onClick = { /* Do something... */ }
+                    )
+                    // You can wrap your content in a scrollable Column
+                    Column(
+                        modifier = modifier
+                            .height(200.dp) // Set your desired height
+                            .verticalScroll(rememberScrollState()) // Make it scrollable
+                    ) {
+                        bookIsPresentList
+                            .forEach { bookshelf ->
+                                BookshelfItem(
+                                    bookshelfName = bookshelf.bookshelfBookDetails.name,
+                                    isSelected = bookshelf.isBookPresent,
+                                    bookshelfId = bookshelf.bookshelfBookDetails.id,
+                                    onItemClick = {
+                                        onItemClick(bookshelf.bookshelfBookDetails.id)
+                                    }
+                                )
                             }
-                        )
-                    }
-                HorizontalDivider()
-                bookIsNotPresentList
-                    .forEach { bookshelf ->
-                        BookshelfItem(
-                            bookshelfName = bookshelf.bookshelfBookDetails.name,
-                            isSelected = bookshelf.isBookPresent,
-                            bookshelfId = bookshelf.bookshelfBookDetails.id,
-                            onItemClick = {
-                                onItemClick(bookshelf.bookshelfBookDetails.id)
+                        HorizontalDivider()
+                        bookIsNotPresentList
+                            .forEach { bookshelf ->
+                                BookshelfItem(
+                                    bookshelfName = bookshelf.bookshelfBookDetails.name,
+                                    isSelected = bookshelf.isBookPresent,
+                                    bookshelfId = bookshelf.bookshelfBookDetails.id,
+                                    onItemClick = {
+                                        onItemClick(bookshelf.bookshelfBookDetails.id)
+                                    }
+                                )
                             }
-                        )
                     }
-            }
 
-            AddBookRow(
-                onCancel = {
-                    onExpandToggle()
-                },
-                isLoading = showBookshelvesState.isLoading,
-                onConfirm = {
-                    onConfirm()
+                    AddBookRow(
+                        onCancel = {
+                            onExpandToggle()
+                        },
+                        isLoading = showOptionState.isLoading,
+                        onConfirm = {
+                            onConfirm()
+                        }
+                    )
                 }
-            )
+
+                is ResultState.Loading -> {
+                    EmptyScreen(
+                        modifier = modifier,
+                        icon = Icons.Outlined.HourglassEmpty,
+                        message = "Loading",
+                        action = {},
+                        actionText = loadingMessage
+                    )
+                }
+
+                else -> {
+                    EmptyScreen(
+                        modifier = modifier,
+                        icon = Icons.Outlined.Error,
+                        message = "Error",
+                        action = {onRefreshBookshelves()},
+                        actionText = "Something went wrong. Please try again"
+                    )
+                }
+            }
         }
+
 
     }
 }

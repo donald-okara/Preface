@@ -5,16 +5,15 @@ import android.util.Log
 import android.widget.Toast
 import ke.don.common_datasource.local.roomdb.dao.BookshelfDao
 import ke.don.common_datasource.local.roomdb.entities.BookshelfEntity
+import ke.don.common_datasource.remote.data.book_details.network.BookNetworkClass
 import ke.don.common_datasource.remote.data.book_details.network.GoogleBooksApi
 import ke.don.common_datasource.remote.data.bookshelf.network.BookshelfNetworkClass
 import ke.don.common_datasource.remote.domain.repositories.BooksRepository
 import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
 import ke.don.common_datasource.remote.domain.states.NoDataReturned
-import ke.don.shared_domain.data_models.AddBookToBookshelf
 import ke.don.shared_domain.data_models.BookDetailsResponse
 import ke.don.shared_domain.data_models.BookItem
 import ke.don.shared_domain.states.NetworkResult
-import kotlinx.coroutines.flow.Flow
 import retrofit2.Response
 
 class BooksRepositoryImpl(
@@ -23,8 +22,24 @@ class BooksRepositoryImpl(
     private val apiKey: String,
     private val context : Context,
     private val bookshelfDao: BookshelfDao,
+    private val bookNetworkClass: BookNetworkClass,
     private val bookshelfRepository: BookshelfRepository,
 ) : BooksRepository {
+
+    override suspend fun checkAndAddBook(book: BookDetailsResponse): NetworkResult<NoDataReturned> {
+        val bookResponse = bookNetworkClass.fetchBook(book.id)
+
+        return if (bookResponse is NetworkResult.Error){
+            bookResponse
+        } else {
+            if((bookResponse as NetworkResult.Success).data == null){
+                bookNetworkClass.addBook(book.toSupabaseBook())
+            }else {
+                NetworkResult.Success(NoDataReturned())
+            }
+        }
+    }
+
 
     override suspend fun getBookDetails(bookId: String): NetworkResult<BookDetailsResponse> {
         return try {
@@ -58,15 +73,15 @@ class BooksRepositoryImpl(
         }
     }
 
-     override suspend fun fetchBookshelves(): Flow<List<BookshelfEntity>> {
-         return bookshelfDao.getAllBookshelvesFlow()
+     override suspend fun fetchBookshelves(): List<BookshelfEntity> {
+         return bookshelfDao.getAllBookshelves()
     }
 
 
     override suspend fun pushEditedBookshelfBooks(
         bookId: String,
         bookshelfIds: List<Int>,
-        addBookshelves: List<AddBookToBookshelf>
+        addBookshelves: List<Int>
     ): NetworkResult<NoDataReturned> = try {
         Log.d(TAG, "Attempting to remove book from bookshelves:: $bookshelfIds")
 
@@ -78,7 +93,7 @@ class BooksRepositoryImpl(
         }
 
         if (addBookshelves.isNotEmpty()) {
-            bookshelfNetworkClass.addMultipleBooksToBookshelf(addBookshelves).also { result ->
+            bookshelfNetworkClass.addBookToMultipleBookshelves(bookshelves = addBookshelves, book = bookId).also { result ->
                 if (result is NetworkResult.Error) {
                     Toast.makeText(context, "${result.message} ${result.hint ?: ""}", Toast.LENGTH_SHORT).show()
                     return result
@@ -94,6 +109,7 @@ class BooksRepositoryImpl(
             details = e.stackTraceToString()
         )
     }
+
 
 
     /**
