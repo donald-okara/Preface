@@ -374,3 +374,7 @@ class BookDetailsViewModel @Inject constructor(
     }
 
 }
+
+sealed class BookDetailsEvent{
+
+}
