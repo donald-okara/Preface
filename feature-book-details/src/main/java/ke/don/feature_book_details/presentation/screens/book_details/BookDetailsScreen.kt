@@ -26,6 +26,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.outlined.Error
+import androidx.compose.material.icons.outlined.HourglassEmpty
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -61,6 +63,7 @@ import ke.don.feature_book_details.presentation.screens.book_details.components.
 import ke.don.feature_book_details.presentation.screens.book_details.components.BookProgressTab
 import ke.don.feature_book_details.presentation.screens.book_details.components.PublishDetails
 import ke.don.feature_book_details.presentation.screens.book_details.components.TitleHeader
+import ke.don.shared_components.EmptyScreen
 import ke.don.shared_domain.states.ResultState
 import kotlinx.coroutines.launch
 
@@ -69,12 +72,14 @@ import kotlinx.coroutines.launch
 @Composable
 fun BookDetailsScreen(
     modifier: Modifier = Modifier,
-    onNavigateToSearch: () -> Unit,
+    onNavigateToSearch: () -> Unit,//TODO
     volumeId: String,
     bookDetailsViewModel: BookDetailsViewModel = hiltViewModel(),
     onBackPressed: () -> Unit
 ){
     val bookUiState by bookDetailsViewModel.bookState.collectAsState()
+
+    val onBookDetailsEvent = bookDetailsViewModel::onBookDetailsEvent
 
     val colorPallet = bookUiState.colorPallet
     val dominantColor =
@@ -84,7 +89,7 @@ fun BookDetailsScreen(
         )
 
     LaunchedEffect(volumeId){
-        bookDetailsViewModel.fetchAndUpdateBookUiState(volumeId)
+        onBookDetailsEvent(BookDetailsEvent.VolumeIdPassed(volumeId))
     }
 
     DisposableEffect(Unit) {
@@ -116,7 +121,7 @@ fun BookDetailsScreen(
                 actions = {
                     if (bookUiState.resultState == ResultState.Success) {
                         IconButton(
-                            onClick = bookDetailsViewModel::onShowBottomSheet
+                            onClick = { onBookDetailsEvent(BookDetailsEvent.ShowBottomSheet) }
                         ) {
                             Icon(
                                 imageVector = Icons.Default.MoreVert,
@@ -138,50 +143,53 @@ fun BookDetailsScreen(
         ) {
             when(bookUiState.resultState) {
                 is ResultState.Success -> {
-                    BookDetailsContent(
-                        modifier = modifier.align(Alignment.TopCenter),
-                        onSearchAuthor = { author ->
-                            bookDetailsViewModel.onSearchAuthor(author = author)
-                            onNavigateToSearch()
-                        },
-                        dominantColor = dominantColor,
-                        onSaveProgress = bookDetailsViewModel::onSaveBookProgress,
-                        onBookProgressUpdate = { bookDetailsViewModel.onCurrentPageUpdate(it) },
-                        onShowProgressDialog = {
-                            bookDetailsViewModel.updateProgressDialogState(
-                                toggle = true
-                            )
-                        },
-                        bookUiState = bookUiState,
-                    )
+                    if(bookUiState.bookDetails.id.isNotEmpty()){
+                        BookDetailsContent(
+                            modifier = modifier.align(Alignment.TopCenter),
+                            dominantColor = dominantColor,
+                            onBookDetailsEvent = onBookDetailsEvent,
+                            bookUiState = bookUiState,
+                        )
 
-                    BookDetailsSheet(
-                        modifier = modifier,
-                        bookUrl = bookUiState.highestImageUrl,
-                        title = bookUiState.bookDetails.volumeInfo.title,
-                        showBottomSheet = bookUiState.showBottomSheet.showOption,
-                        showBookshelves = bookUiState.showBookshelvesDropDown,
-                        onConfirm = bookDetailsViewModel::onPushEditedBookshelfBooks,
-                        onExpandBookshelves = bookDetailsViewModel::onToggleBookshelfDropDown,
-                        onBookshelfClicked = { bookshelfId ->
-                            bookDetailsViewModel.onSelectBookshelf(bookshelfId)
-                        },
-                        uniqueBookshelves = bookUiState.bookshelvesState.bookshelves,
-                        onDismissSheet = bookDetailsViewModel::onShowBottomSheet
+                        BookDetailsSheet(
+                            modifier = modifier
+                                .align(Alignment.Center),
+                            bookUiState = bookUiState,
+                            onBookDetailsEvent = onBookDetailsEvent,
+                        )
+                    }else{
+                        EmptyScreen(
+                            modifier = modifier
+                                .align(Alignment.Center),
+                            icon = Icons.Outlined.HourglassEmpty,
+                            message = "Loading",
+                            action = {},
+                            actionText = bookUiState.loadingJoke
+                        )
+                    }
+
+                }
+
+                is ResultState.Loading -> {
+                    EmptyScreen(
+                        modifier = modifier
+                            .align(Alignment.Center),
+                        icon = Icons.Outlined.HourglassEmpty,
+                        message = "Loading",
+                        action = {},
+                        actionText = bookUiState.loadingJoke
                     )
                 }
 
                 else -> {
-                    DetailsLoadingScreen(
+                    EmptyScreen(
                         modifier = modifier
-                            .padding(16.dp),
-                        text = if (bookUiState.resultState != ResultState.Error()) bookUiState.loadingJoke else "Failed to load your book. Please try again",
-                        onRetryAction = bookDetailsViewModel::refreshAction,
-                        bookUiState = bookUiState,
-                        textColor = if (bookUiState.resultState == ResultState.Loading) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onTertiaryContainer
+                            .align(Alignment.Center),
+                        icon = Icons.Outlined.Error,
+                        message = "Error",
+                        action = {onBookDetailsEvent(BookDetailsEvent.Refresh)},
+                        actionText = "Something went wrong. Please try again"
                     )
-
-
                 }
             }
 
@@ -197,11 +205,8 @@ fun BookDetailsScreen(
 fun BookDetailsContent(
     modifier: Modifier = Modifier,
     bookUiState: BookUiState,
+    onBookDetailsEvent: (BookDetailsEvent) -> Unit,
     dominantColor : Color,
-    onShowProgressDialog: () -> Unit,
-    onSaveProgress : () -> Unit,
-    onBookProgressUpdate: (Int) -> Unit,
-    onSearchAuthor: (String) -> Unit,
 ) {
     val tabs = listOf("About", "Publish details", "Read progress")
     val scrollState = rememberScrollState()
@@ -228,7 +233,7 @@ fun BookDetailsContent(
         ) {
             TitleHeader(
                 volumeInfo = bookUiState.bookDetails.volumeInfo,
-                onSearchAuthor = onSearchAuthor,
+                onSearchAuthor = {},//TODO
                 imageUrl = bookUiState.highestImageUrl,
                 textColor = dominantColor,
                 onImageClick = {
@@ -261,6 +266,9 @@ fun BookDetailsContent(
                         selected = pagerState.currentPage == index,
                         onClick = {
                             coroutineScope.launch {
+                                if (index == 2){
+                                    onBookDetailsEvent(BookDetailsEvent.OnNavigateToProgressTab)
+                                }
                                 pagerState.scrollToPage(index)
                             }
                         },
@@ -287,12 +295,11 @@ fun BookDetailsContent(
                         modifier = modifier
                             .align(Alignment.CenterHorizontally)
                     )
+
                     2 -> BookProgressTab(
                         progressColor = dominantColor,
                         bookUiState = bookUiState,
-                        onBookProgressUpdate= onBookProgressUpdate ,
-                        onShowOptionsDialog = onShowProgressDialog,
-                        onSaveProgress = onSaveProgress,
+                        onBookDetailsEvent = onBookDetailsEvent,
                         modifier = modifier
                             .align(Alignment.CenterHorizontally)
                     )
@@ -316,7 +323,6 @@ fun DetailsLoadingScreen(
     onRetryAction: () -> Unit,
     textColor: Color,
     bookUiState: BookUiState,
-    text: String
 ) {
     LaunchedEffect(Unit) {
         Log.d(

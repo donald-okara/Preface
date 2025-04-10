@@ -11,6 +11,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoStories
+import androidx.compose.material.icons.outlined.Error
+import androidx.compose.material.icons.outlined.HourglassEmpty
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -32,65 +34,90 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import ke.don.common_datasource.remote.domain.states.BookUiState
 import ke.don.common_datasource.remote.domain.states.UserProgressState
+import ke.don.feature_book_details.presentation.screens.book_details.BookDetailsEvent
+import ke.don.shared_components.EmptyScreen
 import ke.don.shared_components.IndividualReadingProgressCard
+import ke.don.shared_domain.states.ResultState
 
 @Composable
 fun BookProgressTab(
     modifier: Modifier = Modifier,
     progressColor: Color,
+    onBookDetailsEvent: (BookDetailsEvent) -> Unit,
     bookUiState: BookUiState,
-    onBookProgressUpdate: (Int) -> Unit,
-    onSaveProgress : () -> Unit,
-    onShowOptionsDialog: () -> Unit,
 ){
-    Column(
-        modifier = modifier.padding(8.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        IndividualReadingProgressCard(
-            modifier = modifier,
-            color = progressColor,
-            currentPage = bookUiState.userProgressState.bookProgress.currentPage,
-            totalPages = bookUiState.userProgressState.bookProgress.totalPages
-        )
+    when(bookUiState.userProgressState.resultState){
+        is ResultState.Loading -> {
+            EmptyScreen(
+                modifier = modifier,
+                icon = Icons.Outlined.HourglassEmpty,
+                message = "Loading",
+                action = {},
+                actionText = bookUiState.loadingJoke
+            )
+        }
+        is ResultState.Success -> {
+            Column(
+                modifier = modifier.padding(8.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                IndividualReadingProgressCard(
+                    modifier = modifier,
+                    color = progressColor,
+                    currentPage = bookUiState.userProgressState.bookProgress.currentPage,
+                    totalPages = bookUiState.userProgressState.bookProgress.totalPages
+                )
 
-        Spacer(modifier = modifier.height(16.dp))
+                Spacer(modifier = modifier.height(16.dp))
 
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center,
-            modifier = modifier.fillMaxWidth()
-        ){
-            Button(
-                shape = RoundedCornerShape(8.dp),
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = progressColor
-                ),
-                onClick = {onShowOptionsDialog()},
-                modifier = modifier.fillMaxWidth()
-            ){
-                Text(
-                   text = "Update Progress"
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = modifier.fillMaxWidth()
+                ){
+                    Button(
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = progressColor
+                        ),
+                        onClick = {onBookDetailsEvent(BookDetailsEvent.ToggleUpdateProgressDialog(toggle = true))},
+                        modifier = modifier.fillMaxWidth()
+                    ){
+                        Text(
+                            text = "Update Progress"
+                        )
+                    }
+                }
+            }
+
+            if (bookUiState.showUpdateProgressDialog.showOption){
+                AddProgressDialog(
+                    modifier = modifier,
+                    onDismissRequest = {onBookDetailsEvent(BookDetailsEvent.ToggleUpdateProgressDialog(toggle = true))},
+                    onConfirmation = {onBookDetailsEvent(BookDetailsEvent.SaveBookProgress)},
+                    bookProgress = bookUiState.userProgressState.newProgress,
+                    onBookProgressUpdate = { onBookDetailsEvent(BookDetailsEvent.ChangeCurrentPage(it)) },
+                    dialogTitle = "Add Progress",
+                    icon = Icons.Outlined.AutoStories,
+                    dialogText = "Book progress",
+                    enabled = !bookUiState.userProgressState.isError,
+                    maxProgress = bookUiState.userProgressState.bookProgress.totalPages
                 )
             }
         }
+
+        else -> {
+            EmptyScreen(
+                modifier = modifier,
+                icon = Icons.Outlined.Error,
+                message = "Error",
+                action = {onBookDetailsEvent(BookDetailsEvent.FetchProgress)},
+                actionText = "Something went wrong. Please try again"
+            )
+        }
     }
 
-    if (bookUiState.showUpdateProgressDialog.showOption){
-        AddProgressDialog(
-            modifier = modifier,
-            onDismissRequest = {onShowOptionsDialog()},
-            onConfirmation = {onSaveProgress()},
-            bookProgress = bookUiState.userProgressState.newProgress,
-            onBookProgressUpdate = onBookProgressUpdate,
-            dialogTitle = "Add Progress",
-            icon = Icons.Outlined.AutoStories,
-            dialogText = "Book progress",
-            enabled = !bookUiState.userProgressState.isError,
-            maxProgress = bookUiState.userProgressState.bookProgress.totalPages
-        )
-    }
 
 }
 

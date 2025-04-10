@@ -91,7 +91,7 @@ class BookDetailsViewModelTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `fetchAndUpdateBookUiState updates volumeId and userID in state`() =
+    fun `loadBookDetails updates volumeId and userID in state`() =
         runTest { // Success state
             // Arrange
             val bookId = "5cu7sER89nwC"
@@ -99,7 +99,7 @@ class BookDetailsViewModelTest {
 
             // Act
 
-            viewModel.fetchAndUpdateBookUiState(bookId)
+            viewModel.loadBookDetails(bookId)
             advanceUntilIdle() // wait for all coroutines to finish
 
 
@@ -110,7 +110,7 @@ class BookDetailsViewModelTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `fetchAndUpdateBookUiState returns an error result state when volume id is error`() =
+    fun `loadBookDetails returns an error result state when volume id is error`() =
         runTest {
             // Arrange
             val bookId = "erreniousId"
@@ -118,7 +118,7 @@ class BookDetailsViewModelTest {
 
             // Act
 
-            viewModel.fetchAndUpdateBookUiState(bookId)
+            viewModel.loadBookDetails(bookId)
             advanceUntilIdle() // wait for all coroutines to finish
 
 
@@ -128,13 +128,13 @@ class BookDetailsViewModelTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `fetchAndUpdateBookUiState updates book state correctly if volumeId is valid`() =
+    fun `loadBookDetails updates book state correctly if volumeId is valid`() =
         runTest(testDispatcher) {
             // Arrange
             val volumeId = "5cu7sER89nwC"
             val uiState = viewModel.bookState
             // Act
-            viewModel.fetchAndUpdateBookUiState(volumeId)
+            viewModel.loadBookDetails(volumeId)
             advanceUntilIdle()
 
             // Assert
@@ -162,13 +162,13 @@ class BookDetailsViewModelTest {
     }
 
     @Test
-    fun `onLoading updates loading joke`() = runTest {
+    fun `changeLoadingJoke updates loading joke`() = runTest {
         // Arrange
         val uiState = viewModel.bookState
         viewModel.updateBookState(BookUiState(loadingJoke = ""))
 
         // Act
-        viewModel.onLoading()
+        viewModel.onChangeLoadingJoke()
 
         // Assert
         assertNotEquals("", uiState.value.loadingJoke)
@@ -286,7 +286,7 @@ class BookDetailsViewModelTest {
 
     @OptIn(ExperimentalCoroutinesApi::class)
     @Test
-    fun `updateProgressDialogState toggles show option if toggle is true`() = runTest {
+    fun `onToggleUpdateProgressDialog toggles show option if toggle is true`() = runTest {
         // Arrange
         val toggle = true
         val uiState = viewModel.bookState
@@ -294,7 +294,7 @@ class BookDetailsViewModelTest {
 
         // Act
 
-        viewModel.updateProgressDialogState(toggle = toggle)
+        viewModel.onToggleUpdateProgressDialog(toggle = toggle)
         advanceUntilIdle()
 
         // Assert

@@ -35,6 +35,66 @@ class BookDetailsViewModel @Inject constructor(
     val bookState: StateFlow<BookUiState> = _bookState
 
     var initialBookshelfState = BookshelvesState()
+
+    fun onBookDetailsEvent(event: BookDetailsEvent){
+        when(event){
+            is BookDetailsEvent.VolumeIdPassed -> {
+                loadBookDetails(event.volumeId)
+            }
+
+            is BookDetailsEvent.Refresh -> {
+                refreshAction()
+            }
+
+            is BookDetailsEvent.ChangeLoadingJoke -> {
+                onChangeLoadingJoke()
+            }
+
+            is BookDetailsEvent.ChangeCurrentPage -> {
+                onCurrentPageUpdate(event.newPage)
+            }
+
+            is BookDetailsEvent.OnNavigateToProgressTab -> {
+                onNavigateToProgressTab()
+            }
+
+            is BookDetailsEvent.ToggleUpdateProgressDialog -> {
+                onToggleUpdateProgressDialog(isLoading = event.isLoading, toggle = event.toggle)
+            }
+
+            is BookDetailsEvent.SaveBookProgress -> {
+                onSaveBookProgress()
+            }
+
+            is BookDetailsEvent.SelectBookshelf -> {
+                onSelectBookshelf(bookshelfId = event.bookshelfId)
+            }
+
+            is BookDetailsEvent.ToggleBookshelfDropDown -> {
+                onToggleBookshelfDropDown()
+            }
+
+            is BookDetailsEvent.ShowBottomSheet -> {
+                onShowBottomSheet()
+            }
+
+            is BookDetailsEvent.PushEditedBookshelfBooks -> {
+                onPushEditedBookshelfBooks()
+            }
+
+            is BookDetailsEvent.ClearState -> {
+                onCleared()
+            }
+
+            is BookDetailsEvent.FetchBookshelves -> {
+                fetchBookshelves()
+            }
+
+            is BookDetailsEvent.FetchProgress -> {
+                fetchUserProgress()
+            }
+        }
+    }
     /**
      * BookDetails
      */
@@ -44,7 +104,7 @@ class BookDetailsViewModel @Inject constructor(
         }
     }
 
-    fun fetchAndUpdateBookUiState(volumeId: String) {
+    fun loadBookDetails(volumeId: String) {
         viewModelScope.launch {
             val userId = booksUseCases.fetchProfileId()
 
@@ -109,9 +169,9 @@ class BookDetailsViewModel @Inject constructor(
 
 
     fun refreshAction() = viewModelScope.launch {
-        onLoading()
+        onChangeLoadingJoke()
         bookState.value.volumeId?.let {
-            fetchAndUpdateBookUiState(it)
+            loadBookDetails(it)
         }
     }
 
@@ -124,7 +184,7 @@ class BookDetailsViewModel @Inject constructor(
         TODO()
     }
 
-    fun onLoading() {
+    fun onChangeLoadingJoke() {
         updateBookState(
             _bookState.value.copy(
                 loadingJoke = loadingBookJokes[Random.nextInt(loadingBookJokes.size)]
@@ -150,7 +210,7 @@ class BookDetailsViewModel @Inject constructor(
         )
     }
 
-    fun onProgressTabNav() {
+    private fun onNavigateToProgressTab() {
         fetchUserProgress()
     }
 
@@ -188,7 +248,7 @@ class BookDetailsViewModel @Inject constructor(
         }
     }
 
-    fun updateProgressDialogState(
+    fun onToggleUpdateProgressDialog(
         isLoading: Boolean? = null,
         toggle: Boolean = false
     ) {
@@ -208,7 +268,7 @@ class BookDetailsViewModel @Inject constructor(
     fun onSaveBookProgress() {
         viewModelScope.launch {
             // Show loading
-            updateProgressDialogState(
+            onToggleUpdateProgressDialog(
                 isLoading = true
             )
 
@@ -250,7 +310,7 @@ class BookDetailsViewModel @Inject constructor(
             }
 
             // Hide loading
-            updateProgressDialogState(isLoading = false, toggle = true)
+            onToggleUpdateProgressDialog(isLoading = false, toggle = true)
         }
     }
 
@@ -375,6 +435,3 @@ class BookDetailsViewModel @Inject constructor(
 
 }
 
-sealed class BookDetailsEvent{
-
-}
