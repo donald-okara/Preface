@@ -12,28 +12,26 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.LibraryBooks
-import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Error
 import androidx.compose.material.icons.outlined.HourglassEmpty
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import ke.don.common_datasource.remote.domain.states.BookUiState
-import ke.don.common_datasource.remote.domain.states.BookshelfBookDetailsState
 import ke.don.common_datasource.remote.domain.states.BookshelvesState
 import ke.don.common_datasource.remote.domain.states.ShowOptionState
-import ke.don.feature_book_details.presentation.screens.book_details.BookDetailsEvent
 import ke.don.shared_components.EmptyScreen
 import ke.don.shared_components.SheetOptionItem
 import ke.don.shared_domain.states.ResultState
@@ -49,9 +47,21 @@ fun BookshelfDropdownMenu(
     onExpandToggle: () -> Unit,
     onItemClick: (Int) -> Unit = {},
 ) {
-
     val bookIsPresentList = bookshelvesState.bookshelves.filter { it.isBookPresent }
     val bookIsNotPresentList = bookshelvesState.bookshelves.filter { !it.isBookPresent }
+
+    // Store the initial set of bookshelf IDs where the book is present
+    var initialPresentIds by remember { mutableStateOf<Set<Int>>(emptySet()) }
+
+    // Capture the initial state when the dropdown opens and the result is Success
+    LaunchedEffect(showOptionState.showOption, bookshelvesState.resultState) {
+        if (showOptionState.showOption && bookshelvesState.resultState is ResultState.Success) {
+            initialPresentIds = bookshelvesState.bookshelves
+                .filter { it.isBookPresent }
+                .map { it.bookshelfBookDetails.id }
+                .toSet()
+        }
+    }
 
     Box(
         modifier = modifier
@@ -72,15 +82,21 @@ fun BookshelfDropdownMenu(
         ){
             when(bookshelvesState.resultState){
                 is ResultState.Success -> {
+                    // Compute current state and check for changes
+                    val currentPresentIds = bookshelvesState.bookshelves
+                        .filter { it.isBookPresent }
+                        .map { it.bookshelfBookDetails.id }
+                        .toSet()
+                    val isChanged = initialPresentIds != currentPresentIds
+
                     DropdownMenuItem(
                         text = { Text("Add a bookshelf") },
                         onClick = { /* Do something... */ }
                     )
-                    // You can wrap your content in a scrollable Column
                     Column(
                         modifier = modifier
-                            .height(200.dp) // Set your desired height
-                            .verticalScroll(rememberScrollState()) // Make it scrollable
+                            .height(200.dp)
+                            .verticalScroll(rememberScrollState())
                     ) {
                         bookIsPresentList
                             .forEach { bookshelf ->
@@ -111,7 +127,7 @@ fun BookshelfDropdownMenu(
                         onCancel = {
                             onExpandToggle()
                         },
-                        isLoading = showOptionState.isLoading,
+                        enabled = isChanged && !showOptionState.isLoading,
                         onConfirm = {
                             onConfirm()
                         }
@@ -139,8 +155,6 @@ fun BookshelfDropdownMenu(
                 }
             }
         }
-
-
     }
 }
 
@@ -179,7 +193,7 @@ fun BookshelfItem(
 fun AddBookRow(
     modifier: Modifier = Modifier,
     onCancel: () -> Unit,
-    isLoading: Boolean,
+    enabled: Boolean,
     onConfirm: () -> Unit,
 ){
     Row(
@@ -198,7 +212,7 @@ fun AddBookRow(
         Spacer(modifier = modifier.weight(1f))
         Button(
             onConfirm,
-            enabled = !isLoading
+            enabled = enabled
         ) {
             Text(
                 text = "Done"

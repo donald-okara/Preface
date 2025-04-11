@@ -11,6 +11,7 @@ import ke.don.common_datasource.remote.domain.states.UserProgressState
 import ke.don.common_datasource.remote.domain.usecases.BooksUseCases
 import ke.don.shared_domain.data_models.BookDetailsResponse
 import ke.don.shared_domain.data_models.CreateUserProgressDTO
+import ke.don.shared_domain.data_models.UserProgressResponse
 import ke.don.shared_domain.states.NetworkResult
 import ke.don.shared_domain.states.ResultState
 import ke.don.shared_domain.states.loadingBookJokes
@@ -199,15 +200,25 @@ class BookDetailsViewModel @Inject constructor(
     fun onCurrentPageUpdate(progress: Int) {
         val pageCount = bookState.value.bookDetails.volumeInfo.pageCount
 
-        val newState = if (progress <= pageCount) {
-            UserProgressState(newProgress = progress, isError = false)
+        if (progress <= pageCount) {
+            updateBookState(
+               _bookState.value.copy(
+                   userProgressState =  _bookState.value.userProgressState.copy(
+                       newProgress = progress,
+                       isError = false
+                   )
+               )
+            )
         } else {
-            UserProgressState(isError = true)
+            updateBookState(
+                _bookState.value.copy(
+                    userProgressState = _bookState.value.userProgressState.copy(
+                        isError = true
+                    )
+                )
+            )
         }
 
-        updateBookState(
-            _bookState.value.copy(userProgressState = newState)
-        )
     }
 
     private fun onNavigateToProgressTab() {
@@ -230,7 +241,12 @@ class BookDetailsViewModel @Inject constructor(
 
                     updateBookState(
                         _bookState.value.copy(
-                            userProgressState = newProgressState ?: UserProgressState(resultState = ResultState.Error())
+                            userProgressState = newProgressState ?: UserProgressState(
+                                bookProgress = UserProgressResponse(
+                                    totalPages = bookState.value.bookDetails.volumeInfo.pageCount
+                                ),
+                                resultState = ResultState.Success
+                            )
                         )
                     )
 
@@ -386,8 +402,12 @@ class BookDetailsViewModel @Inject constructor(
 
             updateBookState(
                 currentState.copy(
-                    resultState = ResultState.Loading,
-                    showBookshelvesDropDown = ShowOptionState(isLoading = true)
+                    bookshelvesState = _bookState.value.bookshelvesState.copy(
+                        resultState = ResultState.Loading
+                    ),
+                    showBookshelvesDropDown = _bookState.value.showBookshelvesDropDown.copy(
+                        isLoading = true
+                    )
                 )
             )
 
@@ -407,6 +427,11 @@ class BookDetailsViewModel @Inject constructor(
 
             when (booksUseCases.pushEditedBookshelfBooks(bookId, bookshelfIdsToRemove, addBookToBookshelfList)) {
                 is NetworkResult.Success -> {
+                    updateBookState(
+                        currentState.copy(
+                            showBookshelvesDropDown = currentState.showBookshelvesDropDown.copy(isLoading = false)
+                        )
+                    )
                     fetchBookshelves()
                 }
                 is NetworkResult.Error -> {
