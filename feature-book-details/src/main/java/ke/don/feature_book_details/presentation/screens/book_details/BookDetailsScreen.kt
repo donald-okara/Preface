@@ -55,6 +55,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ke.don.common_datasource.remote.domain.states.BookUiState
 import ke.don.common_datasource.remote.domain.utils.getDominantColor
 import ke.don.feature_book_details.presentation.screens.book_details.components.AboutVolume
@@ -77,7 +78,9 @@ fun BookDetailsScreen(
     bookDetailsViewModel: BookDetailsViewModel = hiltViewModel(),
     onBackPressed: () -> Unit
 ){
-    val bookUiState by bookDetailsViewModel.bookState.collectAsState()
+    val bookUiState by bookDetailsViewModel.bookState.collectAsStateWithLifecycle()
+
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     val onBookDetailsEvent = bookDetailsViewModel::onBookDetailsEvent
 
@@ -101,6 +104,7 @@ fun BookDetailsScreen(
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
+                scrollBehavior = scrollBehavior,
                 title = {
                     Text(
                         ""
@@ -129,23 +133,19 @@ fun BookDetailsScreen(
                             )
                         }
                     }
-                },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.Transparent, // Transparent background
-                    )
+                }
             )
         }
-    ) {
+    ) { innerPadding ->
         Box(
             modifier = modifier
+                .padding(innerPadding)
                 .fillMaxSize(),
-            contentAlignment = Alignment.TopCenter,
         ) {
             when(bookUiState.resultState) {
                 is ResultState.Success -> {
                     if(bookUiState.bookDetails.id.isNotEmpty()){
                         BookDetailsContent(
-                            modifier = modifier.align(Alignment.TopCenter),
                             dominantColor = dominantColor,
                             onBookDetailsEvent = onBookDetailsEvent,
                             bookUiState = bookUiState,
@@ -215,20 +215,12 @@ fun BookDetailsContent(
 
    Box(
         modifier = modifier
-            .fillMaxSize()
     ){
-       BookGradientBrush(
-           modifier = modifier,
-           isVisible = bookUiState.resultState is ResultState.Success,
-           dominantColor = dominantColor
-       )
-
         Column(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = modifier
                 .verticalScroll(scrollState)
-                .padding(8.dp)
                 .fillMaxSize()
         ) {
             TitleHeader(
@@ -314,77 +306,6 @@ fun BookDetailsContent(
        )
     }
 
-}
-
-
-@Composable
-fun DetailsLoadingScreen(
-    modifier: Modifier = Modifier,
-    onRetryAction: () -> Unit,
-    textColor: Color,
-    bookUiState: BookUiState,
-) {
-    LaunchedEffect(Unit) {
-        Log.d(
-            "BookDetailsScreen",
-            "Loading joke:: ${bookUiState.loadingJoke}, result state:: ${bookUiState.resultState}"
-        )
-    }
-    Column(
-        modifier = modifier
-            .fillMaxHeight(),
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = if (bookUiState.resultState is ResultState.Error) "Error" else "Loading",
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = modifier.padding(bottom = 8.dp)
-        )
-
-        Text(
-            text = if (bookUiState.resultState is ResultState.Error) "Something went wrong" else bookUiState.loadingJoke,
-            color = textColor,
-            style = MaterialTheme.typography.bodyLarge,
-            modifier = modifier
-                .padding(bottom = 16.dp)
-                .clickable {
-                    onRetryAction()
-                }
-        )
-
-    }
-}
-
-
-
-@Composable
-fun DetailsErrorScreen(
-    modifier: Modifier = Modifier,
-    text: String,
-    onRefresh: () -> Unit
-) {
-    Column(
-        modifier = modifier
-            .fillMaxHeight(),
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = "Error",
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = modifier.padding(bottom = 8.dp)
-        )
-
-        Text(
-            text = text,
-            style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onTertiaryContainer),
-            modifier = modifier
-                .padding(bottom = 16.dp)
-                .clickable {
-                    onRefresh()
-                }
-        )
-
-    }
 }
 
 @Composable

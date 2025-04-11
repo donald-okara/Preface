@@ -52,6 +52,7 @@ fun BookProgressTab(
             EmptyScreen(
                 modifier = modifier.fillMaxSize(),
                 icon = Icons.Outlined.HourglassEmpty,
+                textColor = progressColor,
                 message = "Loading",
                 action = {},
                 actionText = bookUiState.loadingJoke
@@ -112,6 +113,7 @@ fun BookProgressTab(
             EmptyScreen(
                 modifier = modifier.fillMaxSize(),
                 icon = Icons.Outlined.Error,
+                textColor = progressColor,
                 message = "Error",
                 action = {onBookDetailsEvent(BookDetailsEvent.FetchProgress)},
                 actionText = "Something went wrong. Please try again"

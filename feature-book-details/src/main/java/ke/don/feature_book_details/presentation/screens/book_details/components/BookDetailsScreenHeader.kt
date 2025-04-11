@@ -1,6 +1,5 @@
 package ke.don.feature_book_details.presentation.screens.book_details.components
 
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -8,15 +7,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,6 +25,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -44,47 +43,43 @@ fun TitleHeader(
     textColor: Color = MaterialTheme.colorScheme.primary
 ) {
     Column(
-        modifier = modifier
-            .wrapContentHeight(),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(4.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         BookImage(
             onImageClick = onImageClick,
             imageUrl = imageUrl,
             modifier = modifier
-                .size(400.dp)
-                .padding(16.dp)
-        )
+                .width(200.dp)
+                .padding(bottom = 8.dp)
+                .aspectRatio(volumeInfo.dimensions.calculateAspectRatio())
 
-        // Display the book title
+        )
         Text(
             text = volumeInfo.title,
             textAlign = TextAlign.Center,
-            style = MaterialTheme.typography.headlineSmall,
-            modifier = modifier.padding(bottom = 4.dp) // Minor padding if needed
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+            color = MaterialTheme.colorScheme.onSurface
         )
 
-
-        // Display the book authors, if available
         volumeInfo.authors.let { authors ->
             Row(
                 horizontalArrangement = Arrangement.Center,
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(bottom = 4.dp)
             ) {
                 authors.forEachIndexed { index, author ->
                     Text(
                         text = AnnotatedString(author),
-                        modifier = Modifier.clickable {
+                        modifier = modifier.clickable {
                             onSearchAuthor(author)
                         },
-                        style = MaterialTheme.typography.bodyLarge.copy(color = textColor),
+                        style = MaterialTheme.typography.bodyMedium.copy(color = textColor),
                     )
                     if (index < authors.size - 1) {
                         Text(
                             text = ", ",
-                            style = MaterialTheme.typography.bodyLarge
+                            style = MaterialTheme.typography.bodyMedium
                         )
                     }
                 }
@@ -93,56 +88,51 @@ fun TitleHeader(
 
         // Display the book published date, if available
         if (volumeInfo.publishedDate.isNotEmpty()) {
-
             Text(
                 text = volumeInfo.publishedDate,
                 style = MaterialTheme.typography.bodyMedium,
-                textAlign = TextAlign.Center,
-                modifier = modifier.graphicsLayer(alpha = 0.8f)
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
 
     }
 }
 
-
 @Composable
 fun BookImage(
-    modifier: Modifier = Modifier, // Allow external modification of size
+    modifier: Modifier = Modifier,
     onImageClick: () -> Unit,
-    imageUrl : String? = null,
+    imageUrl: String? = null,
 ) {
+    val shape = RoundedCornerShape(16.dp)
+    val context = LocalContext.current
 
-    LaunchedEffect(imageUrl) {
-        Log.d("Image", "imageUrl : $imageUrl")
-    }
+    val imageModifier = modifier
+        .clip(shape)
+        .clickable { onImageClick() }
+
+
     if (imageUrl.isNullOrEmpty()) {
         Image(
             painter = painterResource(R.drawable.undraw_writer_q06d),
             contentDescription = stringResource(R.string.book_cover),
-            contentScale = ContentScale.FillHeight,
-            modifier = modifier
-                .clip(RoundedCornerShape(16.dp))
-
+            contentScale = ContentScale.Fit,  // Fills container, cropping excess
+            modifier = imageModifier
         )
-    }else{
+    } else {
         AsyncImage(
-            model = ImageRequest.Builder(context = LocalContext.current)
+            model = ImageRequest.Builder(context)
                 .data(imageUrl)
                 .crossfade(true)
                 .build(),
             contentDescription = stringResource(R.string.book_cover),
-            contentScale = ContentScale.FillHeight,
+            contentScale = ContentScale.FillWidth,  // Fills container, cropping excess
             placeholder = painterResource(R.drawable.undraw_writer_q06d),
-            modifier = modifier
-                .clip(RoundedCornerShape(16.dp))
-                .clickable {
-                    onImageClick()
-                }
+            modifier = imageModifier
         )
     }
-
 }
+
 
 
 @Composable

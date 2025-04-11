@@ -5,13 +5,17 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.LibraryBooks
+import androidx.compose.material.icons.filled.CollectionsBookmark
+import androidx.compose.material.icons.outlined.CollectionsBookmark
 import androidx.compose.material.icons.outlined.Error
 import androidx.compose.material.icons.outlined.HourglassEmpty
 import androidx.compose.material3.Button
@@ -78,60 +82,71 @@ fun BookshelfDropdownMenu(
             expanded = showOptionState.showOption,
             onDismissRequest = { onExpandToggle() },
             modifier = modifier
+                .fillMaxWidth()
                 .padding(8.dp)
         ){
             when(bookshelvesState.resultState){
                 is ResultState.Success -> {
-                    // Compute current state and check for changes
-                    val currentPresentIds = bookshelvesState.bookshelves
-                        .filter { it.isBookPresent }
-                        .map { it.bookshelfBookDetails.id }
-                        .toSet()
-                    val isChanged = initialPresentIds != currentPresentIds
 
-                    DropdownMenuItem(
-                        text = { Text("Add a bookshelf") },
-                        onClick = { /* Do something... */ }
-                    )
-                    Column(
-                        modifier = modifier
-                            .height(200.dp)
-                            .verticalScroll(rememberScrollState())
-                    ) {
-                        bookIsPresentList
-                            .forEach { bookshelf ->
-                                BookshelfItem(
-                                    bookshelfName = bookshelf.bookshelfBookDetails.name,
-                                    isSelected = bookshelf.isBookPresent,
-                                    bookshelfId = bookshelf.bookshelfBookDetails.id,
-                                    onItemClick = {
-                                        onItemClick(bookshelf.bookshelfBookDetails.id)
-                                    }
-                                )
+                    if (bookshelvesState.bookshelves.isEmpty()){
+                        EmptyScreen(
+                            modifier = modifier,
+                            icon = Icons.Outlined.CollectionsBookmark,
+                            message = "Empty library",
+                            action = {},
+                            actionText = "You have no bookshelves. Please add one"
+                        )
+                    }else {
+                        // Compute current state and check for changes
+                        val currentPresentIds = bookshelvesState.bookshelves
+                            .filter { it.isBookPresent }
+                            .map { it.bookshelfBookDetails.id }
+                            .toSet()
+                        val isChanged = initialPresentIds != currentPresentIds
+
+                        Column(
+                            modifier = modifier
+                                .height(200.dp)
+                                .verticalScroll(rememberScrollState())
+                        ) {
+                            bookIsPresentList
+                                .forEach { bookshelf ->
+                                    BookshelfItem(
+                                        modifier = modifier.fillMaxWidth(),
+                                        bookshelfName = bookshelf.bookshelfBookDetails.name,
+                                        isSelected = bookshelf.isBookPresent,
+                                        bookshelfId = bookshelf.bookshelfBookDetails.id,
+                                        onItemClick = {
+                                            onItemClick(bookshelf.bookshelfBookDetails.id)
+                                        }
+                                    )
+                                }
+                            HorizontalDivider()
+                            bookIsNotPresentList
+                                .forEach { bookshelf ->
+                                    BookshelfItem(
+                                        bookshelfName = bookshelf.bookshelfBookDetails.name,
+                                        isSelected = bookshelf.isBookPresent,
+                                        bookshelfId = bookshelf.bookshelfBookDetails.id,
+                                        onItemClick = {
+                                            onItemClick(bookshelf.bookshelfBookDetails.id)
+                                        }
+                                    )
+                                }
+                        }
+
+                        AddBookRow(
+                            modifier = modifier.fillMaxWidth(),
+                            onCancel = {
+                                onExpandToggle()
+                            },
+                            enabled = isChanged && !showOptionState.isLoading,
+                            onConfirm = {
+                                onConfirm()
                             }
-                        HorizontalDivider()
-                        bookIsNotPresentList
-                            .forEach { bookshelf ->
-                                BookshelfItem(
-                                    bookshelfName = bookshelf.bookshelfBookDetails.name,
-                                    isSelected = bookshelf.isBookPresent,
-                                    bookshelfId = bookshelf.bookshelfBookDetails.id,
-                                    onItemClick = {
-                                        onItemClick(bookshelf.bookshelfBookDetails.id)
-                                    }
-                                )
-                            }
+                        )
                     }
 
-                    AddBookRow(
-                        onCancel = {
-                            onExpandToggle()
-                        },
-                        enabled = isChanged && !showOptionState.isLoading,
-                        onConfirm = {
-                            onConfirm()
-                        }
-                    )
                 }
 
                 is ResultState.Loading -> {
@@ -168,10 +183,9 @@ fun BookshelfItem(
 ){
     Row(
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.Start,
         modifier = modifier
             .padding(8.dp)
-            .width(150.dp)
     ) {
         Text(
             text = bookshelfName
@@ -199,25 +213,22 @@ fun AddBookRow(
     Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically,
-        modifier = modifier
-            .padding(8.dp)
+        modifier = modifier.padding(8.dp)
     ) {
         OutlinedButton(
-            onCancel
+            shape = RoundedCornerShape(8.dp),
+            modifier = Modifier.weight(1f), // Takes half the available width
+            onClick = onCancel
         ) {
-            Text(
-                text = "Cancel"
-            )
+            Text(text = "Cancel")
         }
-        Spacer(modifier = modifier.weight(1f))
         Button(
-            onConfirm,
+            shape = RoundedCornerShape(8.dp),
+            modifier = Modifier.weight(1f), // Takes half the available width
+            onClick = onConfirm,
             enabled = enabled
         ) {
-            Text(
-                text = "Done"
-            )
+            Text(text = "Done")
         }
     }
-
 }

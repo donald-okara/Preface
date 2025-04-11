@@ -2,6 +2,8 @@ package ke.don.feature_book_details.presentation.screens.book_details.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CardDefaults
@@ -11,8 +13,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import ke.don.shared_components.GenreChip
 import ke.don.shared_domain.data_models.VolumeInfoDet
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun PublishDetails(
     modifier: Modifier = Modifier,
@@ -61,14 +65,17 @@ fun PublishDetails(
 
             // Categories
             volumeInfo.categories.let { categories ->
-                val processedCategories = categories.flatMap { it.split("/") }.toSet().toList()
-
-                Text(text = "Categories:")
-                Text(
-                    text = processedCategories.joinToString(", "),
-                    modifier = modifier.padding(start = 16.dp) // Indent the categories
-                )
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    categories.forEachIndexed { index, category ->
+                        GenreChip(
+                            category
+                        )
+                    }
+                }
             }
+
         }
 
     }
