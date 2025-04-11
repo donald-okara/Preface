@@ -1,5 +1,6 @@
 package ke.don.shared_domain.data_models
 
+import android.util.Log
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -68,12 +69,42 @@ data class ReadingModes(
     val text: Boolean = false,
     val image: Boolean = false
 )
+
 @Serializable
 data class Dimensions(
     val height: String = "",
     val width: String = "",
     val thickness: String = ""
-)
+){
+    fun calculateAspectRatio(fallbackAspectRatio: Float = 2f / 3f): Float {
+        try {
+            // Function to extract the numerical part from a dimension string
+            fun extractNumber(dimension: String): Float? {
+                // Match a number (integer or decimal) at the start, ignoring suffixes
+                val regex = Regex("""^(\d*\.?\d*)\s*(?:in|cm|mm|inches|centimeters|millimeters)?""", RegexOption.IGNORE_CASE)
+                val match = regex.find(dimension.trim())
+                return match?.groups?.get(1)?.value?.toFloatOrNull()
+            }
+
+            // Extract width and height as numbers
+            val width = extractNumber(width)
+            val height = extractNumber(height)
+
+            // Calculate aspect ratio if both values are valid
+            if (width != null && height != null && height != 0f) {
+                val aspectRatio = width / height
+                // Clamp aspect ratio to reasonable bounds (e.g., 0.5 to 2.0)
+                return aspectRatio.coerceIn(0.5f, 2.0f)
+            }
+        } catch (e: Exception) {
+            // Log or handle parsing errors if needed
+            Log.e("Dimensions", "Failed to parse dimensions: $width, $height", e)
+        }
+
+        // Return fallback if parsing fails or values are invalid
+        return fallbackAspectRatio
+    }
+}
 @Serializable
 data class PanelizationSummary(
     val containsEpubBubbles: Boolean = false,

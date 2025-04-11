@@ -12,6 +12,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 
@@ -20,6 +21,7 @@ fun EmptyScreen(
     modifier: Modifier = Modifier,
     icon: ImageVector,
     message: String,
+    textColor: Color = MaterialTheme.colorScheme.primary,
     action: () -> Unit,
     actionText: String
 ){
@@ -46,7 +48,7 @@ fun EmptyScreen(
         ) {
             Text(
                 text = actionText,
-                color = MaterialTheme.colorScheme.primary,
+                color = textColor,
                 fontSize = MaterialTheme.typography.bodySmall.fontSize,
             )
         }
