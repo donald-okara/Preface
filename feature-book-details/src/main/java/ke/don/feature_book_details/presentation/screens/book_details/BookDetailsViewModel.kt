@@ -40,6 +40,9 @@ class BookDetailsViewModel @Inject constructor(
     fun onBookDetailsEvent(event: BookDetailsEvent){
         when(event){
             is BookDetailsEvent.VolumeIdPassed -> {
+                updateBookState(
+                    BookUiState()
+                )
                 loadBookDetails(event.volumeId)
             }
 
@@ -172,6 +175,11 @@ class BookDetailsViewModel @Inject constructor(
     fun refreshAction() = viewModelScope.launch {
         onChangeLoadingJoke()
         bookState.value.volumeId?.let {
+            updateBookState(
+                _bookState.value.copy(
+                    resultState = ResultState.Loading
+                )
+            )
             loadBookDetails(it)
         }
     }

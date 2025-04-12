@@ -14,6 +14,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 
 @Composable
@@ -40,6 +41,7 @@ fun EmptyScreen(
 
         Text(
             text = message,
+            textAlign = TextAlign.Center,
             fontSize = MaterialTheme.typography.bodyLarge.fontSize,
         )
 
@@ -49,6 +51,7 @@ fun EmptyScreen(
             Text(
                 text = actionText,
                 color = textColor,
+                textAlign = TextAlign.Center,
                 fontSize = MaterialTheme.typography.bodySmall.fontSize,
             )
         }
