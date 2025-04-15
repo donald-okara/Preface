@@ -4,18 +4,15 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -32,7 +29,6 @@ import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
@@ -41,10 +37,7 @@ import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -54,8 +47,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ke.don.common_datasource.remote.domain.states.BookUiState
 import ke.don.common_datasource.remote.domain.utils.getDominantColor
 import ke.don.feature_book_details.presentation.screens.book_details.components.AboutVolume
@@ -75,31 +66,22 @@ fun BookDetailsScreen(
     modifier: Modifier = Modifier,
     onNavigateToSearch: () -> Unit,//TODO
     volumeId: String,
-    bookDetailsViewModel: BookDetailsViewModel = hiltViewModel(),
+    bookUiState: BookUiState,
+    onBookDetailsEvent: (BookDetailsEvent) -> Unit,
     onBackPressed: () -> Unit
 ){
-    val bookUiState by bookDetailsViewModel.bookState.collectAsStateWithLifecycle()
+    LaunchedEffect(volumeId){
+        onBookDetailsEvent(BookDetailsEvent.VolumeIdPassed(volumeId))
+    }
+
 
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-
-    val onBookDetailsEvent = bookDetailsViewModel::onBookDetailsEvent
-
     val colorPallet = bookUiState.colorPallet
     val dominantColor =
         getDominantColor(
             colorPallet,
             isDarkTheme = isSystemInDarkTheme()
         )
-
-    LaunchedEffect(volumeId){
-        onBookDetailsEvent(BookDetailsEvent.VolumeIdPassed(volumeId))
-    }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            bookDetailsViewModel.onCleared() // Reset ViewModel on screen exit
-        }
-    }
 
     Scaffold(
         topBar = {
@@ -144,7 +126,7 @@ fun BookDetailsScreen(
         ) {
             when(bookUiState.resultState) {
                 is ResultState.Success -> {
-                    if(bookUiState.bookDetails.id.isNotEmpty()){
+                    if(bookUiState.bookDetails.id.isNotEmpty() && volumeId == bookUiState.volumeId){
                         BookDetailsContent(
                             dominantColor = dominantColor,
                             onBookDetailsEvent = onBookDetailsEvent,
