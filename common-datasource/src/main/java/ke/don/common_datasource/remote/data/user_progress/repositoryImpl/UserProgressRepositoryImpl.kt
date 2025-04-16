@@ -6,6 +6,7 @@ import ke.don.common_datasource.remote.data.user_progress.network.UserProgressNe
 import ke.don.common_datasource.remote.domain.repositories.UserProgressRepository
 import ke.don.common_datasource.remote.domain.states.NoDataReturned
 import ke.don.shared_domain.data_models.CreateUserProgressDTO
+import ke.don.shared_domain.data_models.UserProgressBookView
 import ke.don.shared_domain.data_models.UserProgressResponse
 import ke.don.shared_domain.states.NetworkResult
 
@@ -42,6 +43,14 @@ class UserProgressRepositoryImpl(
 
     override suspend fun fetchBookProgressByBook(bookId: String): NetworkResult<List<UserProgressResponse>> {
         return userProgressNetworkClass.fetchBookProgressByBook(bookId).also { result ->
+            if (result is NetworkResult.Error){
+                Toast.makeText(context, "${result.message} ${result.hint}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    override suspend fun fetchUserProgressBookView(userId: String): NetworkResult<List<UserProgressBookView>> {
+        return userProgressNetworkClass.fetchUserProgressBookView(userId).also { result ->
             if (result is NetworkResult.Error){
                 Toast.makeText(context, "${result.message} ${result.hint}", Toast.LENGTH_SHORT).show()
             }

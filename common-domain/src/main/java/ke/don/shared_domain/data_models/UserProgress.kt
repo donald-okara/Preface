@@ -26,3 +26,18 @@ data class UserProgressResponse(
     @SerialName("last_updated")
     val lastUpdated: String = ""
 )
+
+@Serializable
+data class UserProgressBookView(
+    @SerialName("user_id") val userId: String,
+    @SerialName("book_id") val bookId: String,
+    val title: String,
+    val authors: List<String>,
+    @SerialName("highest_image_url") val highestImageUrl: String,
+    @SerialName("lowest_image_url") val lowestImageUrl: String,
+    val description: String,
+    @SerialName("current_page") val currentPage: Int,
+    @SerialName("total_pages") val totalPages: Int,
+    @SerialName("last_updated") val lastUpdated: String
+
+)

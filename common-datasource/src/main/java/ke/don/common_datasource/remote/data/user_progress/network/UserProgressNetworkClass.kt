@@ -4,9 +4,11 @@ import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
 import ke.don.common_datasource.remote.domain.states.NoDataReturned
 import ke.don.shared_domain.data_models.CreateUserProgressDTO
+import ke.don.shared_domain.data_models.UserProgressBookView
 import ke.don.shared_domain.data_models.UserProgressResponse
 import ke.don.shared_domain.states.NetworkResult
 import ke.don.shared_domain.values.USERPROGRESS
+import ke.don.shared_domain.values.USERPROGRESSVIEW
 
 class UserProgressNetworkClass(
     private val supabaseClient: SupabaseClient
@@ -44,6 +46,22 @@ class UserProgressNetworkClass(
             e.printStackTrace()
             NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
         }
+    }
+
+    suspend fun fetchUserProgressBookView(userId: String) : NetworkResult<List<UserProgressBookView>> {
+        return try {
+            val result = supabaseClient.from(USERPROGRESSVIEW)
+                .select {
+                    filter { UserProgressBookView::userId eq userId }
+                }
+                .decodeList<UserProgressBookView>()
+
+            NetworkResult.Success(result)
+        }catch (e: Exception) {
+            e.printStackTrace()
+            NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
+        }
+
     }
 
     suspend fun fetchBookProgressByUser(userId: String) : NetworkResult<List<UserProgressResponse>> {
