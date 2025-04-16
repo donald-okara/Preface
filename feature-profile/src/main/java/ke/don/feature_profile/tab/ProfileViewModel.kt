@@ -21,7 +21,6 @@ class ProfileViewModel @Inject constructor(
     private val profileRepository: ProfileRepository,
     private val profileTabUseCases: ProfileTabUseCases,
 ): ViewModel() {
-
     private val _profileState = MutableStateFlow(ProfileTabState())
     val profileState = _profileState
         .onStart { fetchProfile() }
@@ -30,6 +29,18 @@ class ProfileViewModel @Inject constructor(
             started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
             initialValue = ProfileTabState()
         )
+
+    fun handleEvent(event: ProfileTabEventHandler) {
+        when (event) {
+            is ProfileTabEventHandler.FetchProfile -> fetchProfile()
+            is ProfileTabEventHandler.SignOut -> {
+                signOut(event.onSignOut)
+            }
+            is ProfileTabEventHandler.DeleteUser -> {
+                deleteUser(event.onSignOut)
+            }
+        }
+    }
 
     fun updateProfileState(state: ProfileTabState) {
         _profileState.update {
