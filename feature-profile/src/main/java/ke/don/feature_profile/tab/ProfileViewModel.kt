@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ke.don.common_datasource.remote.domain.repositories.BooksRepository
 import ke.don.common_datasource.remote.domain.repositories.ProfileRepository
+import ke.don.common_datasource.remote.domain.usecases.ProfileTabUseCases
 import ke.don.shared_domain.states.NetworkResult
 import ke.don.shared_domain.states.ProfileTabState
 import ke.don.shared_domain.states.ResultState
@@ -18,7 +19,7 @@ import javax.inject.Inject
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val profileRepository: ProfileRepository,
-    private val bookRepository: BooksRepository
+    private val profileTabUseCases: ProfileTabUseCases,
 ): ViewModel() {
 
     private val _profileState = MutableStateFlow(ProfileTabState())
@@ -31,15 +32,12 @@ class ProfileViewModel @Inject constructor(
         )
 
     fun updateProfileState(state: ProfileTabState) {
-        _profileState.update { currentState ->
-            if (currentState.profile == state.profile && currentState.resultState == state.resultState) {
-                currentState // Prevent unnecessary updates
-            } else {
-                currentState.copy(
-                    profile = state.profile ?: currentState.profile, // Preserve profile if not provided
-                    resultState = state.resultState
-                )
-            }
+        _profileState.update {
+            it.copy(
+                profile = state.profile,
+                resultState = state.resultState,
+                showBottomSheet = state.showBottomSheet
+            )
         }
     }
 
@@ -54,25 +52,12 @@ class ProfileViewModel @Inject constructor(
     fun fetchProfile() {
         viewModelScope.launch {
             val userId = profileRepository.fetchProfileFromDataStore().authId
-
-            //updateProfileState(ProfileTabState(resultState = ResultState.Loading))
-            when (val profile = profileRepository.fetchProfileDetails(userId)){
-                is NetworkResult.Error -> {
-                    updateProfileState(ProfileTabState(resultState = ResultState.Error()))
-                }
-
-                is NetworkResult.Success -> {
-                    if (profile.data != null){
-                        updateProfileState(ProfileTabState(profile = profile.data!!, resultState = ResultState.Success))
-
-                    }else{
-                        updateProfileState(ProfileTabState(resultState = ResultState.Empty))
-                        //onSuccessfulSignOut()
-                    }
-
-                }
+                val result =profileTabUseCases.fetchProfileDetails(userId)
+            if (result != null){
+                updateProfileState(ProfileTabState(profile = result, resultState = ResultState.Success))
+            }else{
+                updateProfileState(ProfileTabState(resultState = ResultState.Empty))
             }
-
         }
     }
 
@@ -83,22 +68,15 @@ class ProfileViewModel @Inject constructor(
                     resultState = ResultState.Loading
                 )
             )
-            when(val result = profileRepository.signOut()){
-                is NetworkResult.Error -> {
-                    updateProfileState(
-                        ProfileTabState(
-                            resultState = ResultState.Success
-                        )
-                    )
-                }
-                is NetworkResult.Success -> {
-                    updateProfileState(
-                        ProfileTabState(
+            val result = profileTabUseCases.signOut()
+
+            if (result){
+                updateProfileState(
+                    ProfileTabState(
                             resultState = ResultState.Empty
                         )
                     )
                     onSuccessfulSignOut()
-                }
             }
         }
     }
@@ -112,22 +90,15 @@ class ProfileViewModel @Inject constructor(
             )
             val userId = profileRepository.fetchProfileFromDataStore().authId
 
-            when(val result = profileRepository.deleteUser(userId)){
-                is NetworkResult.Error -> {
-                    updateProfileState(
-                        ProfileTabState(
-                            resultState = ResultState.Success
-                        )
+            val result = profileTabUseCases.deleteUser(userId)
+
+            if (result){
+                updateProfileState(
+                    ProfileTabState(
+                        resultState = ResultState.Empty
                     )
-                }
-                is NetworkResult.Success -> {
-                    updateProfileState(
-                        ProfileTabState(
-                            resultState = ResultState.Empty
-                        )
-                    )
-                    onSuccessfulSignOut()
-                }
+                )
+                onSuccessfulSignOut()
             }
         }
     }
