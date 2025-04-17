@@ -36,8 +36,14 @@ data class UserProgressBookView(
     @SerialName("highest_image_url") val highestImageUrl: String,
     @SerialName("lowest_image_url") val lowestImageUrl: String,
     val description: String,
+    @SerialName("update_history") val updateHistory: List<UpdateHistory>,
     @SerialName("current_page") val currentPage: Int,
     @SerialName("total_pages") val totalPages: Int,
     @SerialName("last_updated") val lastUpdated: String
+)
 
+@Serializable
+data class UpdateHistory(
+    val page: Int = 0,
+    @SerialName("date_updated") val dateUpdated: String = ""
 )

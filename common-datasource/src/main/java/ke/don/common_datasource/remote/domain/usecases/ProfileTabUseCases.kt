@@ -1,11 +1,14 @@
 package ke.don.common_datasource.remote.domain.usecases
 
 import ke.don.common_datasource.remote.domain.repositories.ProfileRepository
+import ke.don.common_datasource.remote.domain.repositories.UserProgressRepository
 import ke.don.shared_domain.data_models.ProfileDetails
+import ke.don.shared_domain.data_models.UserProgressBookView
 import ke.don.shared_domain.states.NetworkResult
 
 class ProfileTabUseCaseClass(
-    private val profileRepository: ProfileRepository
+    private val profileRepository: ProfileRepository,
+    private val userProgressRepository: UserProgressRepository
 ): ProfileTabUseCases{
 
     override suspend fun fetchProfileDetails(userId: String): ProfileDetails? {
@@ -15,6 +18,17 @@ class ProfileTabUseCaseClass(
             }
             is NetworkResult.Success -> {
                 profile.data
+            }
+        }
+    }
+
+    override suspend fun fetchProfileProgress(userId: String): List<UserProgressBookView>? {
+        return when(val result = userProgressRepository.fetchUserProgressBookView(userId)){
+            is NetworkResult.Error -> {
+                null
+            }
+            is NetworkResult.Success -> {
+                result.data
             }
         }
     }
@@ -33,6 +47,8 @@ class ProfileTabUseCaseClass(
 
 interface ProfileTabUseCases{
     suspend fun fetchProfileDetails(userId: String): ProfileDetails?
+
+    suspend fun fetchProfileProgress(userId: String): List<UserProgressBookView>?
 
     suspend fun signOut(): Boolean
 

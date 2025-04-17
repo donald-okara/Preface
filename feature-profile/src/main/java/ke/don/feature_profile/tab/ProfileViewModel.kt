@@ -3,13 +3,12 @@ package ke.don.feature_profile.tab
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import ke.don.common_datasource.remote.domain.repositories.BooksRepository
 import ke.don.common_datasource.remote.domain.repositories.ProfileRepository
 import ke.don.common_datasource.remote.domain.usecases.ProfileTabUseCases
-import ke.don.shared_domain.states.NetworkResult
 import ke.don.shared_domain.states.ProfileTabState
 import ke.don.shared_domain.states.ResultState
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -22,17 +21,16 @@ class ProfileViewModel @Inject constructor(
     private val profileTabUseCases: ProfileTabUseCases,
 ): ViewModel() {
     private val _profileState = MutableStateFlow(ProfileTabState())
-    val profileState = _profileState
-        .onStart { fetchProfile() }
-        .stateIn(
-            scope = viewModelScope,
-            started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
-            initialValue = ProfileTabState()
-        )
+    val profileState: StateFlow<ProfileTabState> = _profileState
 
     fun handleEvent(event: ProfileTabEventHandler) {
         when (event) {
+            is ProfileTabEventHandler.ShowBottomSheet -> updateShowSheet()
+
             is ProfileTabEventHandler.FetchProfile -> fetchProfile()
+
+            is ProfileTabEventHandler.FetchUserProgress -> fetchUserProgress()
+
             is ProfileTabEventHandler.SignOut -> {
                 signOut(event.onSignOut)
             }
@@ -42,13 +40,32 @@ class ProfileViewModel @Inject constructor(
         }
     }
 
-    fun updateProfileState(state: ProfileTabState) {
-        _profileState.update {
-            it.copy(
-                profile = state.profile,
-                resultState = state.resultState,
-                showBottomSheet = state.showBottomSheet
-            )
+    fun fetchUserProgress() {
+        viewModelScope.launch{
+            val userId = profileRepository.fetchProfileFromDataStore().authId
+
+            val result = profileTabUseCases.fetchProfileProgress(userId)
+
+            _profileState.update {
+                _profileState.value.copy(
+                    progressResultState = ResultState.Loading
+                )
+            }
+
+            if (result != null){
+                _profileState.update {
+                    _profileState.value.copy(
+                        progressResultState = ResultState.Success,
+                        userProgress = result
+                    )
+                }
+            }else{
+                _profileState.update {
+                    _profileState.value.copy(
+                        progressResultState = ResultState.Error()
+                    )
+                }
+            }
         }
     }
 
@@ -63,52 +80,68 @@ class ProfileViewModel @Inject constructor(
     fun fetchProfile() {
         viewModelScope.launch {
             val userId = profileRepository.fetchProfileFromDataStore().authId
-                val result =profileTabUseCases.fetchProfileDetails(userId)
+            val result = profileTabUseCases.fetchProfileDetails(userId)
             if (result != null){
-                updateProfileState(ProfileTabState(profile = result, resultState = ResultState.Success))
+                _profileState.update {
+                    it.copy(
+                        profile = result,
+                        profileResultState = ResultState.Success
+                    )
+                }
             }else{
-                updateProfileState(ProfileTabState(resultState = ResultState.Empty))
+                _profileState.update {
+                    it.copy(
+                        profileResultState = ResultState.Empty
+                    )
+                }
             }
         }
     }
 
     fun signOut(onSuccessfulSignOut: () -> Unit){
         viewModelScope.launch {
-            updateProfileState(
-                ProfileTabState(
-                    resultState = ResultState.Loading
+            _profileState.update {
+                it.copy(
+                    profileResultState = ResultState.Loading
                 )
-            )
+            }
             val result = profileTabUseCases.signOut()
 
             if (result){
-                updateProfileState(
-                    ProfileTabState(
-                            resultState = ResultState.Empty
-                        )
+                _profileState.update {
+                    it.copy(
+                        profileResultState = ResultState.Empty
                     )
-                    onSuccessfulSignOut()
+                }
+                onSuccessfulSignOut()
+            }else{
+                _profileState.update {
+                    it.copy(
+                        progressResultState = ResultState.Success
+                    )
+                }
             }
         }
     }
 
     fun deleteUser(onSuccessfulSignOut: () -> Unit){
         viewModelScope.launch {
-            updateProfileState(
-                ProfileTabState(
-                    resultState = ResultState.Loading
+            _profileState.update {
+                it.copy(
+                    profileResultState = ResultState.Loading
                 )
-            )
+            }
+
             val userId = profileRepository.fetchProfileFromDataStore().authId
 
             val result = profileTabUseCases.deleteUser(userId)
 
             if (result){
-                updateProfileState(
-                    ProfileTabState(
-                        resultState = ResultState.Empty
-                    )
-                )
+              _profileState.update {
+                  it.copy(
+                      profileResultState = ResultState.Empty
+                  )
+              }
                 onSuccessfulSignOut()
             }
         }

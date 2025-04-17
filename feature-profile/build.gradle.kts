@@ -67,6 +67,12 @@ dependencies {
     implementation(project(":common-datasource"))
 
     testImplementation(libs.junit)
+    testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.androidx.core.testing)
+    testImplementation( libs.junit)
+    testImplementation(libs.mockito.inline)
+    testImplementation(libs.mockito.core)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }

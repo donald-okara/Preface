@@ -122,6 +122,7 @@ object DatasourceModule {
     @Provides
     @Singleton
     fun provideProfileUseCases(
-        profileRepository: ProfileRepository
-    ): ProfileTabUseCases = ProfileTabUseCaseClass(profileRepository)
+        profileRepository: ProfileRepository,
+        userProgressRepository: UserProgressRepository
+    ): ProfileTabUseCases = ProfileTabUseCaseClass(profileRepository, userProgressRepository)
 }
