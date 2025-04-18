@@ -162,79 +162,40 @@ fun AddProgressDialog(
     }
 
     AlertDialog(
-        icon = {
-            Icon(
-                imageVector = icon,
-                contentDescription = dialogTitle
-            )
-        },
+        icon = { Icon(imageVector = icon, contentDescription = dialogTitle) },
         title = { Text(text = dialogTitle) },
         text = {
-            Column(
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                TextField(
-                    label = { Text(text = dialogText) },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    value = currentProgress.takeIf { it != 0 }?.toString() ?: "",
-                    onValueChange = { newValue ->
-                        if (newValue.isEmpty()) {
-                            currentProgress = 0
-                            sliderPosition = 0f
-                            onBookProgressUpdate(0)
-                            errorMessage = null
-                        } else if (isValidInput(newValue)) {
-                            val value = newValue.toInt()
-                            updateProgress(value)
-                            errorMessage = null
-                        } else {
-                            errorMessage = "Progress must be between $minProgress and $maxProgress"
-                        }
+            ProgressInputContent(
+                dialogText = dialogText,
+                currentProgress = currentProgress,
+                sliderPosition = sliderPosition,
+                maxProgress = maxProgress,
+                minProgress = minProgress,
+                errorMessage = errorMessage,
+                onValueChange = { newValue ->
+                    if (newValue.isEmpty()) {
+                        currentProgress = 0
+                        sliderPosition = 0f
+                        onBookProgressUpdate(0)
+                        errorMessage = null
+                    } else if (isValidInput(newValue)) {
+                        val value = newValue.toInt()
+                        updateProgress(value)
+                        errorMessage = null
+                    } else {
+                        errorMessage = "Progress must be between $minProgress and $maxProgress"
                     }
-                )
-
-                errorMessage?.let {
-                    Text(
-                        text = it,
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodySmall
-                    )
+                },
+                onSliderChange = {
+                    sliderPosition = it
+                    val page = (it * maxProgress).roundToInt().coerceIn(minProgress, maxProgress)
+                    updateProgress(page)
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(text = "Page: $currentProgress / $maxProgress")
-
-                Slider(
-                    value = sliderPosition,
-                    onValueChange = {
-                        sliderPosition = it
-                        val page = (it * maxProgress).roundToInt().coerceIn(minProgress, maxProgress)
-                        updateProgress(page)
-                    },
-                    valueRange = 0f..1f,
-                    steps = 10,
-                    colors = SliderDefaults.colors(
-                        thumbColor = MaterialTheme.colorScheme.primary,
-                        activeTrackColor = MaterialTheme.colorScheme.primary,
-                        inactiveTrackColor = MaterialTheme.colorScheme.primaryContainer,
-                    ),
-                    thumb = {
-                        SliderDefaults.Thumb(
-                            interactionSource = remember { MutableInteractionSource() },
-                            thumbSize = DpSize(24.dp, 24.dp)
-                        )
-                    }
-                )
-            }
+            )
         },
         onDismissRequest = onDismissRequest,
         confirmButton = {
-            TextButton(
-                onClick = onConfirmation,
-                enabled = enabled
-            ) {
+            TextButton(onClick = onConfirmation, enabled = enabled) {
                 Text("Confirm")
             }
         },
@@ -246,3 +207,60 @@ fun AddProgressDialog(
         modifier = modifier
     )
 }
+
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ProgressInputContent(
+    dialogText: String,
+    currentProgress: Int,
+    sliderPosition: Float,
+    maxProgress: Int,
+    minProgress: Int,
+    errorMessage: String?,
+    onValueChange: (String) -> Unit,
+    onSliderChange: (Float) -> Unit
+) {
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        TextField(
+            label = { Text(text = dialogText) },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            value = currentProgress.takeIf { it != 0 }?.toString() ?: "",
+            onValueChange = onValueChange
+        )
+
+        errorMessage?.let {
+            Text(
+                text = it,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall
+            )
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text(text = "Page: $currentProgress / $maxProgress")
+
+        Slider(
+            value = sliderPosition,
+            onValueChange = onSliderChange,
+            valueRange = 0f..1f,
+            steps = 10,
+            colors = SliderDefaults.colors(
+                thumbColor = MaterialTheme.colorScheme.primary,
+                activeTrackColor = MaterialTheme.colorScheme.primary,
+                inactiveTrackColor = MaterialTheme.colorScheme.primaryContainer,
+            ),
+            thumb = {
+                SliderDefaults.Thumb(
+                    interactionSource = remember { MutableInteractionSource() },
+                    thumbSize = DpSize(24.dp, 24.dp)
+                )
+            }
+        )
+    }
+}
+
