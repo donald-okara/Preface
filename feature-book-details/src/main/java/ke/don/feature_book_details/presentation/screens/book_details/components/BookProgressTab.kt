@@ -19,11 +19,15 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -39,6 +43,7 @@ import ke.don.feature_book_details.presentation.screens.book_details.BookDetails
 import ke.don.shared_components.EmptyScreen
 import ke.don.shared_components.IndividualReadingProgressCard
 import ke.don.shared_domain.states.ResultState
+import kotlin.math.roundToInt
 
 @Composable
 fun BookProgressTab(
@@ -134,19 +139,26 @@ fun AddProgressDialog(
     onBookProgressUpdate: (Int) -> Unit,
     dialogTitle: String,
     dialogText: String,
-    icon : ImageVector,
+    icon: ImageVector,
     minProgress: Int = 1,
     maxProgress: Int
-){
+) {
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var sliderPosition by remember { mutableFloatStateOf(bookProgress.toFloat() / maxProgress.toFloat()) }
+    var currentProgress by remember { mutableIntStateOf(bookProgress) }
 
-    fun isValidInput(input: String, currentProgress: Int): Boolean {
+    fun updateProgress(value: Int) {
+        currentProgress = value
+        onBookProgressUpdate(value)
+        sliderPosition = value.toFloat() / maxProgress.toFloat()
+    }
+
+    fun isValidInput(input: String): Boolean {
         return input.all { it.isDigit() } &&
-                input.toInt() in minProgress..maxProgress
+                input.toIntOrNull() in minProgress..maxProgress
     }
 
     AlertDialog(
-        //containerColor = containerColor,
         icon = {
             Icon(
                 imageVector = icon,
@@ -159,22 +171,23 @@ fun AddProgressDialog(
                 TextField(
                     label = { Text(text = dialogText) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-                    value = if (bookProgress == 0) {
-                        "" // If progress is 0, display an empty string
-                    } else bookProgress.toString(),
+                    value = currentProgress.takeIf { it != 0 }?.toString() ?: "",
                     onValueChange = { newValue ->
-                        // Only validate if the value is not empty
-                        if (newValue.isEmpty() || isValidInput(newValue, bookProgress)) {
-                            val newProgress = newValue.toIntOrNull() ?: 0 // Safely handle empty string by defaulting to 0
-                            errorMessage = null // Clear the error message if input is valid
-                            onBookProgressUpdate(newProgress)
+                        if (newValue.isEmpty()) {
+                            currentProgress = 0
+                            sliderPosition = 0f
+                            onBookProgressUpdate(0)
+                            errorMessage = null
+                        } else if (isValidInput(newValue)) {
+                            val value = newValue.toInt()
+                            updateProgress(value)
+                            errorMessage = null
                         } else {
                             errorMessage = "Progress must be between $minProgress and $maxProgress"
                         }
-                    },
+                    }
                 )
 
-                // Display error message if value is invalid
                 errorMessage?.let {
                     Text(
                         text = it,
@@ -182,6 +195,25 @@ fun AddProgressDialog(
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Text(text = "Page: $currentProgress / $maxProgress")
+
+                Slider(
+                    value = sliderPosition,
+                    onValueChange = {
+                        sliderPosition = it
+                        val page = (it * maxProgress).roundToInt().coerceIn(minProgress, maxProgress)
+                        updateProgress(page)
+                    },
+                    valueRange = 0f..1f,
+                    colors = SliderDefaults.colors(
+                        thumbColor = MaterialTheme.colorScheme.secondary,
+                        activeTrackColor = MaterialTheme.colorScheme.secondary,
+                        inactiveTrackColor = MaterialTheme.colorScheme.secondaryContainer,
+                    )
+                )
             }
         },
         onDismissRequest = onDismissRequest,
@@ -190,16 +222,12 @@ fun AddProgressDialog(
                 onClick = onConfirmation,
                 enabled = enabled
             ) {
-                Text(
-                    text = "Confirm"
-                )
+                Text("Confirm")
             }
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text(
-                    text = "Dismiss"
-                )
+                Text("Dismiss")
             }
         },
         modifier = modifier

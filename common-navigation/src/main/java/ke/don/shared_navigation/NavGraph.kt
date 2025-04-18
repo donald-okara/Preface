@@ -97,7 +97,12 @@ object MainScreen : AndroidScreen() {
             )
         }
         val profileTab = remember {
-            ProfileTab(onSignOut = { navigator?.replaceAll(OnBoardingVoyagerScreen) })
+            ProfileTab(
+                onSignOut = { navigator?.replaceAll(OnBoardingVoyagerScreen) },
+                onNavigateToBookItem = {
+                    navigator?.push(BookDetailsVoyagerScreen(it))
+                }
+            )
         }
         val tabs = listOf(myLibraryTab, searchTab, profileTab)
 

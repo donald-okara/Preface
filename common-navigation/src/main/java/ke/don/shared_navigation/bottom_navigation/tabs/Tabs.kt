@@ -79,7 +79,7 @@ class SearchTab(private val onNavigateToBookItem: (String) -> Unit) : Tab {
     }
 }
 
-class ProfileTab(private val onSignOut: () -> Unit) : Tab {
+class ProfileTab(private val onSignOut: () -> Unit, private val onNavigateToBookItem: (String) -> Unit) : Tab {
 
     override val options: TabOptions
         @Composable
@@ -100,8 +100,8 @@ class ProfileTab(private val onSignOut: () -> Unit) : Tab {
             onNavigateToSignIn = { onSignOut() },
             viewModel = viewModel,
             profileState = state,
-            profileTabEventHandler = viewModel::handleEvent
-
+            profileTabEventHandler = viewModel::handleEvent,
+            onNavigateToBook = onNavigateToBookItem
         )
     }
 }

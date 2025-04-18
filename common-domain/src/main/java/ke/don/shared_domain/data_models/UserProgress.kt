@@ -2,6 +2,12 @@ package ke.don.shared_domain.data_models
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Date
+import java.util.Locale
+import java.util.TimeZone
+
 
 @Serializable
 data class CreateUserProgressDTO(
@@ -47,3 +53,25 @@ data class UpdateHistory(
     val page: Int = 0,
     @SerialName("date_updated") val dateUpdated: String = ""
 )
+
+
+fun formatDate(dateString: String): String {
+    val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX", Locale.ENGLISH)
+    isoFormat.timeZone = TimeZone.getTimeZone("UTC")
+    val date: Date = isoFormat.parse(dateString) ?: return ""
+
+    val calendar = Calendar.getInstance()
+    val currentYear = calendar.get(Calendar.YEAR)
+
+    val dateCalendar = Calendar.getInstance()
+    dateCalendar.time = date
+    val year = dateCalendar.get(Calendar.YEAR)
+
+    val format = if (year == currentYear) {
+        SimpleDateFormat("MMM d", Locale.ENGLISH)
+    } else {
+        SimpleDateFormat("MMM d, yyyy", Locale.ENGLISH)
+    }
+
+    return format.format(date)
+}
