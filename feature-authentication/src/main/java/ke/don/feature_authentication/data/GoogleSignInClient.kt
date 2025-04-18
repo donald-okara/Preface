@@ -61,6 +61,7 @@ class GoogleSignInClient(
                     }
                 }
             } catch (e: Exception) {
+                e.printStackTrace()
                 Toast.makeText(
                     context, "Sign in failed. Please try again later", Toast.LENGTH_SHORT
                 ).show()

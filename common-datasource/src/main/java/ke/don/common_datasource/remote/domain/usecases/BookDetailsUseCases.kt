@@ -69,6 +69,7 @@ class BooksUseCasesImpl(
             UserProgressState(
                 bookProgress = progressResult.data!!,
                 resultState = ResultState.Success,
+                newProgress = progressResult.data!!.currentPage,
                 isPresent = true
             )
         } else {

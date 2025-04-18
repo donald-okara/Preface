@@ -3,12 +3,12 @@ package ke.don.feature_profile.tab
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import ke.don.common_datasource.remote.domain.repositories.BooksRepository
 import ke.don.common_datasource.remote.domain.repositories.ProfileRepository
-import ke.don.shared_domain.states.NetworkResult
+import ke.don.common_datasource.remote.domain.usecases.ProfileTabUseCases
 import ke.don.shared_domain.states.ProfileTabState
 import ke.don.shared_domain.states.ResultState
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -18,27 +18,53 @@ import javax.inject.Inject
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val profileRepository: ProfileRepository,
-    private val bookRepository: BooksRepository
+    private val profileTabUseCases: ProfileTabUseCases,
 ): ViewModel() {
-
     private val _profileState = MutableStateFlow(ProfileTabState())
-    val profileState = _profileState
-        .onStart { fetchProfile() }
-        .stateIn(
-            scope = viewModelScope,
-            started = kotlinx.coroutines.flow.SharingStarted.WhileSubscribed(5000),
-            initialValue = ProfileTabState()
-        )
+    val profileState: StateFlow<ProfileTabState> = _profileState
 
-    fun updateProfileState(state: ProfileTabState) {
-        _profileState.update { currentState ->
-            if (currentState.profile == state.profile && currentState.resultState == state.resultState) {
-                currentState // Prevent unnecessary updates
-            } else {
-                currentState.copy(
-                    profile = state.profile ?: currentState.profile, // Preserve profile if not provided
-                    resultState = state.resultState
+    fun handleEvent(event: ProfileTabEventHandler) {
+        when (event) {
+            is ProfileTabEventHandler.ShowBottomSheet -> updateShowSheet()
+
+            is ProfileTabEventHandler.FetchProfile -> fetchProfile()
+
+            is ProfileTabEventHandler.FetchUserProgress -> fetchUserProgress()
+
+            is ProfileTabEventHandler.SignOut -> {
+                signOut(event.onSignOut)
+            }
+            is ProfileTabEventHandler.DeleteUser -> {
+                deleteUser(event.onSignOut)
+            }
+        }
+    }
+
+    fun fetchUserProgress() {
+        viewModelScope.launch{
+            val userId = profileRepository.fetchProfileFromDataStore().authId
+
+            val result = profileTabUseCases.fetchProfileProgress(userId)
+
+            _profileState.update {
+                _profileState.value.copy(
+                    progressResultState = ResultState.Loading
                 )
+            }
+
+            if (result != null){
+                _profileState.update {
+                    _profileState.value.copy(
+                        progressResultState = ResultState.Success,
+                        userProgress = result
+                    )
+                }
+            }else{
+                _profileState.update {
+                    _profileState.value.copy(
+                        progressResultState = ResultState.Error()
+                    )
+                }
             }
         }
     }
@@ -54,50 +80,45 @@ class ProfileViewModel @Inject constructor(
     fun fetchProfile() {
         viewModelScope.launch {
             val userId = profileRepository.fetchProfileFromDataStore().authId
-
-            //updateProfileState(ProfileTabState(resultState = ResultState.Loading))
-            when (val profile = profileRepository.fetchProfileDetails(userId)){
-                is NetworkResult.Error -> {
-                    updateProfileState(ProfileTabState(resultState = ResultState.Error()))
+            val result = profileTabUseCases.fetchProfileDetails(userId)
+            if (result != null){
+                _profileState.update {
+                    it.copy(
+                        profile = result,
+                        profileResultState = ResultState.Success
+                    )
                 }
-
-                is NetworkResult.Success -> {
-                    if (profile.data != null){
-                        updateProfileState(ProfileTabState(profile = profile.data!!, resultState = ResultState.Success))
-
-                    }else{
-                        updateProfileState(ProfileTabState(resultState = ResultState.Empty))
-                        //onSuccessfulSignOut()
-                    }
-
+            }else{
+                _profileState.update {
+                    it.copy(
+                        profileResultState = ResultState.Empty
+                    )
                 }
             }
-
         }
     }
 
     fun signOut(onSuccessfulSignOut: () -> Unit){
         viewModelScope.launch {
-            updateProfileState(
-                ProfileTabState(
-                    resultState = ResultState.Loading
+            _profileState.update {
+                it.copy(
+                    profileResultState = ResultState.Loading
                 )
-            )
-            when(val result = profileRepository.signOut()){
-                is NetworkResult.Error -> {
-                    updateProfileState(
-                        ProfileTabState(
-                            resultState = ResultState.Success
-                        )
+            }
+            val result = profileTabUseCases.signOut()
+
+            if (result){
+                _profileState.update {
+                    it.copy(
+                        profileResultState = ResultState.Empty
                     )
                 }
-                is NetworkResult.Success -> {
-                    updateProfileState(
-                        ProfileTabState(
-                            resultState = ResultState.Empty
-                        )
+                onSuccessfulSignOut()
+            }else{
+                _profileState.update {
+                    it.copy(
+                        progressResultState = ResultState.Success
                     )
-                    onSuccessfulSignOut()
                 }
             }
         }
@@ -105,29 +126,23 @@ class ProfileViewModel @Inject constructor(
 
     fun deleteUser(onSuccessfulSignOut: () -> Unit){
         viewModelScope.launch {
-            updateProfileState(
-                ProfileTabState(
-                    resultState = ResultState.Loading
+            _profileState.update {
+                it.copy(
+                    profileResultState = ResultState.Loading
                 )
-            )
+            }
+
             val userId = profileRepository.fetchProfileFromDataStore().authId
 
-            when(val result = profileRepository.deleteUser(userId)){
-                is NetworkResult.Error -> {
-                    updateProfileState(
-                        ProfileTabState(
-                            resultState = ResultState.Success
-                        )
-                    )
-                }
-                is NetworkResult.Success -> {
-                    updateProfileState(
-                        ProfileTabState(
-                            resultState = ResultState.Empty
-                        )
-                    )
-                    onSuccessfulSignOut()
-                }
+            val result = profileTabUseCases.deleteUser(userId)
+
+            if (result){
+              _profileState.update {
+                  it.copy(
+                      profileResultState = ResultState.Empty
+                  )
+              }
+                onSuccessfulSignOut()
             }
         }
     }

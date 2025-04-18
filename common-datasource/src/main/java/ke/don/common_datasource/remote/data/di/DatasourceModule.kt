@@ -22,6 +22,8 @@ import ke.don.common_datasource.remote.data.user_progress.repositoryImpl.UserPro
 import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
 import ke.don.common_datasource.remote.domain.repositories.ProfileRepository
 import ke.don.common_datasource.remote.domain.repositories.UserProgressRepository
+import ke.don.common_datasource.remote.domain.usecases.ProfileTabUseCaseClass
+import ke.don.common_datasource.remote.domain.usecases.ProfileTabUseCases
 import ke.don.shared_domain.data_models.Profile
 import kotlinx.coroutines.runBlocking
 import javax.inject.Singleton
@@ -116,4 +118,11 @@ object DatasourceModule {
         context = context,
         userProgressNetworkClass = userProgressNetworkClass
     )
+
+    @Provides
+    @Singleton
+    fun provideProfileUseCases(
+        profileRepository: ProfileRepository,
+        userProgressRepository: UserProgressRepository
+    ): ProfileTabUseCases = ProfileTabUseCaseClass(profileRepository, userProgressRepository)
 }
