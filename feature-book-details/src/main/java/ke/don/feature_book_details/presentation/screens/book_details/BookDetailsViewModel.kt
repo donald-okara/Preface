@@ -251,9 +251,9 @@ class BookDetailsViewModel @Inject constructor(
                         _bookState.value.copy(
                             userProgressState = newProgressState ?: UserProgressState(
                                 bookProgress = UserProgressResponse(
-                                    totalPages = bookState.value.bookDetails.volumeInfo.pageCount
+                                    totalPages = bookState.value.bookDetails.volumeInfo.pageCount,
                                 ),
-                                resultState = ResultState.Success
+                                resultState = ResultState.Success,
                             )
                         )
                     )

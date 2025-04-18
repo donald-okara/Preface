@@ -26,6 +26,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -40,6 +41,7 @@ fun CurrentlyReadingCard(
     imageUrl: String,
     currentPage: Int,
     lastUpdated: String,
+    title: String,
     totalPages: Int,
     previewPainter: Painter? = null
 ) {
@@ -53,7 +55,7 @@ fun CurrentlyReadingCard(
         if (LocalInspectionMode.current && previewPainter != null) {
             Image(
                 painter = previewPainter,
-                contentDescription = "Book cover",
+                contentDescription = "$title book cover",
                 contentScale = ContentScale.Crop,
                 modifier = modifier
                     .width(100.dp)
@@ -64,7 +66,7 @@ fun CurrentlyReadingCard(
         } else {
             AsyncImage(
                 model = imageUrl,
-                contentDescription = "Book cover",
+                contentDescription = "$title book cover",
                 contentScale = ContentScale.Crop,
                 modifier = modifier
                     .width(100.dp)
@@ -78,7 +80,10 @@ fun CurrentlyReadingCard(
 
         Column {
             Text(
-                text = "The Midnight Library",
+                text = title,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+                fontWeight = FontWeight.SemiBold,
                 style = MaterialTheme.typography.titleSmall,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -128,7 +133,7 @@ fun FinishedBookCard(
         if (LocalInspectionMode.current && previewPainter != null) {
             Image(
                 painter = painterResource(R.drawable.download),
-                contentDescription = "The Psychology of Money book cover",
+                contentDescription = "$title book cover",
                 contentScale = ContentScale.Crop,
                 modifier = modifier
                     .width(100.dp)
@@ -139,7 +144,7 @@ fun FinishedBookCard(
         } else {
             AsyncImage(
                 model = imageUrl,
-                contentDescription = "The Psychology of Money book cover",
+                contentDescription = "$title book cover",
                 contentScale = ContentScale.Crop,
                 modifier = modifier
                     .width(100.dp)
@@ -154,14 +159,15 @@ fun FinishedBookCard(
         Column {
             Text(
                 text = title,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface
             )
 
             Text(
                 text = "Completed on $dateCompleted",
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
@@ -183,6 +189,7 @@ fun CurrentlyReadingCardPreview(){
            imageUrl = "",
            lastUpdated = "",
            previewPainter = painterResource(R.drawable.download),
+           title = ""
        )
     }
 }
@@ -197,7 +204,8 @@ fun CurrentlyReadingCardLightPreview(){
            previewPainter = painterResource(R.drawable.download),
            currentPage = 50,
            lastUpdated = "",
-           totalPages = 100
+           totalPages = 100,
+           title = ""
        )
     }
 }

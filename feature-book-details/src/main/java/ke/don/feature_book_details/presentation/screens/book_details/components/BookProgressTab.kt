@@ -1,5 +1,6 @@
 package ke.don.feature_book_details.presentation.screens.book_details.components
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,6 +18,7 @@ import androidx.compose.material.icons.outlined.HourglassEmpty
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
@@ -36,9 +38,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import ke.don.common_datasource.remote.domain.states.BookUiState
-import ke.don.common_datasource.remote.domain.states.UserProgressState
 import ke.don.feature_book_details.presentation.screens.book_details.BookDetailsEvent
 import ke.don.shared_components.EmptyScreen
 import ke.don.shared_components.IndividualReadingProgressCard
@@ -129,6 +131,7 @@ fun BookProgressTab(
 
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddProgressDialog(
     modifier: Modifier = Modifier,
@@ -167,7 +170,10 @@ fun AddProgressDialog(
         },
         title = { Text(text = dialogTitle) },
         text = {
-            Column {
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
                 TextField(
                     label = { Text(text = dialogText) },
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -208,11 +214,18 @@ fun AddProgressDialog(
                         updateProgress(page)
                     },
                     valueRange = 0f..1f,
+                    steps = 10,
                     colors = SliderDefaults.colors(
-                        thumbColor = MaterialTheme.colorScheme.secondary,
-                        activeTrackColor = MaterialTheme.colorScheme.secondary,
-                        inactiveTrackColor = MaterialTheme.colorScheme.secondaryContainer,
-                    )
+                        thumbColor = MaterialTheme.colorScheme.primary,
+                        activeTrackColor = MaterialTheme.colorScheme.primary,
+                        inactiveTrackColor = MaterialTheme.colorScheme.primaryContainer,
+                    ),
+                    thumb = {
+                        SliderDefaults.Thumb(
+                            interactionSource = remember { MutableInteractionSource() },
+                            thumbSize = DpSize(24.dp, 24.dp)
+                        )
+                    }
                 )
             }
         },

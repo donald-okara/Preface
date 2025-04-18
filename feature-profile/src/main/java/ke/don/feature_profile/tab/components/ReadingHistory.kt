@@ -125,6 +125,7 @@ fun CurrentlyReadingSection(
                     imageUrl = book.highestImageUrl,
                     currentPage = book.currentPage,
                     totalPages = book.totalPages,
+                    title = book.title,
                     lastUpdated = formatDate(book.lastUpdated),
                     modifier = modifier.clickable {
                         onNavigateToBook(book.bookId)
