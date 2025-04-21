@@ -172,7 +172,7 @@ class ProfileNetworkClass(
 
     suspend fun checkSignedInStatus(): Boolean {
 
-        val signInStatus = context.reloadSession(supabase)
+        val signInStatus = context.reloadSession()
         Log.d(TAG, "User is logged in: $signInStatus")
 
         return signInStatus
@@ -221,9 +221,7 @@ class ProfileNetworkClass(
 
 }
 
-suspend fun Context.reloadSession(
-    supabase: SupabaseClient
-): Boolean {
+suspend fun Context.reloadSession(): Boolean {
 
     try {
         val localProfile =  withTimeoutOrNull(5_000) { // 5-second timeout
