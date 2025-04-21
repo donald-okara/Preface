@@ -1,4 +1,4 @@
-package ke.don.shared_components
+package ke.don.shared_components.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

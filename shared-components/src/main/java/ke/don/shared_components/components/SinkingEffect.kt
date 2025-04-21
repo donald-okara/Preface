@@ -1,4 +1,4 @@
-package ke.don.shared_components
+package ke.don.shared_components.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable

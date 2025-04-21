@@ -28,7 +28,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ke.don.feature_bookshelf.R
-import ke.don.shared_components.BookStack
+import ke.don.shared_components.components.BookStack
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

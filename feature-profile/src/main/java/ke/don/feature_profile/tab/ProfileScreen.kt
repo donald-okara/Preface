@@ -43,10 +43,10 @@ import ke.don.feature_profile.tab.components.CurrentlyReadingContainer
 import ke.don.feature_profile.tab.components.ProfileHeader
 import ke.don.feature_profile.tab.components.ProfilePicture
 import ke.don.feature_profile.tab.components.ReadingHistoryContainer
-import ke.don.shared_components.ConfirmationDialog
-import ke.don.shared_components.DialogType
-import ke.don.shared_components.EmptyScreen
-import ke.don.shared_components.SheetOptionItem
+import ke.don.shared_components.components.ConfirmationDialog
+import ke.don.shared_components.components.DialogType
+import ke.don.shared_components.components.EmptyScreen
+import ke.don.shared_components.components.SheetOptionItem
 import ke.don.shared_domain.states.ProfileTabState
 import ke.don.shared_domain.states.ResultState
 

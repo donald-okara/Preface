@@ -55,7 +55,7 @@ import ke.don.feature_book_details.presentation.screens.book_details.components.
 import ke.don.feature_book_details.presentation.screens.book_details.components.BookProgressTab
 import ke.don.feature_book_details.presentation.screens.book_details.components.PublishDetails
 import ke.don.feature_book_details.presentation.screens.book_details.components.TitleHeader
-import ke.don.shared_components.EmptyScreen
+import ke.don.shared_components.components.EmptyScreen
 import ke.don.shared_domain.states.ResultState
 import kotlinx.coroutines.launch
 

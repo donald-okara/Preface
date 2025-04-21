@@ -39,7 +39,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import ke.don.feature_bookshelf.R
 import ke.don.feature_bookshelf.presentation.shared_components.BookshelfOptionsSheet
-import ke.don.shared_components.BookStack
+import ke.don.shared_components.components.BookStack
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

@@ -1,4 +1,4 @@
-package ke.don.shared_components
+package ke.don.shared_components.components
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close

@@ -1,4 +1,4 @@
-package ke.don.shared_components
+package ke.don.shared_components.components
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.height

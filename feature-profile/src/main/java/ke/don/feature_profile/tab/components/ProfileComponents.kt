@@ -33,7 +33,7 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import ke.don.feature_profile.R
 import ke.don.feature_profile.tab.ProfileTabEventHandler
-import ke.don.shared_components.ProfileStatCard
+import ke.don.shared_components.components.ProfileStatCard
 import ke.don.shared_domain.states.ProfileTabState
 
 

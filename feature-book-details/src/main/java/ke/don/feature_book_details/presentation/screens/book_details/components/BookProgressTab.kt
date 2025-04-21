@@ -42,8 +42,8 @@ import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import ke.don.common_datasource.remote.domain.states.BookUiState
 import ke.don.feature_book_details.presentation.screens.book_details.BookDetailsEvent
-import ke.don.shared_components.EmptyScreen
-import ke.don.shared_components.IndividualReadingProgressCard
+import ke.don.shared_components.components.EmptyScreen
+import ke.don.shared_components.components.IndividualReadingProgressCard
 import ke.don.shared_domain.states.ResultState
 import kotlin.math.roundToInt
 
