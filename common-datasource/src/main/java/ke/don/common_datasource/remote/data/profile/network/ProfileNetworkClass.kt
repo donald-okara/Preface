@@ -232,10 +232,7 @@ suspend fun Context.reloadSession(
                 .first()
         } ?: Profile(authId = "", /* other default fields */) // or throw an exception
 
-        val sessionStatus = supabase.auth.sessionStatus
-            .first { it !is SessionStatus.Initializing }
-
-        return (sessionStatus is SessionStatus.Authenticated && localProfile.authId.isNotEmpty())
+        return (localProfile.authId.isNotEmpty())
 
     } catch (e: Exception) {
         Log.e("Context", "Error reloading session", e)

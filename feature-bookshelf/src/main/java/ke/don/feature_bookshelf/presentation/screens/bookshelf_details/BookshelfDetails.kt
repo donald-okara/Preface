@@ -49,11 +49,6 @@ fun BookshelfDetailsRoute(
         bookshelfDetailsViewModel.onBookshelfIdPassed(bookshelfId)
     }
 
-    DisposableEffect(Unit) {
-        onDispose {
-            bookshelfDetailsViewModel.onCleared()
-        }
-    }
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(

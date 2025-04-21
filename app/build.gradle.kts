@@ -74,6 +74,7 @@ dependencies {
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.androidx.palette.ktx)
     implementation(libs.androidx.lifecycle.process)
+    implementation(libs.androidx.hilt.hilt.work)
     kapt(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
 
