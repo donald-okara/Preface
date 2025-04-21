@@ -2,9 +2,15 @@ package ke.don.common_datasource.remote.data.bookshelf.repositoryImpl
 
 import android.content.Context
 import android.widget.Toast
+import androidx.work.Constraints
+import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import ke.don.common_datasource.local.roomdb.dao.BookshelfDao
 import ke.don.common_datasource.local.roomdb.entities.BookshelfEntity
 import ke.don.common_datasource.local.roomdb.entities.toBookshelf
+import ke.don.common_datasource.local.worker.SyncBookshelvesWorker
 import ke.don.common_datasource.remote.data.bookshelf.network.BookshelfNetworkClass
 import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
 import ke.don.common_datasource.remote.domain.states.NoDataReturned
@@ -31,32 +37,29 @@ class BookshelfRepositoryImpl(
         }
     }
 
-    override suspend fun syncLocalBookshelvesDb(): NetworkResult<NoDataReturned>{
-        return when (val remoteBookshelves = bookshelfNetworkClass.fetchUserBookshelves(userProfile?.authId!!)){
-            is NetworkResult.Error -> {
-                Toast.makeText(context, "${remoteBookshelves.message} ${remoteBookshelves.hint}", Toast.LENGTH_SHORT).show()
-                NetworkResult.Error(
-                    message = remoteBookshelves.message,
-                    code = remoteBookshelves.code,
-                    details = remoteBookshelves.details,
-                    hint = remoteBookshelves.hint
+    override suspend fun syncLocalBookshelvesDb(): NetworkResult<NoDataReturned> {
+        return try {
+            val request = OneTimeWorkRequestBuilder<SyncBookshelvesWorker>()
+                .setConstraints(
+                    Constraints.Builder()
+                        .setRequiredNetworkType(NetworkType.CONNECTED)
+                        .build()
                 )
-            }
-            is NetworkResult.Success ->{
-                val remoteIds = remoteBookshelves.data.map { it.id }.toSet() // Convert to set for fast lookup
-                bookshelfDao.deleteBookshelvesNotIn(remoteIds)
+                .build()
 
-                // Insert/update fetched bookshelves
-                bookshelfDao.insertAll(remoteBookshelves.data)
-
-                NetworkResult.Success(NoDataReturned())
-            }
+            WorkManager.getInstance(context)
+                .enqueueUniqueWork(
+                    "bookshelf_sync",
+                    ExistingWorkPolicy.REPLACE,
+                    request
+                )
+            NetworkResult.Success(NoDataReturned())
+        } catch (e: Exception) {
+            NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
         }
-
     }
 
     override suspend fun fetchUserBookShelves(): NetworkResult<Flow<List<BookShelf>>> {
-        syncLocalBookshelvesDb()
         return NetworkResult.Success(bookshelfDao.getAllBookshelvesFlow()
             .map { list -> list.map { it.toBookshelf() } })
     }
@@ -84,22 +87,7 @@ class BookshelfRepositoryImpl(
     }
 
     override suspend fun fetchBookshelfById(bookshelfId: Int): NetworkResult<Flow<BookshelfEntity>> {
-        return when(val result = syncLocalBookshelvesDb()) {
-            is NetworkResult.Error -> {
-                Toast.makeText(context, "${result.message} ${result.hint}", Toast.LENGTH_SHORT)
-                    .show()
-                NetworkResult.Error(
-                    message = result.message,
-                    code = result.code,
-                    details = result.details,
-                    hint = result.hint
-                )
-            }
-
-            is NetworkResult.Success -> {
-                NetworkResult.Success(bookshelfDao.getBookshelfById(bookshelfId))
-            }
-        }
+        return NetworkResult.Success(bookshelfDao.getBookshelfById(bookshelfId))
     }
 
     override suspend fun addBookToBookshelf(bookshelfId: Int, bookId: String): NetworkResult<NoDataReturned> {

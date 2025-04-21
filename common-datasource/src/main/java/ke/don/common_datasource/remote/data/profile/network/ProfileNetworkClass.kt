@@ -172,7 +172,7 @@ class ProfileNetworkClass(
 
     suspend fun checkSignedInStatus(): Boolean {
 
-        val signInStatus = context.reloadSession(supabase)
+        val signInStatus = context.reloadSession()
         Log.d(TAG, "User is logged in: $signInStatus")
 
         return signInStatus
@@ -221,9 +221,7 @@ class ProfileNetworkClass(
 
 }
 
-suspend fun Context.reloadSession(
-    supabase: SupabaseClient
-): Boolean {
+suspend fun Context.reloadSession(): Boolean {
 
     try {
         val localProfile =  withTimeoutOrNull(5_000) { // 5-second timeout
@@ -232,10 +230,7 @@ suspend fun Context.reloadSession(
                 .first()
         } ?: Profile(authId = "", /* other default fields */) // or throw an exception
 
-        val sessionStatus = supabase.auth.sessionStatus
-            .first { it !is SessionStatus.Initializing }
-
-        return (sessionStatus is SessionStatus.Authenticated && localProfile.authId.isNotEmpty())
+        return (localProfile.authId.isNotEmpty())
 
     } catch (e: Exception) {
         Log.e("Context", "Error reloading session", e)

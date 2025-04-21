@@ -51,6 +51,7 @@ voyagerAndroidx = "1.0.0-rc06"
 voyagerNavigator = "1.0.0"
 voyagerTabNavigator = "1.0.0"
 ksp = "2.0.21-1.0.27"
+workRuntimeKtx = "2.10.0"
 
 
 [libraries]
@@ -59,9 +60,11 @@ androidx-core-ktx-v1120 = { module = "androidx.core:core-ktx", version.ref = "co
 androidx-core-splashscreen = { module = "androidx.core:core-splashscreen", version.ref = "coreSplashscreen" }
 androidx-core-testing = { module = "androidx.arch.core:core-testing", version.ref = "coreTesting" }
 androidx-credentials = { module = "androidx.credentials:credentials", version.ref = "credentials" }
+androidx-hilt-hilt-work = { module = "androidx.hilt:hilt-work", version.ref = "hiltNavigationCompose" }
 androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "roomRuntime" }
 androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "roomRuntime" }
 androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "roomRuntime" }
+androidx-work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "workRuntimeKtx" }
 kotlinx-collections-immutable = { module = "org.jetbrains.kotlinx:kotlinx-collections-immutable", version.ref = "kotlinx-collections-immutable" }
 androidx-credentials-play-services-auth = { module = "androidx.credentials:credentials-play-services-auth", version.ref = "credentials" }
 androidx-datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }

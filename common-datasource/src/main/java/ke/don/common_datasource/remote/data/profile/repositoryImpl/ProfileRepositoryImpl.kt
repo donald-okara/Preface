@@ -3,9 +3,16 @@ package ke.don.common_datasource.remote.data.profile.repositoryImpl
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
+import androidx.work.Constraints
+import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
 import ke.don.common_datasource.local.datastore.profile.ProfileDataStoreManager
 import ke.don.common_datasource.local.datastore.profile.profileDataStore
 import ke.don.common_datasource.local.roomdb.dao.BookshelfDao
+import ke.don.common_datasource.local.worker.SyncBookshelvesWorker
+import ke.don.common_datasource.local.worker.SyncProfileWorker
 import ke.don.common_datasource.remote.data.profile.network.ProfileNetworkClass
 import ke.don.common_datasource.remote.domain.getters.generateNonce
 import ke.don.common_datasource.remote.domain.repositories.BooksRepository
@@ -90,13 +97,25 @@ class ProfileRepositoryImpl(
         val profileResult = profileNetworkClass.fetchUserProfile(userId)
 
         return if (profileResult is NetworkResult.Success) {
-            profileDataStoreManager.setProfileInDatastore(profileResult.data)
-            Log.d(TAG, "Profile fetched and stored successfully")
+            val request = OneTimeWorkRequestBuilder<SyncProfileWorker>()
+                .setConstraints(
+                    Constraints.Builder()
+                        .setRequiredNetworkType(NetworkType.CONNECTED)
+                        .build()
+                )
+                .build()
+
+            WorkManager.getInstance(context)
+                .enqueueUniqueWork(
+                    "profile_sync",
+                    ExistingWorkPolicy.REPLACE,
+                    request
+                )
             NetworkResult.Success(NoDataReturned())
         } else {
             Log.e(TAG, "Error fetching profile: ${(profileResult as NetworkResult.Error).message}")
             NetworkResult.Error(
-                message = (profileResult as NetworkResult.Error).message
+                message = (profileResult).message
             )
         }
     }
