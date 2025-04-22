@@ -52,22 +52,6 @@ class UserLibraryViewModelTest {
         assertNotEquals(emptyList<BookShelf>(), uiState.value.userBookshelves)
     }
 
-    @Test
-    fun `refreshAction calls onRefreshComplete`() = runTest{
-        // Arrange
-        val uiState = viewModel.userLibraryState
-        var refreshed = false
-        val onRefreshComplete = {
-            refreshed = !refreshed
-        }
-
-        // Act
-        viewModel.refreshAction(onRefreshComplete)
-        advanceUntilIdle()
-
-        // Assert
-        assertNotEquals(false, refreshed)
-    }
 
     @Test
     fun `updateSelectedBookshelf updates selectedBookshelfId`() = runTest{
@@ -97,23 +81,6 @@ class UserLibraryViewModelTest {
     }
 
     @Test
-    fun `deleteBookshelf refreshes state on success`() = runTest{
-        // Arrange
-        val uiState = viewModel.userLibraryState
-        var refreshed = false
-        val onRefreshComplete = {
-            refreshed = !refreshed
-        }
-
-        // Act
-        viewModel.deleteBookshelf(onRefreshComplete, 3)
-        advanceUntilIdle()
-
-        // Assert
-        assertNotEquals(false, refreshed)
-    }
-
-    @Test
     fun `deleteBookshelf does not refresh state on error`() = runTest{
         // Arrange
         val uiState = viewModel.userLibraryState
@@ -123,7 +90,7 @@ class UserLibraryViewModelTest {
         }
 
         // Act
-        viewModel.deleteBookshelf(onRefreshComplete, -1)
+        viewModel.deleteBookshelf(-1)
         advanceUntilIdle()
 
         // Assert
