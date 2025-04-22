@@ -12,7 +12,7 @@ import kotlinx.serialization.Serializable
 data class UserLibraryState(
     val userBookshelves: List<BookShelf> = emptyList(),
     val successState: SuccessState = SuccessState.IDLE,
-    val selectedBookshelfId: Int = 0,
+    val selectedBookshelfId: Int? = null,
     val isRefreshing: Boolean = false,
     val showOptionsSheet: Boolean = false
 )

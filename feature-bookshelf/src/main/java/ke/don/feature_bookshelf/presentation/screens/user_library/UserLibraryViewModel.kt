@@ -85,6 +85,15 @@ class UserLibraryViewModel @Inject constructor(
             updateShowSheet(
                 newState = !userLibraryState.value.showOptionsSheet
             )
+        }else{
+            _userLibraryState.update {
+                it.copy(
+                    selectedBookshelfId = null
+                )
+            }
+            updateShowSheet(
+                newState = !userLibraryState.value.showOptionsSheet
+            )
         }
     }
 

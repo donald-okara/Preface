@@ -26,7 +26,7 @@ fun BookStack(
     size: Dp = 150.dp,
     aspectRatio: Float = 2f / 3f
 ) {
-    val displayedBooks = bookCoverUrls.takeLast(maxBooks).reversed()
+    val displayedBooks = bookCoverUrls.take(maxBooks)
     val bookCount = displayedBooks.size
     if (bookCount == 0) return // Handle empty list
 
