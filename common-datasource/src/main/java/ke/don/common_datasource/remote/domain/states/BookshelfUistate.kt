@@ -10,8 +10,11 @@ import kotlinx.coroutines.flow.emptyFlow
 import kotlinx.serialization.Serializable
 
 data class UserLibraryState(
-    val userBookshelves: Flow<List<BookShelf>> = emptyFlow(),
+    val userBookshelves: List<BookShelf> = emptyList(),
     val successState: SuccessState = SuccessState.IDLE,
+    val selectedBookshelfId: Int = 0,
+    val isRefreshing: Boolean = false,
+    val showOptionsSheet: Boolean = false
 )
 
 data class BookshelfUiState(

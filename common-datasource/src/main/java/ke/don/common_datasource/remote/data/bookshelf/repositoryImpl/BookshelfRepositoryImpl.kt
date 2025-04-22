@@ -59,9 +59,11 @@ class BookshelfRepositoryImpl(
         }
     }
 
-    override suspend fun fetchUserBookShelves(): NetworkResult<Flow<List<BookShelf>>> {
-        return NetworkResult.Success(bookshelfDao.getAllBookshelvesFlow()
-            .map { list -> list.map { it.toBookshelf() } })
+    override suspend fun fetchUserBookShelves(): NetworkResult<List<BookShelf>> {
+        return NetworkResult.Success(bookshelfDao.getAllBookshelves().map {
+            it.toBookshelf()
+            }
+        )
     }
 
 

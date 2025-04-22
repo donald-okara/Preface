@@ -1,5 +1,6 @@
 package ke.don.feature_bookshelf.presentation.screens.user_library
 
+import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.combinedClickable
@@ -25,65 +26,49 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import ke.don.common_datasource.remote.domain.states.UserLibraryState
 import ke.don.feature_bookshelf.R
 import ke.don.feature_bookshelf.presentation.shared_components.BookshelfOptionsSheet
 import ke.don.shared_components.components.BookStack
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserLibraryScreen(
     modifier: Modifier = Modifier,
+    eventHandler: (LibraryEventHandler)-> Unit,
+    userLibraryState: UserLibraryState,
     paddingValues: PaddingValues = PaddingValues(),
     onNavigateToEdit: (Int) -> Unit,
     onNavigateToBookshefItem: (Int) -> Unit,
-    userLibraryViewModel: UserLibraryViewModel = hiltViewModel(),
     onAddBookshelf: () -> Unit,
 ) {
-    val userLibraryState by userLibraryViewModel.userLibraryState.collectAsStateWithLifecycle()
-
-    val bookshelves by userLibraryState.userBookshelves.collectAsState(initial = emptyList())
-
+    val bookshelves = userLibraryState.userBookshelves
     val uniqueBookshelves = bookshelves.distinctBy { it.supabaseBookShelf.id }
+    val selectedBookshelfId = userLibraryState.selectedBookshelfId
 
-    val isRefreshing = remember{
-        mutableStateOf(false)
-    }
-
-    val onRefresh = {
-        isRefreshing.value = true
-        userLibraryViewModel.refreshAction {
-            isRefreshing.value = false
-        }
-    }
-
-    val selectedBookshelfId by userLibraryViewModel.selectedBookshelfId.collectAsState()
-
-    val onShowBottomSheet: (Int) -> Unit = { bookshelfId ->
-        userLibraryViewModel.updateSelectedBookshelf(bookshelfId)
-    }
-
-    val onDismissBottomSheet: () -> Unit = {
-        userLibraryViewModel.updateSelectedBookshelf(null)
-    }
-
-
+    val pullToRefreshState = rememberPullToRefreshState()
 
     PullToRefreshBox(
         contentAlignment = Alignment.Center,
-        isRefreshing = isRefreshing.value,
-        onRefresh = onRefresh,
+        isRefreshing = userLibraryState.isRefreshing,
+        onRefresh = { eventHandler(LibraryEventHandler.RefreshAction) },
+        state = pullToRefreshState,
         modifier = modifier
             .fillMaxSize()
             .padding(paddingValues)
@@ -121,17 +106,22 @@ fun UserLibraryScreen(
                     bookshelfSize = "${shelfItem.books.size} books",
                     bookshelfId = shelfItem.supabaseBookShelf.id,
                     onDeleteBookshelf = { bookshelfId ->
-                        userLibraryViewModel.deleteBookshelf(
-                            onRefreshComplete = {
-                                isRefreshing.value = false
-                            },
-                            bookshelfId = bookshelfId
+                        eventHandler(
+                            LibraryEventHandler.DeleteBookshelf(bookshelfId = bookshelfId)
                         )
                     },
                     showBottomSheet = selectedBookshelfId == shelfItem.supabaseBookShelf.id, // Only show for selected item
                     onNavigateToEdit = onNavigateToEdit,
-                    onShowBottomSheet = { onShowBottomSheet(shelfItem.supabaseBookShelf.id) },
-                    onDismissBottomSheet = onDismissBottomSheet
+                    onShowBottomSheet = {
+                        eventHandler(
+                            LibraryEventHandler.SelectBookshelf(
+                                shelfItem.supabaseBookShelf.id
+                            )
+                        )
+                    },
+                    onDismissBottomSheet = {
+                        eventHandler(LibraryEventHandler.SelectBookshelf(null))
+                    }
                 )
             }
 

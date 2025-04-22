@@ -6,6 +6,7 @@ import androidx.compose.material.icons.automirrored.filled.ManageSearch
 import androidx.compose.material.icons.automirrored.outlined.LibraryBooks
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -15,8 +16,11 @@ import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import ke.don.feature_book_details.presentation.screens.search.BookSearchScreen
+import ke.don.feature_bookshelf.presentation.screens.user_library.LibraryEventHandler
 import ke.don.feature_bookshelf.presentation.screens.user_library.UserLibraryScreen
+import ke.don.feature_bookshelf.presentation.screens.user_library.UserLibraryViewModel
 import ke.don.feature_profile.tab.ProfileScreen
+import ke.don.feature_profile.tab.ProfileTabEventHandler
 import ke.don.feature_profile.tab.ProfileViewModel
 
 class MyLibraryTab(
@@ -45,7 +49,16 @@ class MyLibraryTab(
 
     @Composable
     override fun Content() {
+        val viewModel: UserLibraryViewModel = hiltViewModel()
+        val state by viewModel.userLibraryState.collectAsState()
+        val eventHandler = viewModel::handleEvent
+
+        LaunchedEffect(viewModel) {
+            eventHandler(LibraryEventHandler.FetchBookshelves)
+        }
         UserLibraryScreen(
+            userLibraryState = state,
+            eventHandler = eventHandler,
             onNavigateToBookshefItem = { bookshelfId ->
                 onNavigateToBookshelfItem(bookshelfId)
             },
@@ -95,12 +108,17 @@ class ProfileTab(private val onSignOut: () -> Unit, private val onNavigateToBook
     override fun Content() {
         val viewModel: ProfileViewModel = hiltViewModel()
         val state by viewModel.profileState.collectAsState()
+        val profileEventHandler = viewModel::handleEvent
+
+        LaunchedEffect(viewModel) {
+            profileEventHandler(ProfileTabEventHandler.FetchProfile)
+            profileEventHandler(ProfileTabEventHandler.FetchUserProgress)
+        }
 
         ProfileScreen(
             onNavigateToSignIn = { onSignOut() },
-            viewModel = viewModel,
             profileState = state,
-            profileTabEventHandler = viewModel::handleEvent,
+            profileTabEventHandler = profileEventHandler,
             onNavigateToBook = onNavigateToBookItem
         )
     }
