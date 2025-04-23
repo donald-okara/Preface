@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -27,10 +28,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import ke.don.feature_book_details.R
+import ke.don.shared_domain.data_models.Dimensions
 import ke.don.shared_domain.data_models.VolumeInfoDet
 
 @Composable
@@ -51,10 +54,8 @@ fun TitleHeader(
             onImageClick = onImageClick,
             imageUrl = imageUrl,
             modifier = modifier
-                .width(200.dp)
                 .padding(bottom = 8.dp)
-                .aspectRatio(volumeInfo.dimensions.calculateAspectRatio())
-
+                .size(volumeInfo.dimensions.toDpSize())
         )
         Text(
             text = volumeInfo.title,
@@ -104,7 +105,7 @@ fun BookImage(
     onImageClick: () -> Unit,
     imageUrl: String? = null,
 ) {
-    val shape = RoundedCornerShape(16.dp)
+    val shape = RoundedCornerShape(8.dp)
     val context = LocalContext.current
 
     val imageModifier = modifier
@@ -179,3 +180,10 @@ fun BookCoverPreview(
 }
 
 
+@Composable
+fun Dimensions.toDpSize(fallbackAspectRatio: Float = 2f / 3f): DpSize {
+    val aspectRatio = calculateAspectRatio(fallbackAspectRatio)
+    val widthDp = 200.dp
+    val heightDp = widthDp / aspectRatio
+    return DpSize(widthDp, heightDp)
+}

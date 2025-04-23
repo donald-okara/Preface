@@ -1,6 +1,7 @@
-package ke.don.common_datasource.local.worker
+package ke.don.common_datasource.local.worker.classes
 
 import android.content.Context
+import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -22,7 +23,10 @@ class SyncBookshelvesWorker @AssistedInject constructor(
 
     override suspend fun doWork(): Result {
         return try {
+            Log.d(TAG,"Work manager running")
             if (userProfile == null) return Result.failure()
+            Result.success()
+
 
             when (val result = bookshelfNetworkClass.fetchUserBookshelves(userProfile.authId)) {
                 is NetworkResult.Error -> Result.retry()
@@ -36,5 +40,9 @@ class SyncBookshelvesWorker @AssistedInject constructor(
         } catch (e: Exception) {
             Result.retry()
         }
+    }
+
+    companion object {
+        const val TAG = "SyncBookshelvesWorker"
     }
 }

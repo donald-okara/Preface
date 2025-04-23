@@ -10,7 +10,7 @@ import androidx.work.WorkManager
 import ke.don.common_datasource.local.roomdb.dao.BookshelfDao
 import ke.don.common_datasource.local.roomdb.entities.BookshelfEntity
 import ke.don.common_datasource.local.roomdb.entities.toBookshelf
-import ke.don.common_datasource.local.worker.SyncBookshelvesWorker
+import ke.don.common_datasource.local.worker.classes.SyncBookshelvesWorker
 import ke.don.common_datasource.remote.data.bookshelf.network.BookshelfNetworkClass
 import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
 import ke.don.common_datasource.remote.domain.states.NoDataReturned
@@ -20,7 +20,6 @@ import ke.don.shared_domain.data_models.BookshelfRef
 import ke.don.shared_domain.data_models.Profile
 import ke.don.shared_domain.states.NetworkResult
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 
 class BookshelfRepositoryImpl(
     private val bookshelfNetworkClass: BookshelfNetworkClass,
@@ -60,6 +59,7 @@ class BookshelfRepositoryImpl(
     }
 
     override suspend fun fetchUserBookShelves(): NetworkResult<List<BookShelf>> {
+        syncLocalBookshelvesDb()
         return NetworkResult.Success(bookshelfDao.getAllBookshelves().map {
             it.toBookshelf()
             }
@@ -81,7 +81,7 @@ class BookshelfRepositoryImpl(
             if (result is NetworkResult.Error) {
                 Toast.makeText(context, "${'$'}{result.message} ${'$'}{result.hint}", Toast.LENGTH_SHORT).show()
             }else{
-                bookshelfDao.updateBookshelf(bookshelf.toEntity())
+                syncLocalBookshelvesDb()
             }
         }
 
@@ -96,6 +96,8 @@ class BookshelfRepositoryImpl(
         return bookshelfNetworkClass.addBookToBookshelf(bookshelfId, bookId).also { result ->
             if (result is NetworkResult.Error) {
                 Toast.makeText(context, "${result.message} ${result.hint}", Toast.LENGTH_SHORT).show()
+            }else{
+                syncLocalBookshelvesDb()
             }
         }
     }
@@ -113,6 +115,8 @@ class BookshelfRepositoryImpl(
         return bookshelfNetworkClass.deleteBookshelf(bookshelfId).also { result ->
             if (result is NetworkResult.Error) {
                 Toast.makeText(context, "${'$'}{result.message} ${'$'}{result.hint}", Toast.LENGTH_SHORT).show()
+            }else{
+                syncLocalBookshelvesDb()
             }
         }
 

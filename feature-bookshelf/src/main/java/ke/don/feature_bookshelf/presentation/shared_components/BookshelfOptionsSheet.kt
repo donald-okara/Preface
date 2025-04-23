@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -139,9 +140,7 @@ fun BookshelfSheetHeader(
                 Image(
                     painter = painterResource(R.drawable.bookshelf_placeholder),
                     contentDescription = "Bookshelf item",
-                    modifier = modifier
-                        .fillMaxWidth()
-                        .height(imageSize)
+                    modifier = modifier.size(imageSize)
                 )
             }
             Spacer(modifier = modifier.width(12.dp))

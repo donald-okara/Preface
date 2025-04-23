@@ -9,13 +9,10 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import ke.don.common_datasource.local.datastore.profile.ProfileDataStoreManager
-import ke.don.common_datasource.local.datastore.profile.profileDataStore
 import ke.don.common_datasource.local.roomdb.dao.BookshelfDao
-import ke.don.common_datasource.local.worker.SyncBookshelvesWorker
-import ke.don.common_datasource.local.worker.SyncProfileWorker
+import ke.don.common_datasource.local.worker.classes.SyncProfileWorker
 import ke.don.common_datasource.remote.data.profile.network.ProfileNetworkClass
 import ke.don.common_datasource.remote.domain.getters.generateNonce
-import ke.don.common_datasource.remote.domain.repositories.BooksRepository
 import ke.don.common_datasource.remote.domain.repositories.ProfileRepository
 import ke.don.common_datasource.remote.domain.states.NoDataReturned
 import ke.don.shared_domain.data_models.Profile

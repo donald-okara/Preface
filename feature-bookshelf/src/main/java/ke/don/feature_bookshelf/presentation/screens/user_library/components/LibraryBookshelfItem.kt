@@ -6,13 +6,17 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.CollectionsBookmark
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
@@ -20,11 +24,13 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import ke.don.feature_bookshelf.presentation.shared_components.BookshelfOptionsSheet
+import ke.don.shared_components.components.EmptyScreen
 
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -67,23 +73,35 @@ fun BookshelfItem(
                 style = MaterialTheme.typography.bodyMedium
             )
             Spacer(modifier = modifier.height(16.dp))
-            LazyRow (
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                contentPadding = PaddingValues(end = 16.dp)
-            ) {
-                items(
-                    coverImages.take(3)
-                ) { imageUrl ->
-                    AsyncImage(
-                        model = imageUrl,
-                        contentDescription = null,
-                        modifier = modifier
-                            .size(width = 96.dp, height = 144.dp)
-                            .clip(RoundedCornerShape(8.dp)),
-                        contentScale = ContentScale.Crop
-                    )
+
+            if (coverImages.isEmpty()){
+                EmptyScreen(
+                    icon = Icons.Outlined.CollectionsBookmark,
+                    message = "This bookshelf is empty",
+                    action = {},
+                    actionText = "",
+                    modifier = modifier.fillMaxWidth()
+                )
+            }else{
+                LazyRow (
+                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    contentPadding = PaddingValues(end = 16.dp)
+                ) {
+                    items(
+                        coverImages.take(3)
+                    ) { imageUrl ->
+                        AsyncImage(
+                            model = imageUrl,
+                            contentDescription = null,
+                            modifier = modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .size(width = 100.dp, height = 150.dp),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
                 }
             }
+
         }
 
     }

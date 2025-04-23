@@ -5,7 +5,6 @@ plugins {
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
-    id("kotlin-kapt")
     id("kotlin-parcelize")
 }
 
@@ -62,7 +61,7 @@ dependencies {
     //Dagger Hilt
     implementation(libs.hilt.android)
     implementation(libs.androidx.runtime.livedata)
-    kapt(libs.hilt.android.compiler)
+    ksp(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
 
     //Datastore
@@ -100,7 +99,6 @@ dependencies {
 
     implementation(libs.androidx.work.runtime.ktx)
     implementation(libs.androidx.hilt.hilt.work)
-
 
     //Project
     implementation(project(":common-domain"))

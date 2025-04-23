@@ -3,8 +3,8 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.hilt.android)
+    alias(libs.plugins.ksp)
     alias(libs.plugins.kotlin.serialization)
-    id("kotlin-kapt")
     id("kotlin-parcelize")
 }
 
@@ -75,7 +75,9 @@ dependencies {
     implementation(libs.androidx.palette.ktx)
     implementation(libs.androidx.lifecycle.process)
     implementation(libs.androidx.hilt.hilt.work)
-    kapt(libs.hilt.android.compiler)
+    implementation(libs.androidx.work.runtime.ktx)
+
+    ksp(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
 
     // Retrofit with Kotlin serialization Converter
@@ -98,7 +100,7 @@ dependencies {
 
     implementation(libs.glide) // Latest version
     //noinspection KaptUsageInsteadOfKsp
-    kapt(libs.compiler)
+    ksp(libs.compiler)
 
     implementation(project(":common-navigation"))
     implementation(project(":common-domain"))
