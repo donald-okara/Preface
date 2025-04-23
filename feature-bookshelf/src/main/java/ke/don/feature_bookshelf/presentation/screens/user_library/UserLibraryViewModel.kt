@@ -1,6 +1,5 @@
 package ke.don.feature_bookshelf.presentation.screens.user_library
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,7 +24,7 @@ class UserLibraryViewModel @Inject constructor(
     fun handleEvent(eventHandler: LibraryEventHandler){
         when (eventHandler){
             is LibraryEventHandler.FetchBookshelves -> {
-                fetchUserBookShelves()
+                refreshAction()
             }
 
             is LibraryEventHandler.DeleteBookshelf -> {
@@ -42,6 +41,10 @@ class UserLibraryViewModel @Inject constructor(
 
             is LibraryEventHandler.ToggleBottomSheet -> {
                 updateShowSheet(eventHandler.newState)
+            }
+
+            is LibraryEventHandler.ResetState -> {
+                onCleared()
             }
         }
     }
@@ -110,7 +113,7 @@ class UserLibraryViewModel @Inject constructor(
                     _userLibraryState.update { libraryState ->
                         libraryState.copy(
                             userBookshelves = result.data,
-                            successState = SuccessState.SUCCESS
+                            successState = SuccessState.SUCCESS,
                         )
                     }
                 }
@@ -139,6 +142,13 @@ class UserLibraryViewModel @Inject constructor(
                 }
 
             }
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        _userLibraryState.update { 
+            UserLibraryState()
         }
     }
 }

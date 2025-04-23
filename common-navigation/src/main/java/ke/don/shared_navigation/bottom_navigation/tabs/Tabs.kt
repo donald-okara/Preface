@@ -6,6 +6,7 @@ import androidx.compose.material.icons.automirrored.filled.ManageSearch
 import androidx.compose.material.icons.automirrored.outlined.LibraryBooks
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -52,10 +53,15 @@ class MyLibraryTab(
         val viewModel: UserLibraryViewModel = hiltViewModel()
         val state by viewModel.userLibraryState.collectAsState()
         val eventHandler = viewModel::handleEvent
+        val tabNavigator = LocalTabNavigator.current
+        val isSelected = tabNavigator.current == this
 
-        LaunchedEffect(viewModel) {
-            eventHandler(LibraryEventHandler.FetchBookshelves)
+        LaunchedEffect(isSelected) {
+            if (isSelected) {
+                eventHandler(LibraryEventHandler.FetchBookshelves)
+            }
         }
+
         UserLibraryScreen(
             userLibraryState = state,
             eventHandler = eventHandler,

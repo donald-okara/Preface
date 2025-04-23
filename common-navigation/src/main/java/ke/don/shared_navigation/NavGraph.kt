@@ -29,6 +29,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -117,10 +118,13 @@ object MainScreen : AndroidScreen() {
         }
         val tabs = listOf(myLibraryTab, searchTab, profileTab)
 
+        val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
+
         TabNavigator(myLibraryTab) { tabNavigator ->
             Scaffold(
                 topBar = {
                     CenterAlignedTopAppBar(
+                        scrollBehavior = scrollBehavior,
                         title = {
                             Image(
                                 painter = painterResource(R.drawable.app_logo),

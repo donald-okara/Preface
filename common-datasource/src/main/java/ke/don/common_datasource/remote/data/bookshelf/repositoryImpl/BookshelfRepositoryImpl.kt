@@ -19,6 +19,7 @@ import ke.don.shared_domain.data_models.BookShelf
 import ke.don.shared_domain.data_models.BookshelfRef
 import ke.don.shared_domain.data_models.Profile
 import ke.don.shared_domain.states.NetworkResult
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 
 class BookshelfRepositoryImpl(
@@ -28,10 +29,13 @@ class BookshelfRepositoryImpl(
     private val context : Context
 ): BookshelfRepository {
 
-    override suspend fun createBookshelf(bookshelf: BookshelfRef): NetworkResult<NoDataReturned> {
+    override suspend fun createBookshelf(bookshelf: BookshelfRef): NetworkResult<BookshelfRef> {
         return bookshelfNetworkClass.createBookshelf(bookshelf).also { result->
             if (result is NetworkResult.Error){
                 Toast.makeText(context, "${result.message} ${result.hint}", Toast.LENGTH_SHORT).show()
+            }else{
+                waitUntilBookshelfIsCreated(bookshelf)
+                syncLocalBookshelvesDb()
             }
         }
     }
@@ -81,6 +85,7 @@ class BookshelfRepositoryImpl(
             if (result is NetworkResult.Error) {
                 Toast.makeText(context, "${'$'}{result.message} ${'$'}{result.hint}", Toast.LENGTH_SHORT).show()
             }else{
+                waitUntilBookshelfIsUpdated(bookshelfId, bookshelf)
                 syncLocalBookshelvesDb()
             }
         }
@@ -112,14 +117,63 @@ class BookshelfRepositoryImpl(
     }
 
     override suspend fun deleteBookshelf(bookshelfId: Int): NetworkResult<NoDataReturned> {
-        return bookshelfNetworkClass.deleteBookshelf(bookshelfId).also { result ->
-            if (result is NetworkResult.Error) {
-                Toast.makeText(context, "${'$'}{result.message} ${'$'}{result.hint}", Toast.LENGTH_SHORT).show()
-            }else{
-                syncLocalBookshelvesDb()
-            }
+        val result = bookshelfNetworkClass.deleteBookshelf(bookshelfId)
+        if (result is NetworkResult.Success) {
+            // Wait and poll until deletion is reflected remotely
+            waitUntilDeletedRemotely(bookshelfId)
+            syncLocalBookshelvesDb()
+        } else if (result is NetworkResult.Error) {
+            Toast.makeText(context, "${result.message} ${result.hint}", Toast.LENGTH_SHORT).show()
         }
+        return result
+    }
 
+
+    private suspend fun waitUntilDeletedRemotely(bookshelfId: Int, timeoutMs: Long = 3000L) {
+        val start = System.currentTimeMillis()
+        while (System.currentTimeMillis() - start < timeoutMs) {
+            val allBookshelves = userProfile?.let { bookshelfNetworkClass.fetchUserBookshelves(it.authId) }
+            if (allBookshelves is NetworkResult.Success &&
+                allBookshelves.data.none { it.id == bookshelfId }) {
+                return
+            }
+            delay(300) // retry every 300ms
+        }
+    }
+
+    private suspend fun waitUntilBookshelfIsUpdated(
+        bookshelfId: Int,
+        target: BookshelfRef,
+        timeoutMs: Long = 3000L
+    ) {
+        val start = System.currentTimeMillis()
+        while (System.currentTimeMillis() - start < timeoutMs) {
+            val result = userProfile?.let { bookshelfNetworkClass.fetchUserBookshelves(userId = it.authId) }
+            if (result is NetworkResult.Success) {
+                val updated = result.data.firstOrNull { it.id == bookshelfId }
+                if (updated != null && updated.name == target.name && updated.description == target.description) {
+                    return
+                }
+            }
+            delay(300)
+        }
+    }
+
+    private suspend fun waitUntilBookshelfIsCreated(
+        target: BookshelfRef,
+        timeoutMs: Long = 3000L
+    ) {
+        val start = System.currentTimeMillis()
+        while (System.currentTimeMillis() - start < timeoutMs) {
+            val result = userProfile?.let { bookshelfNetworkClass.fetchUserBookshelves(userId = it.authId) }
+            if (result is NetworkResult.Success) {
+                val match = result.data.any {
+                    it.name == target.name && it.description == target.description
+                }
+                if (match) return
+            }
+            delay(300)
+        }
     }
 
 
@@ -127,3 +181,5 @@ class BookshelfRepositoryImpl(
         const val TAG = "BookshelfRepositoryImpl"
     }
 }
+
+

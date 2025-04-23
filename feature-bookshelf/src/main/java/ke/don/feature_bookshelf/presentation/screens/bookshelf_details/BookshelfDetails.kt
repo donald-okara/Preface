@@ -22,6 +22,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.hilt.navigation.compose.hiltViewModel
+import ke.don.common_datasource.remote.domain.states.BookshelfUiState
 import ke.don.feature_bookshelf.presentation.screens.bookshelf_details.components.BookList
 import ke.don.feature_bookshelf.presentation.shared_components.BookshelfOptionsSheet
 import ke.don.shared_domain.states.ResultState
@@ -31,15 +32,13 @@ import ke.don.shared_domain.states.ResultState
 fun BookshelfDetailsRoute(
     modifier: Modifier = Modifier,
     bookshelfId: Int,
+    bookshelfUiState: BookshelfUiState,
+    eventHandler: (BookshelfEventHandler) -> Unit,
     onNavigateToEdit: (Int) -> Unit,
-    bookshelfDetailsViewModel: BookshelfDetailsViewModel = hiltViewModel(),
     navigateBack: () -> Unit,
     onItemClick: (String) -> Unit
 ) {
-    val bookshelfUiState by bookshelfDetailsViewModel.bookshelfUiState.collectAsState()
-
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-
 
     Scaffold(
         topBar = {
@@ -55,7 +54,7 @@ fun BookshelfDetailsRoute(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { bookshelfDetailsViewModel.updateShowSheet() }) {
+                    IconButton(onClick = { eventHandler(BookshelfEventHandler.ToggleBottomSheet) }) {
                         Icon(
                             imageVector = Icons.Outlined.MoreVert,
                             contentDescription = "Options"
@@ -76,7 +75,7 @@ fun BookshelfDetailsRoute(
         ) {
             when (val state = bookshelfUiState.resultState) {
                 is ResultState.Success -> {
-                    if (bookshelfUiState.bookShelf.id == -1 || bookshelfUiState.bookShelf.name == "") { // Loading state indicator
+                    if (bookshelfUiState.bookShelf.id == -1 || bookshelfUiState.bookShelf.name == "" || bookshelfUiState.bookShelf.id != bookshelfId) { // Loading state indicator
                         CircularProgressIndicator()
                     } else {
                         BookList(
@@ -91,13 +90,15 @@ fun BookshelfDetailsRoute(
                             title = bookshelfUiState.bookShelf.name,
                             bookshelfSize = "${bookshelfUiState.bookShelf.books.size} books",
                             showBottomSheet = bookshelfUiState.showOptionsSheet,
-                            onDismissSheet = { bookshelfDetailsViewModel.updateShowSheet() },
+                            onDismissSheet = { eventHandler(BookshelfEventHandler.ToggleBottomSheet) },
                             bookshelfId = bookshelfId,
                             onNavigateToEdit = onNavigateToEdit,
                             onDeleteBookshelf = {
-                                bookshelfDetailsViewModel.deleteBookshelf(
-                                    bookshelfId = bookshelfId,
-                                    onNavigateBack = navigateBack
+                                eventHandler(
+                                    BookshelfEventHandler.DeleteBookshelf(
+                                        onNavigateBack = navigateBack,
+                                        bookShelfId = bookshelfId
+                                    )
                                 )
                             }
                         )

@@ -13,7 +13,7 @@ data class UserLibraryState(
     val userBookshelves: List<BookShelf> = emptyList(),
     val successState: SuccessState = SuccessState.IDLE,
     val selectedBookshelfId: Int? = null,
-    val isRefreshing: Boolean = false,
+    val isRefreshing: Boolean = true,
     val showOptionsSheet: Boolean = false
 )
 

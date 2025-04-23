@@ -10,4 +10,6 @@ sealed class LibraryEventHandler {
     data class DeleteBookshelf(val bookshelfId: Int): LibraryEventHandler()
 
     data class ToggleBottomSheet(val newState: Boolean): LibraryEventHandler()
+
+    data object ResetState: LibraryEventHandler()
 }

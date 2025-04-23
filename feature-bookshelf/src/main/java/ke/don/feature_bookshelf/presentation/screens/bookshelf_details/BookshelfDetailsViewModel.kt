@@ -20,6 +20,21 @@ class BookshelfDetailsViewModel @Inject constructor(
     private val _bookshelfUiState = MutableStateFlow(BookshelfUiState())
     val bookshelfUiState: StateFlow<BookshelfUiState> = _bookshelfUiState
 
+    fun handleEvents(event: BookshelfEventHandler){
+        when(event){
+            is BookshelfEventHandler.FetchBookshelf -> {
+                fetchBookshelf(event.bookShelfId)
+            }
+
+            is BookshelfEventHandler.DeleteBookshelf -> {
+                deleteBookshelf(event.onNavigateBack, event.bookShelfId)
+            }
+
+            is BookshelfEventHandler.ToggleBottomSheet -> {
+                updateShowSheet()
+            }
+        }
+    }
     fun fetchBookshelf(bookshelfId: Int) {
         viewModelScope.launch {
                 when (val result = bookshelfRepository.fetchBookshelfById(bookshelfId)){
@@ -41,8 +56,6 @@ class BookshelfDetailsViewModel @Inject constructor(
             }
         }
     }
-
-
 
     fun updateShowSheet(){
         _bookshelfUiState.update {
