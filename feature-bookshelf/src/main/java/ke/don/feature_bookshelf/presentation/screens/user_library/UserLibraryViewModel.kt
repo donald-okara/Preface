@@ -48,29 +48,16 @@ class UserLibraryViewModel @Inject constructor(
 
     fun refreshAction() {
         viewModelScope.launch {
-            Log.d(
-                "UserLibraryViewModel",
-                "Attempting refresh🥱. State::: ${userLibraryState.value.isRefreshing}"
-            )
-
             _userLibraryState.update {
                 it.copy(isRefreshing = true)
             }
             delay(2000)
 
-            Log.d(
-                "UserLibraryViewModel",
-                "Refreshing. State::: ${userLibraryState.value.isRefreshing}"
-            )
-
             fetchUserBookShelves()
             _userLibraryState.update {
                 it.copy(isRefreshing = false)
             }
-            Log.d(
-                "UserLibraryViewModel",
-                "Done refreshing🏁. State::: ${userLibraryState.value.isRefreshing}"
-            )
+
         }
     }
 
