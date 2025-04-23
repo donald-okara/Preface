@@ -38,6 +38,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.androidx.AndroidScreen
@@ -87,6 +88,8 @@ object MainScreen : AndroidScreen() {
     override fun Content() {
         val navigator = LocalNavigator.current // Top-level navigator managing MainScreen
         // Define tab instances
+        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+
         val myLibraryTab = remember {
             MyLibraryTab(
                 onNavigateToAddBookshelf = {
@@ -118,10 +121,9 @@ object MainScreen : AndroidScreen() {
         }
         val tabs = listOf(myLibraryTab, searchTab, profileTab)
 
-        val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
-
         TabNavigator(myLibraryTab) { tabNavigator ->
             Scaffold(
+                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                 topBar = {
                     CenterAlignedTopAppBar(
                         scrollBehavior = scrollBehavior,
