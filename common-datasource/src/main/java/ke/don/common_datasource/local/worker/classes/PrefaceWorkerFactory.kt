@@ -17,8 +17,8 @@ class PrefaceWorkerFactory @Inject constructor(
     private val bookshelfDao: BookshelfDao,
     private val userProfile: Profile?,
     private val profileDataStoreManager: ProfileDataStoreManager,
-    private val profileNetworkClass: ProfileNetworkClass,
-    ) : WorkerFactory() {
+    private val profileNetworkClass: ProfileNetworkClass
+) : WorkerFactory() {
     override fun createWorker(
         appContext: Context,
         workerClassName: String,

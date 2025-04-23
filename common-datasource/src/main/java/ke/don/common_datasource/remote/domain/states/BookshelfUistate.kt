@@ -18,8 +18,11 @@ data class UserLibraryState(
 )
 
 data class BookshelfUiState(
-    val bookShelf: Flow<BookshelfEntity> = emptyFlow(),
+    val bookshelfId: Int? =null,
+    val bookShelf: BookshelfEntity = BookshelfEntity(),
     val resultState: ResultState = ResultState.Empty,
+    val showOptionsSheet: Boolean = false,
+
 )
 
 fun BookshelfEntity.toBookshelfBookDetails(

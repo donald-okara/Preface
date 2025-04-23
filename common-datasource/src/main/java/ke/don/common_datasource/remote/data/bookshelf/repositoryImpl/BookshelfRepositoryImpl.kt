@@ -88,7 +88,7 @@ class BookshelfRepositoryImpl(
 
     }
 
-    override suspend fun fetchBookshelfById(bookshelfId: Int): NetworkResult<Flow<BookshelfEntity>> {
+    override suspend fun fetchBookshelfById(bookshelfId: Int): NetworkResult<BookshelfEntity> {
         return NetworkResult.Success(bookshelfDao.getBookshelfById(bookshelfId))
     }
 

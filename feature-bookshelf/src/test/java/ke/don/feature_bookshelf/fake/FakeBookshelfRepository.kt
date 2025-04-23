@@ -1,9 +1,11 @@
 package ke.don.feature_bookshelf.fake
 
 import ke.don.common_datasource.local.roomdb.entities.BookshelfEntity
+import ke.don.common_datasource.local.roomdb.entities.toEntity
 import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
 import ke.don.common_datasource.remote.domain.states.NoDataReturned
 import ke.don.feature_bookshelf.fake.FakeBookshelf.fakeBookShelves
+import ke.don.feature_bookshelf.fake.FakeBookshelf.fictionBookshelf
 import ke.don.shared_domain.data_models.BookShelf
 import ke.don.shared_domain.data_models.BookshelfRef
 import ke.don.shared_domain.states.NetworkResult
@@ -14,8 +16,12 @@ class FakeBookshelfRepository() : BookshelfRepository{
         TODO("Not yet implemented")
     }
 
-    override suspend fun fetchBookshelfById(bookshelfId: Int): NetworkResult<Flow<BookshelfEntity>> {
-        TODO("Not yet implemented")
+    override suspend fun fetchBookshelfById(bookshelfId: Int): NetworkResult<BookshelfEntity> {
+        return if (bookshelfId != -1) {
+            NetworkResult.Success(fictionBookshelf.toEntity())
+        }else {
+            NetworkResult.Error(message = "Something went wrong")
+        }
     }
 
     override suspend fun fetchUserBookShelves(): NetworkResult<List<BookShelf>> {

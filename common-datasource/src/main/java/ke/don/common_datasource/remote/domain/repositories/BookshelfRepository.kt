@@ -9,7 +9,7 @@ import kotlinx.coroutines.flow.Flow
 
 interface BookshelfRepository {
     suspend fun createBookshelf(bookshelf: BookshelfRef): NetworkResult<NoDataReturned>
-    suspend fun fetchBookshelfById(bookshelfId: Int): NetworkResult<Flow<BookshelfEntity>>
+    suspend fun fetchBookshelfById(bookshelfId: Int): NetworkResult<BookshelfEntity>
     suspend fun fetchUserBookShelves():NetworkResult<List<BookShelf>>
     suspend fun syncLocalBookshelvesDb():NetworkResult<NoDataReturned>
     suspend fun editBookshelf(bookshelfId: Int, bookshelf: BookshelfRef): NetworkResult<NoDataReturned>
