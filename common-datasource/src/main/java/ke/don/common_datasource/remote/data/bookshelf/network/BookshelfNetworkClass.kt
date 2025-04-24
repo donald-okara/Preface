@@ -14,6 +14,8 @@ import ke.don.shared_domain.values.BOOKSHELFTABLE
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import io.github.jan.supabase.postgrest.rpc
+import ke.don.shared_domain.values.USERBOOKSHELVESVIEW
+import ke.don.shared_domain.values.USERPROGRESSVIEW
 
 class BookshelfNetworkClass(
     private val supabaseClient: SupabaseClient,
@@ -21,18 +23,31 @@ class BookshelfNetworkClass(
    /**
      * CREATE
      */
-    suspend fun createBookshelf(
-        bookshelf :BookshelfRef
-    ): NetworkResult<NoDataReturned>{
-        return try {
-            val response = supabaseClient.from(BOOKSHELFTABLE).insert(bookshelf){select()}.decodeSingleOrNull<BookshelfRef>()
-            Log.d(TAG, "Bookshelf inserted successfully::: $response")
-            NetworkResult.Success(NoDataReturned())
-        }catch (e: Exception){
-            e.printStackTrace()
-            NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
-        }
-    }
+   suspend fun createBookshelf(
+       bookshelf: BookshelfRef
+   ): NetworkResult<BookshelfRef> {
+       return try {
+           val response = supabaseClient
+               .from(BOOKSHELFTABLE)
+               .insert(bookshelf) { select() }
+               .decodeSingleOrNull<BookshelfRef>()
+
+           Log.d(TAG, "Bookshelf inserted successfully: $response")
+
+           if (response != null) {
+               NetworkResult.Success(response)
+           } else {
+               NetworkResult.Error(message = "Failed to create bookshelf")
+           }
+       } catch (e: Exception) {
+           e.printStackTrace()
+           NetworkResult.Error(
+               message = e.message.orEmpty(),
+               hint    = e.cause?.toString().orEmpty(),
+               details = e.stackTraceToString()
+           )
+       }
+   }
 
     /**
      * READ
@@ -53,12 +68,12 @@ class BookshelfNetworkClass(
     }
 
 
-    suspend fun fetchUserBookshelves(userId: String): NetworkResult<List<BookshelfEntity>> = withContext(Dispatchers.IO){
-        return@withContext try {
-            val result = supabaseClient.postgrest.rpc(
-                function = "fetch_user_bookshelves",
-                parameters = mapOf("p_user_id" to userId)
-            ).decodeList<BookshelfEntity>()
+    suspend fun fetchUserBookshelves(userId: String): NetworkResult<List<BookshelfEntity>>{
+        return try {
+            val result = supabaseClient.from(USERBOOKSHELVESVIEW)
+                .select {
+                    filter { BookshelfRef::userId eq userId }
+                }.decodeList<BookshelfEntity>()
 
             NetworkResult.Success(result)
         } catch (e: Exception) {

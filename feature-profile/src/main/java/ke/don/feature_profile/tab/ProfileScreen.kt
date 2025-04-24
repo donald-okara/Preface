@@ -55,15 +55,11 @@ fun ProfileScreen(
     modifier: Modifier = Modifier,
     paddingValues: PaddingValues = PaddingValues(),
     onNavigateToSignIn: () -> Unit,
-    viewModel: ProfileViewModel,
     profileTabEventHandler: (ProfileTabEventHandler) -> Unit,
     profileState: ProfileTabState,
     onNavigateToBook: (String) -> Unit
 ){
-    LaunchedEffect(viewModel) {
-        profileTabEventHandler(ProfileTabEventHandler.FetchProfile)
-        profileTabEventHandler(ProfileTabEventHandler.FetchUserProgress)
-    }
+
 
     Box(
         contentAlignment = Alignment.TopCenter,
@@ -80,7 +76,7 @@ fun ProfileScreen(
 
                 ProfileBottomSheet(
                     modifier = modifier,
-                    onSignOut = { viewModel.signOut(onNavigateToSignIn) },
+                    onSignOut = { profileTabEventHandler(ProfileTabEventHandler.SignOut(onNavigateToSignIn)) },
                     state = profileState,
                     profileTabEventHandler = profileTabEventHandler
                 )

@@ -76,6 +76,7 @@ data class Dimensions(
     val width: String = "",
     val thickness: String = ""
 ){
+
     fun calculateAspectRatio(fallbackAspectRatio: Float = 2f / 3f): Float {
         try {
             // Function to extract the numerical part from a dimension string
@@ -105,6 +106,8 @@ data class Dimensions(
         return fallbackAspectRatio
     }
 }
+
+
 @Serializable
 data class PanelizationSummary(
     val containsEpubBubbles: Boolean = false,

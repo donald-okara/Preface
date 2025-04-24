@@ -142,7 +142,6 @@ fun IndividualReadingProgressCard(
 fun RoundedProgressBar(
     modifier: Modifier = Modifier,
     progress: Float, // Range: 0f to 1f
-     // Explicit height to make it visible
     backgroundColor: Color = MaterialTheme.colorScheme.surfaceContainer,
     progressColor: Color = MaterialTheme.colorScheme.primary,
     height: Dp = 12.dp

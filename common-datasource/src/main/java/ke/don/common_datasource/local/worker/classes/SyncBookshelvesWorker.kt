@@ -1,11 +1,13 @@
-package ke.don.common_datasource.local.worker
+package ke.don.common_datasource.local.worker.classes
 
 import android.content.Context
+import android.util.Log
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
+import ke.don.common_datasource.local.datastore.profile.ProfileDataStoreManager
 import ke.don.common_datasource.local.roomdb.dao.BookshelfDao
 import ke.don.common_datasource.remote.data.bookshelf.network.BookshelfNetworkClass
 import ke.don.shared_domain.data_models.Profile
@@ -17,12 +19,15 @@ class SyncBookshelvesWorker @AssistedInject constructor(
     @Assisted workerParams: WorkerParameters,
     private val bookshelfNetworkClass: BookshelfNetworkClass,
     private val bookshelfDao: BookshelfDao,
-    private val userProfile: Profile?
+    private val profileDataStoreManager: ProfileDataStoreManager,
 ) : CoroutineWorker(appContext, workerParams) {
 
     override suspend fun doWork(): Result {
         return try {
-            if (userProfile == null) return Result.failure()
+            val userProfile = profileDataStoreManager.getProfileFromDatastore()
+            Log.d(TAG,"Work manager running")
+            Result.success()
+
 
             when (val result = bookshelfNetworkClass.fetchUserBookshelves(userProfile.authId)) {
                 is NetworkResult.Error -> Result.retry()
@@ -36,5 +41,9 @@ class SyncBookshelvesWorker @AssistedInject constructor(
         } catch (e: Exception) {
             Result.retry()
         }
+    }
+
+    companion object {
+        const val TAG = "SyncBookshelvesWorker"
     }
 }

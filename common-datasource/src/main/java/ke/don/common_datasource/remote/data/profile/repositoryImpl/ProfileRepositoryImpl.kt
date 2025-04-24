@@ -3,24 +3,16 @@ package ke.don.common_datasource.remote.data.profile.repositoryImpl
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
-import androidx.work.Constraints
-import androidx.work.ExistingWorkPolicy
-import androidx.work.NetworkType
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
 import ke.don.common_datasource.local.datastore.profile.ProfileDataStoreManager
-import ke.don.common_datasource.local.datastore.profile.profileDataStore
 import ke.don.common_datasource.local.roomdb.dao.BookshelfDao
-import ke.don.common_datasource.local.worker.SyncBookshelvesWorker
-import ke.don.common_datasource.local.worker.SyncProfileWorker
 import ke.don.common_datasource.remote.data.profile.network.ProfileNetworkClass
-import ke.don.common_datasource.remote.domain.getters.generateNonce
-import ke.don.common_datasource.remote.domain.repositories.BooksRepository
 import ke.don.common_datasource.remote.domain.repositories.ProfileRepository
 import ke.don.common_datasource.remote.domain.states.NoDataReturned
 import ke.don.shared_domain.data_models.Profile
 import ke.don.shared_domain.data_models.ProfileDetails
 import ke.don.shared_domain.states.NetworkResult
+import java.security.MessageDigest
+import java.util.UUID
 
 class ProfileRepositoryImpl(
     private val profileNetworkClass: ProfileNetworkClass,
@@ -28,14 +20,20 @@ class ProfileRepositoryImpl(
     private val bookshelfDao: BookshelfDao,
     private val profileDataStoreManager: ProfileDataStoreManager
 ): ProfileRepository {
+    private var _rawNonce: String? = null
     override val rawNonce: String
-    override val hashedNonce: String
+        get() = _rawNonce ?: throw IllegalStateException("Nonce not yet generated")
 
-    init {
-        val (raw, hashed) = generateNonce()
-        rawNonce = raw
-        hashedNonce = hashed
+    override fun generateNonce(): Pair<String, String> {
+        val raw = UUID.randomUUID().toString() // Generate raw nonce
+        val bytes = raw.toByteArray() // Use raw directly, not rawNonce
+        val md = MessageDigest.getInstance("SHA-256")
+        val digest = md.digest(bytes)
+        val hashedNonce = digest.fold("") { str, it -> str + "%02x".format(it) }
+        _rawNonce = raw // Store raw nonce for later access
+        return raw to hashedNonce
     }
+
 
     override suspend fun checkSignedInStatus(): Boolean = profileNetworkClass.checkSignedInStatus()
 
@@ -59,6 +57,7 @@ class ProfileRepositoryImpl(
             val profile = Profile(
                 name = displayName,
                 avatarUrl = profilePictureUri,
+                authId = signInResult.data.id,
                 email = signInResult.data.email ?: "",
             )
 
@@ -81,7 +80,8 @@ class ProfileRepositoryImpl(
                 }
             }
 
-            syncUserProfile(userId)
+
+          profileDataStoreManager.setProfileInDatastore(profile)
         } catch (e: Exception) {
             Log.e(TAG, "Exception in signInAndInsertProfile", e)
             NetworkResult.Error(
@@ -97,21 +97,7 @@ class ProfileRepositoryImpl(
         val profileResult = profileNetworkClass.fetchUserProfile(userId)
 
         return if (profileResult is NetworkResult.Success) {
-            val request = OneTimeWorkRequestBuilder<SyncProfileWorker>()
-                .setConstraints(
-                    Constraints.Builder()
-                        .setRequiredNetworkType(NetworkType.CONNECTED)
-                        .build()
-                )
-                .build()
-
-            WorkManager.getInstance(context)
-                .enqueueUniqueWork(
-                    "profile_sync",
-                    ExistingWorkPolicy.REPLACE,
-                    request
-                )
-            NetworkResult.Success(NoDataReturned())
+            profileDataStoreManager.setProfileInDatastore(profileResult.data)
         } else {
             Log.e(TAG, "Error fetching profile: ${(profileResult as NetworkResult.Error).message}")
             NetworkResult.Error(

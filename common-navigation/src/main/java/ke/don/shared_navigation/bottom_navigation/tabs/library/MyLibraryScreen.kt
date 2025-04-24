@@ -6,11 +6,18 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.hilt.navigation.compose.hiltViewModel
 import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import ke.don.feature_bookshelf.presentation.screens.add_bookshelf.AddBookshelfRoute
 import ke.don.feature_bookshelf.presentation.screens.bookshelf_details.BookshelfDetailsRoute
+import ke.don.feature_bookshelf.presentation.screens.bookshelf_details.BookshelfDetailsViewModel
+import ke.don.feature_bookshelf.presentation.screens.bookshelf_details.BookshelfEventHandler
+import ke.don.shared_navigation.MainScreen
 import ke.don.shared_navigation.bottom_navigation.tabs.search.BookDetailsVoyagerScreen
 
 
@@ -48,8 +55,18 @@ class BookshelfDetailsScreen(private val bookshelfId: Int) : AndroidScreen() {
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.current
+        val viewModel: BookshelfDetailsViewModel = hiltViewModel()
+        val bookshelfUiState by viewModel.bookshelfUiState.collectAsState()
+        val eventHandler = viewModel::handleEvents
+
+        LaunchedEffect(viewModel) {
+            eventHandler(BookshelfEventHandler.FetchBookshelf(bookshelfId))
+        }
+
         BookshelfDetailsRoute(
             bookshelfId = bookshelfId,
+            bookshelfUiState = bookshelfUiState,
+            eventHandler = eventHandler,
             navigateBack = { navigator?.pop() },
             onItemClick = { bookId ->
                 navigator?.push(BookDetailsVoyagerScreen(bookId))

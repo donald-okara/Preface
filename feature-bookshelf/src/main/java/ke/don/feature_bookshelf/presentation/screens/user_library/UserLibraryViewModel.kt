@@ -7,11 +7,9 @@ import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
 import ke.don.common_datasource.remote.domain.states.UserLibraryState
 import ke.don.shared_domain.states.NetworkResult
 import ke.don.shared_domain.states.SuccessState
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -21,42 +19,83 @@ class UserLibraryViewModel @Inject constructor(
     private val bookshelfRepository: BookshelfRepository
 ) : ViewModel() {
     private val _userLibraryState = MutableStateFlow(UserLibraryState())
-    val userLibraryState = _userLibraryState
-        .onStart { fetchUserBookShelves() }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = UserLibraryState()
-        )
+    val userLibraryState: StateFlow<UserLibraryState> = _userLibraryState
 
-    private val _selectedBookshelfId = MutableStateFlow<Int?>(null)
-    val selectedBookshelfId: StateFlow<Int?> = _selectedBookshelfId
+    fun handleEvent(eventHandler: LibraryEventHandler){
+        when (eventHandler){
+            is LibraryEventHandler.FetchBookshelves -> {
+                refreshAction()
+            }
 
-    private val _showOptionsSheet = MutableStateFlow(false)
-    val showOptionsSheet: StateFlow<Boolean> = _showOptionsSheet
+            is LibraryEventHandler.DeleteBookshelf -> {
+                deleteBookshelf(bookshelfId = eventHandler.bookshelfId)
+            }
 
+            is LibraryEventHandler.RefreshAction -> {
+                refreshAction()
+            }
 
-    fun refreshAction(onRefreshComplete: () -> Unit){
-        viewModelScope.launch {
-            try {
-                fetchUserBookShelves()
-            } finally {
-                onRefreshComplete()
+            is LibraryEventHandler.SelectBookshelf -> {
+                onShowBottomSheet(bookshelfId = eventHandler.bookshelfId)
+            }
+
+            is LibraryEventHandler.ToggleBottomSheet -> {
+                updateShowSheet(eventHandler.newState)
+            }
+
+            is LibraryEventHandler.ResetState -> {
+                onCleared()
             }
         }
     }
 
-    fun updateSelectedBookshelf(bookshelfId: Int?) {
-        _selectedBookshelfId.value = bookshelfId
-    }
+    fun refreshAction() {
+        viewModelScope.launch {
+            _userLibraryState.update {
+                it.copy(isRefreshing = true)
+            }
+            delay(2000)
 
-    fun updateShowSheet(newState: Boolean){
-        _showOptionsSheet.update {
-            newState
+            fetchUserBookShelves()
+            _userLibraryState.update {
+                it.copy(isRefreshing = false)
+            }
+
         }
     }
 
-    private fun fetchUserBookShelves() {
+    fun onShowBottomSheet(bookshelfId: Int?) {
+        if (bookshelfId != null) {
+
+            _userLibraryState.update {
+                it.copy(
+                    selectedBookshelfId = bookshelfId
+                )
+            }
+            updateShowSheet(
+                newState = !userLibraryState.value.showOptionsSheet
+            )
+        }else{
+            _userLibraryState.update {
+                it.copy(
+                    selectedBookshelfId = null
+                )
+            }
+            updateShowSheet(
+                newState = !userLibraryState.value.showOptionsSheet
+            )
+        }
+    }
+
+    fun updateShowSheet(newState: Boolean) {
+        _userLibraryState.update {
+            it.copy(
+                showOptionsSheet = newState
+            )
+        }
+    }
+
+    fun fetchUserBookShelves() {
         viewModelScope.launch {
             _userLibraryState.update {
                 it.copy(successState = SuccessState.LOADING)
@@ -74,7 +113,7 @@ class UserLibraryViewModel @Inject constructor(
                     _userLibraryState.update { libraryState ->
                         libraryState.copy(
                             userBookshelves = result.data,
-                            successState = SuccessState.SUCCESS
+                            successState = SuccessState.SUCCESS,
                         )
                     }
                 }
@@ -82,7 +121,7 @@ class UserLibraryViewModel @Inject constructor(
         }
     }
 
-    fun deleteBookshelf(onRefreshComplete: () -> Unit, bookshelfId : Int){
+    fun deleteBookshelf(bookshelfId : Int){
         viewModelScope.launch {
             when (bookshelfRepository.deleteBookshelf(bookshelfId)){
                 is NetworkResult.Error -> {
@@ -94,7 +133,7 @@ class UserLibraryViewModel @Inject constructor(
                 }
                 is NetworkResult.Success -> {
                     updateShowSheet(false)
-                    refreshAction(onRefreshComplete)
+                    refreshAction()
                     _userLibraryState.update { libraryState ->
                         libraryState.copy(
                             successState = SuccessState.SUCCESS
@@ -103,6 +142,13 @@ class UserLibraryViewModel @Inject constructor(
                 }
 
             }
+        }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        _userLibraryState.update { 
+            UserLibraryState()
         }
     }
 }

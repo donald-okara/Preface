@@ -3,14 +3,8 @@ package ke.don.common_datasource.remote.data.book_details.repositoryImpl
 import android.content.Context
 import android.util.Log
 import android.widget.Toast
-import androidx.work.Constraints
-import androidx.work.ExistingWorkPolicy
-import androidx.work.NetworkType
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
 import ke.don.common_datasource.local.roomdb.dao.BookshelfDao
 import ke.don.common_datasource.local.roomdb.entities.BookshelfEntity
-import ke.don.common_datasource.local.worker.SyncBookshelvesWorker
 import ke.don.common_datasource.remote.data.book_details.network.BookNetworkClass
 import ke.don.common_datasource.remote.data.book_details.network.GoogleBooksApi
 import ke.don.common_datasource.remote.data.bookshelf.network.BookshelfNetworkClass
