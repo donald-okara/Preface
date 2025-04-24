@@ -2,6 +2,7 @@ package ke.don.feature_bookshelf.presentation.screens.user_library
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -20,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import ke.don.common_datasource.remote.domain.states.UserLibraryState
 import ke.don.feature_bookshelf.presentation.screens.user_library.components.BookshelfItem
+import ke.don.shared_components.components.EmptyScreen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,6 +61,15 @@ fun UserLibraryScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
+            if(bookshelves.isEmpty()){
+                EmptyScreen(
+                    icon = Icons.Outlined.CollectionsBookmark,
+                    message = "You have no bookshelves yet",
+                    action = {onAddBookshelf()},
+                    actionText = "Build your library book by book",
+                    modifier = modifier.fillMaxWidth()
+                )
+            }
             LazyColumn (
                 modifier = modifier
                     .padding(8.dp)
@@ -66,7 +77,6 @@ fun UserLibraryScreen(
                 horizontalAlignment = Alignment.Start,
                 verticalArrangement = Arrangement.spacedBy(4.dp),
             ) {
-
                 items(
                     items = uniqueBookshelves.sortedByDescending { it.books.size },
                     key = { bookShelf -> bookShelf.supabaseBookShelf.id }) { shelfItem ->

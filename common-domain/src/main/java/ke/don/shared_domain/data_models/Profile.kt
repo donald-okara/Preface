@@ -5,7 +5,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Profile(
-    val id: Int = 0,
     val name : String = "",
     val email: String = "",
     @SerialName("auth_id")
@@ -18,7 +17,6 @@ data class Profile(
 
 @Serializable
 data class ProfileDetails(
-    val id: Int = 0,
     val name : String = "",
 
     @SerialName("auth_id")

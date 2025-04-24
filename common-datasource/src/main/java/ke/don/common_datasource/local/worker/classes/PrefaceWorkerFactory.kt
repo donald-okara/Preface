@@ -15,9 +15,8 @@ import androidx.work.ListenableWorker
 class PrefaceWorkerFactory @Inject constructor(
     private val bookshelfNetworkClass: BookshelfNetworkClass,
     private val bookshelfDao: BookshelfDao,
-    private val userProfile: Profile?,
     private val profileDataStoreManager: ProfileDataStoreManager,
-    private val profileNetworkClass: ProfileNetworkClass
+    private val userProfile: Profile?,
 ) : WorkerFactory() {
     override fun createWorker(
         appContext: Context,
@@ -29,15 +28,8 @@ class PrefaceWorkerFactory @Inject constructor(
                 appContext = appContext,
                 workerParams = workerParameters,
                 bookshelfNetworkClass = bookshelfNetworkClass,
-                bookshelfDao = bookshelfDao,
-                userProfile = userProfile,
-            )
-            SyncProfileWorker::class.java.name -> SyncProfileWorker(
-                appContext = appContext,
-                workerParams = workerParameters,
-                userProfile = userProfile,
                 profileDataStoreManager = profileDataStoreManager,
-                profileNetworkClass = profileNetworkClass
+                bookshelfDao = bookshelfDao,
             )
 
             else -> null // Let WorkManager handle unknown workers with default factory

@@ -8,7 +8,8 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface ProfileRepository {
     val rawNonce: String
-    val hashedNonce: String
+
+    fun generateNonce(): Pair<String, String> // Returns raw and hashed nonce
 
     suspend fun signInAndInsertProfile(
         idToken: String,

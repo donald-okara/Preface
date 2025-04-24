@@ -81,12 +81,18 @@ class ProfileNetworkClass(
 
     suspend fun insertUserProfile(
         profile : Profile
-    ): NetworkResult<NoDataReturned>{
+    ): NetworkResult<Profile>{
         return try {
-            supabase.from(PROFILESTABLE).insert(profile)
+            val response= supabase.from(PROFILESTABLE)
+                .insert(profile) { select() }
+                .decodeSingleOrNull<Profile>()
             Log.d(TAG, "Profile inserted successfully")
 
-            NetworkResult.Success(NoDataReturned())
+            if (response != null) {
+                NetworkResult.Success(response)
+            } else {
+                NetworkResult.Error(message = "Failed to create profile")
+            }
         } catch (e: Exception) {
             e.printStackTrace()
             Toast.makeText(context, "Failed to create profile. Please try again later", Toast.LENGTH_SHORT).show()
@@ -222,13 +228,14 @@ class ProfileNetworkClass(
 }
 
 suspend fun Context.reloadSession(): Boolean {
-
     try {
         val localProfile =  withTimeoutOrNull(5_000) { // 5-second timeout
             profileDataStore.data
                 .filter { it.authId.isNotEmpty() }
                 .first()
         } ?: Profile(authId = "", /* other default fields */) // or throw an exception
+
+        Log.e("Context", "profile: $localProfile",)
 
         return (localProfile.authId.isNotEmpty())
 

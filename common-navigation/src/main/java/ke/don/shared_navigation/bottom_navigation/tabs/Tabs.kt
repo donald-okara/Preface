@@ -56,10 +56,9 @@ class MyLibraryTab(
         val tabNavigator = LocalTabNavigator.current
         val isSelected = tabNavigator.current == this
 
-        LaunchedEffect(isSelected) {
-            if (isSelected) {
-                eventHandler(LibraryEventHandler.FetchBookshelves)
-            }
+        LaunchedEffect(viewModel) {
+            eventHandler(LibraryEventHandler.FetchBookshelves)
+
         }
 
         UserLibraryScreen(
