@@ -34,8 +34,7 @@ fun UserLibraryScreen(
     onAddBookshelf: () -> Unit,
 ) {
     val bookshelves = userLibraryState.userBookshelves
-    val uniqueBookshelves = bookshelves.distinctBy { it.supabaseBookShelf.id }
-    val selectedBookshelfId = userLibraryState.selectedBookshelfId
+    val uniqueBookshelves = bookshelves.distinctBy { it.bookshelfRef.id }
 
     val pullToRefreshState = rememberPullToRefreshState()
 
@@ -79,30 +78,15 @@ fun UserLibraryScreen(
             ) {
                 items(
                     items = uniqueBookshelves.sortedByDescending { it.books.size },
-                    key = { bookShelf -> bookShelf.supabaseBookShelf.id }) { shelfItem ->
+                    key = { bookShelf -> bookShelf.bookshelfRef.id }) { shelfItem ->
+                    val showOptionSheet = userLibraryState.selectedBookshelfId == shelfItem.bookshelfRef.id
                     BookshelfItem(
-                        onNavigateToBookshefItem = onNavigateToBookshefItem,
-                        coverImages = shelfItem.books.mapNotNull { it.highestImageUrl?.takeIf { image -> image.isNotEmpty() } },
-                        bookshelfTitle = shelfItem.supabaseBookShelf.name,
-                        bookshelfSize = "${shelfItem.books.size} books",
-                        bookshelfId = shelfItem.supabaseBookShelf.id,
-                        onDeleteBookshelf = { bookshelfId ->
-                            eventHandler(
-                                LibraryEventHandler.DeleteBookshelf(bookshelfId = bookshelfId)
-                            )
-                        },
-                        showBottomSheet = selectedBookshelfId == shelfItem.supabaseBookShelf.id, // Only show for selected item
+                        modifier = modifier,
+                        bookshelf = shelfItem,
+                        onNavigateToBookshelfItem = onNavigateToBookshefItem,
+                        eventHandler = eventHandler,
                         onNavigateToEdit = onNavigateToEdit,
-                        onShowBottomSheet = {
-                            eventHandler(
-                                LibraryEventHandler.SelectBookshelf(
-                                    shelfItem.supabaseBookShelf.id
-                                )
-                            )
-                        },
-                        onDismissBottomSheet = {
-                            eventHandler(LibraryEventHandler.SelectBookshelf(null))
-                        }
+                        showOptionsSheet = showOptionSheet
                     )
                 }
 

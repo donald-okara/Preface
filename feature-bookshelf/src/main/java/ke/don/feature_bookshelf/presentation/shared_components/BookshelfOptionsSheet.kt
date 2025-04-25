@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -42,21 +41,19 @@ import ke.don.shared_components.components.SheetOptionItem
 fun BookshelfOptionsSheet(
     modifier: Modifier = Modifier,
     bookCovers: List<String>,
+    showOptionsSheet: Boolean,
+    onToggleBottomSheet: () -> Unit,
     title: String,
     bookshelfSize: String,
-    onNavigateToEdit: (Int) -> Unit,
-    showBottomSheet: Boolean,
     bookshelfId: Int,
-    onDismissSheet: () -> Unit,
-    onDeleteBookshelf: (Int) -> Unit
+    onNavigateToEdit: (Int) -> Unit,
+    onDeleteBookshelf: (Int) -> Unit,
 ){
     val sheetState = rememberModalBottomSheetState()
     var showDeleteDialog by remember { mutableStateOf(false) }
-    if (showBottomSheet) {
+    if (showOptionsSheet) {
         ModalBottomSheet(
-            onDismissRequest = {
-                onDismissSheet()
-            },
+            onDismissRequest = {onToggleBottomSheet()},
             sheetState = sheetState
         ) {
             LazyColumn(

@@ -33,7 +33,7 @@ fun getDominantColor(
         return Color(newColorInt)
     }
 
-    val fallback = MaterialTheme.colorScheme.secondary
+    val fallback = MaterialTheme.colorScheme.primary
 
     return listOf(
         colorPalette.dominantColor,

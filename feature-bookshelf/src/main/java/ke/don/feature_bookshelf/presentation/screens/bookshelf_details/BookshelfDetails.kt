@@ -16,12 +16,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.hilt.navigation.compose.hiltViewModel
 import ke.don.common_datasource.remote.domain.states.BookshelfUiState
 import ke.don.feature_bookshelf.presentation.screens.bookshelf_details.components.BookList
 import ke.don.feature_bookshelf.presentation.shared_components.BookshelfOptionsSheet
@@ -32,7 +29,7 @@ import ke.don.shared_domain.states.ResultState
 fun BookshelfDetailsRoute(
     modifier: Modifier = Modifier,
     bookshelfId: Int,
-    bookshelfUiState: BookshelfUiState,
+    uiState: BookshelfUiState,
     eventHandler: (BookshelfEventHandler) -> Unit,
     onNavigateToEdit: (Int) -> Unit,
     navigateBack: () -> Unit,
@@ -73,34 +70,30 @@ fun BookshelfDetailsRoute(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            when (val state = bookshelfUiState.resultState) {
+            when (val state = uiState.resultState) {
                 is ResultState.Success -> {
-                    if (bookshelfUiState.bookShelf.id == -1 || bookshelfUiState.bookShelf.name == "" || bookshelfUiState.bookShelf.id != bookshelfId) { // Loading state indicator
+                    if (uiState.bookShelf.id == -1 || uiState.bookShelf.name == "" || uiState.bookShelf.id != bookshelfId) { // Loading state indicator
                         CircularProgressIndicator()
                     } else {
                         BookList(
-                            bookShelf = bookshelfUiState.bookShelf,
                             modifier = modifier,
+                            uiState = uiState,
+                            onRefresh = { eventHandler(BookshelfEventHandler.RefreshAction(bookshelfId)) },
                             scrollBehavior = scrollBehavior,
                             onItemClick = onItemClick
                         )
                         BookshelfOptionsSheet(
                             modifier = modifier,
-                            bookCovers = bookshelfUiState.bookShelf.books.mapNotNull { it.highestImageUrl?.takeIf { it.isNotEmpty() } },
-                            title = bookshelfUiState.bookShelf.name,
-                            bookshelfSize = "${bookshelfUiState.bookShelf.books.size} books",
-                            showBottomSheet = bookshelfUiState.showOptionsSheet,
-                            onDismissSheet = { eventHandler(BookshelfEventHandler.ToggleBottomSheet) },
-                            bookshelfId = bookshelfId,
                             onNavigateToEdit = onNavigateToEdit,
-                            onDeleteBookshelf = {
-                                eventHandler(
-                                    BookshelfEventHandler.DeleteBookshelf(
-                                        onNavigateBack = navigateBack,
-                                        bookShelfId = bookshelfId
-                                    )
-                                )
-                            }
+                            showOptionsSheet = uiState.showOptionsSheet,
+                            onToggleBottomSheet = { eventHandler(BookshelfEventHandler.ToggleBottomSheet) },
+                            bookCovers = uiState.bookShelf.books.mapNotNull { supabaseBook ->
+                                supabaseBook.highestImageUrl.takeIf { !it.isNullOrBlank() }
+                            },
+                            title = uiState.bookShelf.name,
+                            bookshelfSize = "${uiState.bookShelf.books.size} books",
+                            bookshelfId = bookshelfId,
+                            onDeleteBookshelf = { eventHandler(BookshelfEventHandler.DeleteBookshelf(onNavigateBack = navigateBack, bookshelfId)) },
                         )
                     }
                 }

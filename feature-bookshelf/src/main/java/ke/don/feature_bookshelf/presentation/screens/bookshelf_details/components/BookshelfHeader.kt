@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
@@ -25,6 +26,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ke.don.feature_bookshelf.R
@@ -72,7 +74,12 @@ fun BookshelfHeader(
             .graphicsLayer {
                 this.alpha = alpha
             }
-            .animateContentSize(animationSpec = tween(animationDuration, easing = FastOutSlowInEasing)) // Ensures smooth resizing
+            .animateContentSize(
+                animationSpec = tween(
+                    animationDuration,
+                    easing = FastOutSlowInEasing
+                )
+            ) // Ensures smooth resizing
 
         if (isCollapsed) {
             Row(
@@ -90,7 +97,9 @@ fun BookshelfHeader(
                     Image(
                         painter = painterResource(R.drawable.bookshelf_placeholder),
                         contentDescription = "Bookshelf item",
-                        modifier = modifier.fillMaxWidth().height(imageHeight)
+                        modifier = modifier
+                            .fillMaxWidth()
+                            .height(imageHeight)
                     )
                 }
 
@@ -131,7 +140,9 @@ fun BookshelfHeader(
                     Image(
                         painter = painterResource(R.drawable.bookshelf_placeholder),
                         contentDescription = "Bookshelf item",
-                        modifier = modifier.fillMaxWidth().height(imageHeight)
+                        modifier = modifier
+                            .fillMaxWidth()
+                            .height(imageHeight)
                     )
                 }
 
@@ -142,20 +153,24 @@ fun BookshelfHeader(
                     modifier = modifier.padding(top = 8.dp)
                 )
 
-                if (bookshelfDescription.isNotEmpty()) {
-                    Text(
-                        text = bookshelfDescription,
-                        maxLines = 2,
-                        style = MaterialTheme.typography.headlineMedium,
-                        modifier = modifier.padding(top = 8.dp)
-                    )
-                }
+
 
                 Text(
                     text = bookshelfSize,
                     style = MaterialTheme.typography.headlineSmall,
                     modifier = modifier.padding(top = 8.dp)
                 )
+                if (bookshelfDescription.isNotEmpty()) {
+                    Text(
+                        text = bookshelfDescription,
+                        textAlign = TextAlign.Center,
+                        style = MaterialTheme.typography.bodyLarge,
+                        modifier = modifier.padding(top = 8.dp)
+                    )
+                }
+                Spacer(modifier = modifier.height(8.dp))
+
+                HorizontalDivider()
             }
         }
     }

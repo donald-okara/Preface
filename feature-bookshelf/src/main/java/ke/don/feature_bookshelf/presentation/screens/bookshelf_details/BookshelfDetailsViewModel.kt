@@ -26,6 +26,15 @@ class BookshelfDetailsViewModel @Inject constructor(
                 fetchBookshelf(event.bookShelfId)
             }
 
+            is BookshelfEventHandler.RefreshAction -> {
+                _bookshelfUiState.update {
+                    it.copy(
+                        resultState = ResultState.Loading
+                    )
+                }
+                fetchBookshelf(event.bookShelfId)
+            }
+
             is BookshelfEventHandler.DeleteBookshelf -> {
                 deleteBookshelf(event.onNavigateBack, event.bookShelfId)
             }
@@ -56,6 +65,7 @@ class BookshelfDetailsViewModel @Inject constructor(
             }
         }
     }
+
 
     fun updateShowSheet(){
         _bookshelfUiState.update {

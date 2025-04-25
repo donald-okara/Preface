@@ -25,6 +25,6 @@ data class BookJson(
 )
 
 data class BookShelf(
-    val supabaseBookShelf: BookshelfRef = BookshelfRef(),
+    val bookshelfRef: BookshelfRef = BookshelfRef(),
     val books : List<SupabaseBook> = emptyList()
 )

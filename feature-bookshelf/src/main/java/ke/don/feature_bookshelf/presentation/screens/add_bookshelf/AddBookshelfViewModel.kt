@@ -1,5 +1,6 @@
 package ke.don.feature_bookshelf.presentation.screens.add_bookshelf
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -11,11 +12,7 @@ import ke.don.shared_domain.data_models.BookshelfType
 import ke.don.shared_domain.states.SuccessState
 import ke.don.shared_domain.states.NetworkResult
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -24,63 +21,64 @@ import javax.inject.Inject
 class AddBookshelfViewModel @Inject constructor(
     private val bookshelfRepository: BookshelfRepository
 ): ViewModel() {
-    private val _bookShelfId = MutableStateFlow<Int?>(null)
-    val bookshelfId: StateFlow<Int?> = _bookShelfId
-
     private val _addBookshelfState = MutableStateFlow(AddBookshelfState())
-    val addBookshelfState = _addBookshelfState
-        .onStart { observeBookshelfId() }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = AddBookshelfState()
-        )
+    val addBookshelfState: StateFlow<AddBookshelfState> = _addBookshelfState
 
-    private fun observeBookshelfId() {
-        viewModelScope.launch {
-            bookshelfId.collectLatest { id ->
-                when (val result = id?.let { bookshelfRepository.fetchBookshelfRef(it) }) {
-                    is NetworkResult.Error -> {
-                        _addBookshelfState.update { it.copy(successState = SuccessState.ERROR) }
-                    }
-
-                    is NetworkResult.Success -> {
-                        _addBookshelfState.update {
-                            it.copy(
-                                name = result.data.name,
-                                description = result.data.description
-                            )
-                        }
-                    }
-
-                    null -> {
-                        //Do nothing
-                    }
-                }
+    fun handleEvent(event: AddBookshelfEventHandler){
+        when(event) {
+            is AddBookshelfEventHandler.FetchBookshelf -> {
+                fetchBookshelf(event.id)
             }
+            is AddBookshelfEventHandler.OnNameChange -> onNameChange(event.name)
+            is AddBookshelfEventHandler.OnDescriptionChange -> onDescriptionChange(event.description)
+            is AddBookshelfEventHandler.OnBookshelfTypeChange -> onBookshelfTypeChange(event.bookshelfType)
+            is AddBookshelfEventHandler.OnSubmit -> onSubmit(event.onNavigateBack)
+            is AddBookshelfEventHandler.OnCleared -> onCleared()
         }
     }
+    fun fetchBookshelf(id: Int?) {
+        viewModelScope.launch {
+            Log.d(TAG,"Passed id:: $id")
+            when (val result = id?.let { bookshelfRepository.fetchBookshelfRef(it) }) {
+                is NetworkResult.Error -> {
+                    _addBookshelfState.update { it.copy(successState = SuccessState.ERROR) }
+                }
 
-    fun onBookshelfIdPassed(passedBookshelfId: Int?) {
-        _bookShelfId.update {
-            passedBookshelfId
+                is NetworkResult.Success -> {
+                    _addBookshelfState.update {
+                        it.copy(
+                            bookshelfId = id,
+                            name = result.data.name,
+                            description = result.data.description
+                        )
+                    }
+                }
+
+                null -> {
+                    //Do nothing
+                }
+            }
+
         }
     }
 
     fun onNameChange(name: String) {
-        _addBookshelfState.update {
-            it.copy(name = name)
+        if (name.length <= MAX_NAME_LENGTH) {
+            _addBookshelfState.update { current ->
+                if (current.name != name) current.copy(name = name)
+                else current
+            }
         }
     }
 
-    fun isAddButtonEnabled(): Boolean{
-        return addBookshelfState.value.name.isNotEmpty() && addBookshelfState.value.successState != SuccessState.LOADING
-    }
 
 
     fun onDescriptionChange(description: String) {
-        _addBookshelfState.update {
-            it.copy(description = description)
+        if (description.length <= MAX_DESCRIPTION_LENGTH) {
+            _addBookshelfState.update { current ->
+                if (current.description != description) current.copy(description = description)
+                else current
+            }
         }
 
     }
@@ -108,7 +106,7 @@ class AddBookshelfViewModel @Inject constructor(
 
     private fun editBookshelf(bookshelf: BookshelfRef, onNavigateBack: () -> Unit){
         viewModelScope.launch {
-            when(bookshelfRepository.editBookshelf(bookshelfId.value!!, bookshelf)){
+            when(bookshelfRepository.editBookshelf(_addBookshelfState.value.bookshelfId!!, bookshelf)){
                 is NetworkResult.Error -> {
                     _addBookshelfState.update { it.copy(successState = SuccessState.ERROR) }
                 }
@@ -127,7 +125,7 @@ class AddBookshelfViewModel @Inject constructor(
 
             val bookshelf = addBookshelfState.value.toBookshelf()
 
-            if (bookshelfId.value == null) {
+            if (_addBookshelfState.value.bookshelfId == null) {
                 createBookshelf(bookshelf, onNavigateBack)
                 return@launch
             } else {
@@ -138,4 +136,16 @@ class AddBookshelfViewModel @Inject constructor(
         }
     }
 
+    override fun onCleared() {
+        super.onCleared()
+        _addBookshelfState.update {
+            AddBookshelfState()
+        }
+    }
+
+    companion object {
+        const val TAG = "AddBookshelfViewModel"
+        const val MAX_NAME_LENGTH = 30
+        const val MAX_DESCRIPTION_LENGTH = 200
+    }
 }

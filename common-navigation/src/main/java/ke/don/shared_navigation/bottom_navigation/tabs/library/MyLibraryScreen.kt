@@ -6,6 +6,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -13,11 +14,12 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.navigator.LocalNavigator
+import ke.don.feature_bookshelf.presentation.screens.add_bookshelf.AddBookshelfEventHandler
 import ke.don.feature_bookshelf.presentation.screens.add_bookshelf.AddBookshelfRoute
+import ke.don.feature_bookshelf.presentation.screens.add_bookshelf.AddBookshelfViewModel
 import ke.don.feature_bookshelf.presentation.screens.bookshelf_details.BookshelfDetailsRoute
 import ke.don.feature_bookshelf.presentation.screens.bookshelf_details.BookshelfDetailsViewModel
 import ke.don.feature_bookshelf.presentation.screens.bookshelf_details.BookshelfEventHandler
-import ke.don.shared_navigation.MainScreen
 import ke.don.shared_navigation.bottom_navigation.tabs.search.BookDetailsVoyagerScreen
 
 
@@ -28,6 +30,18 @@ class AddBookshelfVoyagerScreen(private val bookshelfId: Int?) : AndroidScreen()
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.current
+        val viewModel: AddBookshelfViewModel = hiltViewModel()
+        val state by viewModel.addBookshelfState.collectAsState()
+        val handleEvent = viewModel::handleEvent
+
+        DisposableEffect(viewModel) {
+            handleEvent(AddBookshelfEventHandler.FetchBookshelf(bookshelfId))
+
+            onDispose {
+                handleEvent(AddBookshelfEventHandler.OnCleared)
+            }
+        }
+
         Scaffold(
             topBar = {
                 CenterAlignedTopAppBar(
@@ -41,10 +55,11 @@ class AddBookshelfVoyagerScreen(private val bookshelfId: Int?) : AndroidScreen()
             }
         ) { innerPadding ->
             AddBookshelfRoute(
-                bookshelfId = bookshelfId,
                 modifier = Modifier.padding(innerPadding),
                 paddingValues = innerPadding,
-                onNavigateBack = { navigator?.pop() }
+                onNavigateBack = { navigator?.pop() },
+                state = state,
+                handleEvent = handleEvent
             )
         }
     }
@@ -65,7 +80,7 @@ class BookshelfDetailsScreen(private val bookshelfId: Int) : AndroidScreen() {
 
         BookshelfDetailsRoute(
             bookshelfId = bookshelfId,
-            bookshelfUiState = bookshelfUiState,
+            uiState = bookshelfUiState,
             eventHandler = eventHandler,
             navigateBack = { navigator?.pop() },
             onItemClick = { bookId ->
