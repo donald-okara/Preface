@@ -47,17 +47,17 @@ object FakeBookshelf {
     val emptyBooks = emptyList<SupabaseBook>()
 
     val fictionBookshelf = BookShelf(
-        supabaseBookShelf = fictionBookshelfRef,
+        bookshelfRef = fictionBookshelfRef,
         books = fictionBooks
     )
 
     val scienceBookshelf = BookShelf(
-        supabaseBookShelf = scienceBookshelfRef,
+        bookshelfRef = scienceBookshelfRef,
         books = scienceBooks
     )
 
     val emptyBookshelf = BookShelf(
-        supabaseBookShelf = emptyBookshelfRef,
+        bookshelfRef = emptyBookshelfRef,
         books = emptyBooks
     )
 

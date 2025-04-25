@@ -17,6 +17,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarScrollBehavior
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -33,9 +34,11 @@ import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import ke.don.common_datasource.local.roomdb.entities.BookshelfEntity
+import ke.don.common_datasource.remote.domain.states.BookshelfUiState
 import ke.don.feature_bookshelf.R
 import ke.don.shared_domain.data_models.BookShelf
 import ke.don.shared_domain.data_models.SupabaseBook
+import ke.don.shared_domain.states.ResultState
 import ke.don.shared_domain.utils.formatting_utils.formatHtmlToAnnotatedString
 
 
@@ -43,34 +46,41 @@ import ke.don.shared_domain.utils.formatting_utils.formatHtmlToAnnotatedString
 @Composable
 fun BookList(
     modifier: Modifier = Modifier,
-    bookShelf: BookshelfEntity,
+    uiState: BookshelfUiState,
+    onRefresh: () -> Unit,
     scrollBehavior: TopAppBarScrollBehavior,
     onItemClick: (String) -> Unit
 ){
-    val uniqueBooks = bookShelf.books.distinctBy { it.bookId } // Ensure uniqueness
+    val uniqueBooks = uiState.bookShelf.books.distinctBy { it.bookId } // Ensure uniqueness
 
-    LazyColumn(
-        modifier = modifier
-            .nestedScroll(scrollBehavior.nestedScrollConnection)
-            .padding(4.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp),
+    PullToRefreshBox(
+        isRefreshing = uiState.resultState == ResultState.Loading,
+        onRefresh = {onRefresh()},
+        modifier = modifier,
     ){
-        item{
-            BookshelfHeader(
-                coverImages = bookShelf.books.mapNotNull { it.highestImageUrl?.takeIf {image->  image.isNotEmpty() } },
-                bookshelfName = bookShelf.name,
-                bookshelfDescription = bookShelf.description,
-                bookshelfSize = "${bookShelf.books.size} books",
-                scrollBehavior = scrollBehavior,
-                modifier = modifier
-            )
-        }
-        items(items = uniqueBooks, key = { book -> book.bookId }) { book ->
-            BookComponent(
-                book = book,
-                modifier = modifier.padding(4.dp),
-                onItemClick = onItemClick
-            )
+        LazyColumn(
+            modifier = modifier
+                .nestedScroll(scrollBehavior.nestedScrollConnection)
+                .padding(4.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+        ) {
+            item {
+                BookshelfHeader(
+                    coverImages = uiState.bookShelf.books.mapNotNull { it.highestImageUrl?.takeIf { image -> image.isNotEmpty() } },
+                    bookshelfName = uiState.bookShelf.name,
+                    bookshelfDescription = uiState.bookShelf.description,
+                    bookshelfSize = "${uiState.bookShelf.books.size} books",
+                    scrollBehavior = scrollBehavior,
+                    modifier = modifier
+                )
+            }
+            items(items = uniqueBooks, key = { book -> book.bookId }) { book ->
+                BookComponent(
+                    book = book,
+                    modifier = modifier.padding(4.dp),
+                    onItemClick = onItemClick
+                )
+            }
         }
     }
 }
@@ -106,7 +116,6 @@ fun BookComponent(
             AsyncImage(
                 model = ImageRequest.Builder(context = LocalContext.current)
                     .data(book.highestImageUrl)
-                    .crossfade(true)
                     .build(),
                 contentDescription = book.title,
                 placeholder = painterResource(R.drawable.undraw_writer_q06d),

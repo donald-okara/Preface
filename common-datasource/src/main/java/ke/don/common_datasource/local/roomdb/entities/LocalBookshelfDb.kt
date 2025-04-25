@@ -21,11 +21,11 @@ data class BookshelfEntity(
 
 fun BookShelf.toEntity(): BookshelfEntity {
     return BookshelfEntity(
-        id = this.supabaseBookShelf.id,
-        name = this.supabaseBookShelf.name,
-        description = this.supabaseBookShelf.description,
-        bookshelfType = this.supabaseBookShelf.bookshelfType,
-        userId = this.supabaseBookShelf.userId,
+        id = this.bookshelfRef.id,
+        name = this.bookshelfRef.name,
+        description = this.bookshelfRef.description,
+        bookshelfType = this.bookshelfRef.bookshelfType,
+        userId = this.bookshelfRef.userId,
         books = this.books
     )
 }
@@ -33,7 +33,7 @@ fun BookShelf.toEntity(): BookshelfEntity {
 
 fun BookshelfEntity.toBookshelf(): BookShelf {
     return BookShelf(
-        supabaseBookShelf = BookshelfRef(
+        bookshelfRef = BookshelfRef(
             id = this.id,
             name = this.name,
             description = this.description,

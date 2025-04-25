@@ -53,12 +53,9 @@ class MyLibraryTab(
         val viewModel: UserLibraryViewModel = hiltViewModel()
         val state by viewModel.userLibraryState.collectAsState()
         val eventHandler = viewModel::handleEvent
-        val tabNavigator = LocalTabNavigator.current
-        val isSelected = tabNavigator.current == this
 
         LaunchedEffect(viewModel) {
             eventHandler(LibraryEventHandler.FetchBookshelves)
-
         }
 
         UserLibraryScreen(

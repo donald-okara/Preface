@@ -4,6 +4,7 @@ import ke.don.shared_domain.data_models.BookshelfType
 import ke.don.shared_domain.data_models.BookshelfRef
 
 data class AddBookshelfState(
+    val bookshelfId: Int? = null,
     val name: String = "",
     val description: String = "",
     val bookshelfType: BookshelfType = BookshelfType.GENERAL,

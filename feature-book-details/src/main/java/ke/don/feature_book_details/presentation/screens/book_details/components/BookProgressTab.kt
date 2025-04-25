@@ -131,7 +131,6 @@ fun BookProgressTab(
 
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddProgressDialog(
     modifier: Modifier = Modifier,

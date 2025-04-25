@@ -62,7 +62,7 @@ import kotlinx.coroutines.launch
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun BookDetailsScreen(
+fun BookDetailsRoute(
     modifier: Modifier = Modifier,
     onNavigateToSearch: () -> Unit,//TODO
     volumeId: String,
