@@ -64,7 +64,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun BookDetailsRoute(
     modifier: Modifier = Modifier,
-    onNavigateToSearch: () -> Unit,//TODO
+    onNavigateToSearch: (String) -> Unit,
     volumeId: String,
     bookUiState: BookUiState,
     onBookDetailsEvent: (BookDetailsEvent) -> Unit,
@@ -131,6 +131,7 @@ fun BookDetailsRoute(
                             dominantColor = dominantColor,
                             onBookDetailsEvent = onBookDetailsEvent,
                             bookUiState = bookUiState,
+                            onSearchAuthor = onNavigateToSearch
                         )
 
                         BookDetailsSheet(
@@ -187,6 +188,7 @@ fun BookDetailsRoute(
 fun BookDetailsContent(
     modifier: Modifier = Modifier,
     bookUiState: BookUiState,
+    onSearchAuthor: (String) -> Unit,
     onBookDetailsEvent: (BookDetailsEvent) -> Unit,
     dominantColor : Color,
 ) {
@@ -207,7 +209,7 @@ fun BookDetailsContent(
         ) {
             TitleHeader(
                 volumeInfo = bookUiState.bookDetails.volumeInfo,
-                onSearchAuthor = {},//TODO
+                onSearchAuthor = onSearchAuthor,
                 imageUrl = bookUiState.highestImageUrl,
                 textColor = dominantColor,
                 onImageClick = {

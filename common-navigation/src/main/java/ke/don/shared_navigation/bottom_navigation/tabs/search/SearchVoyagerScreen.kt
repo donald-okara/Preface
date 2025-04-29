@@ -8,6 +8,7 @@ import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import ke.don.feature_book_details.presentation.screens.book_details.BookDetailsRoute
 import ke.don.feature_book_details.presentation.screens.book_details.BookDetailsViewModel
+import ke.don.shared_navigation.bottom_navigation.tabs.SearchTab
 
 
 // Voyager Screens
@@ -20,7 +21,14 @@ class BookDetailsVoyagerScreen(private val volumeId: String) : AndroidScreen() {
         val onBookDetailsEvent = viewModel::onBookDetailsEvent
 
         BookDetailsRoute(
-            onNavigateToSearch = { navigator?.pop() },
+            onNavigateToSearch = { author ->
+                navigator?.push(
+                    SearchTab(
+                        onNavigateToBookItem = { navigator.push(BookDetailsVoyagerScreen(it)) },
+                        searchQuery = author
+                    )
+                )
+            },
             volumeId = volumeId,
             onBackPressed = { navigator?.pop() },
             bookUiState = bookUiState,

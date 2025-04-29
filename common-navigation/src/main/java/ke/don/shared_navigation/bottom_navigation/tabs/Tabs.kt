@@ -17,6 +17,8 @@ import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import ke.don.feature_book_details.presentation.screens.search.BookSearchScreen
+import ke.don.feature_book_details.presentation.screens.search.SearchEventHandler
+import ke.don.feature_book_details.presentation.screens.search.SearchViewModel
 import ke.don.feature_bookshelf.presentation.screens.user_library.LibraryEventHandler
 import ke.don.feature_bookshelf.presentation.screens.user_library.UserLibraryScreen
 import ke.don.feature_bookshelf.presentation.screens.user_library.UserLibraryViewModel
@@ -74,7 +76,10 @@ class MyLibraryTab(
     }
 }
 
-class SearchTab(private val onNavigateToBookItem: (String) -> Unit) : Tab {
+class SearchTab(
+    private val onNavigateToBookItem: (String) -> Unit,
+    private val searchQuery: String? = null
+) : Tab {
 
     override val options: TabOptions
         @Composable
@@ -88,8 +93,23 @@ class SearchTab(private val onNavigateToBookItem: (String) -> Unit) : Tab {
 
     @Composable
     override fun Content() {
+        val viewModel: SearchViewModel = hiltViewModel()
+        val state by viewModel.searchUiState.collectAsState()
+        val eventHandler = viewModel::handleEvent
+
+        LaunchedEffect(viewModel) {
+            eventHandler(SearchEventHandler.SuggestBook)
+            searchQuery?.let {
+                eventHandler(SearchEventHandler.OnSearchQueryChange(it))
+                eventHandler(SearchEventHandler.Search)
+            }
+
+        }
+
         BookSearchScreen(
-            onNavigateToBookItem = onNavigateToBookItem
+            onNavigateToBookItem = onNavigateToBookItem,
+            searchState = state,
+            eventHandler = eventHandler,
         )
     }
 }

@@ -24,20 +24,16 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import ke.don.feature_book_details.presentation.screens.search.components.BookSearchBar
 import ke.don.feature_book_details.presentation.screens.search.components.BooksGridScreen
 import ke.don.shared_domain.states.ResultState
+import ke.don.shared_domain.states.SearchState
 
 @Composable
 fun BookSearchScreen(
     modifier: Modifier = Modifier,
+    searchState: SearchState,
+    eventHandler: (SearchEventHandler) -> Unit,
     paddingValues: PaddingValues = PaddingValues(),
-    viewModel: SearchViewModel = hiltViewModel(),
     onNavigateToBookItem: (String) -> Unit
 ) {
-
-    val searchState by viewModel.searchUiState.collectAsState()
-    val searchMessage by viewModel.searchMessage.collectAsState()
-    val searchQuery by viewModel.searchQuery.collectAsState()
-    val suggestedBook by viewModel.suggestedBook.collectAsState()
-    val isSearchPopulated by viewModel.isSearchPopulated.collectAsState()
 
     Box(
         contentAlignment = Alignment.Center,
@@ -54,13 +50,13 @@ fun BookSearchScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 BookSearchBar(
-                    bookSearch = searchQuery,
-                    onBookSearchChange = viewModel::onSearchQueryChange,
-                    suggestedBook = suggestedBook,
-                    isSearchPopulated = isSearchPopulated,
-                    onShuffle = viewModel::shuffleBook,
-                    onClear = viewModel::clearSearch,
-                    onSearch = viewModel::onSearch,
+                    searchQuery = searchState.searchQuery,
+                    onBookSearchChange = { eventHandler(SearchEventHandler.OnSearchQueryChange(it)) },
+                    suggestedBook = searchState.suggestedBook,
+                    isSearchPopulated = searchState.searchQuery.isNotEmpty(),
+                    onShuffle = {eventHandler(SearchEventHandler.Shuffle)},
+                    onClear = {eventHandler(SearchEventHandler.ClearSearch)},
+                    onSearch = {eventHandler(SearchEventHandler.Search)},
                     shape = RoundedCornerShape(16.dp),
                     modifier = modifier
                         .padding(8.dp)
@@ -83,14 +79,13 @@ fun BookSearchScreen(
                     is ResultState.Error -> {
                         SearchErrorScreen(
                             text = searchState.errorMessage,
-                            onRefresh = viewModel::onSearch
-
+                            onRefresh = {eventHandler(SearchEventHandler.Search)}
                         )
                     }
 
                     is ResultState.Loading -> {
                         SearchLoadingScreen(
-                            text = searchMessage
+                            text = searchState.searchMessage
                         )
                     }
 

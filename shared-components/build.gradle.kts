@@ -58,6 +58,7 @@ dependencies {
     implementation(libs.androidx.core.splashscreen)
 
     implementation(libs.androidx.foundation)
+    implementation(project(":common-domain"))
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
