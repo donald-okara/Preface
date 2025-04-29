@@ -105,11 +105,7 @@ object MainScreen : AndroidScreen() {
             )
         }
         val searchTab = remember {
-            SearchTab(
-                onNavigateToBookItem = {
-                    navigator?.push(BookDetailsVoyagerScreen(it))
-                }
-            )
+            SearchTab()
         }
         val profileTab = remember {
             ProfileTab(
@@ -128,13 +124,9 @@ object MainScreen : AndroidScreen() {
                     CenterAlignedTopAppBar(
                         scrollBehavior = scrollBehavior,
                         title = {
-                            Image(
-                                painter = painterResource(R.drawable.app_logo),
-                                contentDescription = "My Library",
+                            Text(
+                                text = tabNavigator.current.options.title,
                                 modifier = Modifier
-                                    .clip(shape = RoundedCornerShape(16.dp))
-                                    .scale(1.2f)
-                                    .fillMaxHeight()
                             )
                         }
                     )
@@ -156,14 +148,12 @@ object MainScreen : AndroidScreen() {
     }
 }
 
-
 @Composable
 fun AppNavigation() {
     Navigator(SplashVoyagerScreen) { navigator ->
         navigator.lastItemOrNull?.Content()
     }
 }
-
 
 @Composable
 fun BottomNavigationBar(tabs: List<Tab>) {

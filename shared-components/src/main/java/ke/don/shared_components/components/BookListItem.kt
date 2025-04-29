@@ -4,6 +4,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -18,6 +20,7 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -27,6 +30,7 @@ import ke.don.shared_components.R
 import ke.don.shared_domain.utils.formatting_utils.formatHtmlToAnnotatedString
 
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun BookListItem(
     modifier: Modifier = Modifier,
@@ -87,6 +91,36 @@ fun BookListItem(
                     overflow = TextOverflow.Ellipsis,
                     modifier = modifier
                 )
+            }
+            authors?.let { authors ->
+                if (authors.isNotEmpty()) {
+                    val displayAuthors = authors.take(2)
+                    val textStyle = MaterialTheme.typography.bodyMedium.copy(color = MaterialTheme.colorScheme.primary)
+                    FlowRow(
+                        modifier = modifier,
+                        horizontalArrangement = Arrangement.Center,
+                        verticalArrangement = Arrangement.Center,
+                    ) {
+                        displayAuthors.forEachIndexed { index, author ->
+                            Text(
+                                text = AnnotatedString(author),
+                                style = textStyle,
+                            )
+                            if (index < displayAuthors.size - 1) {
+                                Text(
+                                    text = ", ",
+                                    style = textStyle,
+                                )
+                            }
+                        }
+                        if (authors.size > 2) {
+                            Text(
+                                text = " +${authors.size - 2} more",
+                                style = textStyle,
+                            )
+                        }
+                    }
+                }
             }
             if (description != null) {
                 Text(
