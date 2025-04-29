@@ -15,18 +15,17 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun configureAppBars(
+fun ConfigureAppBars(
     title: String = "",
     actions: @Composable RowScope.() -> Unit = {},
     showBackButton: Boolean = false,
     scrollBehavior: TopAppBarScrollBehavior? = null,
     showBottomBar: Boolean = true,
-    showTopBar: Boolean = true
 ) {
     val appBarViewModel: ScaffoldViewModel = hiltViewModel()
     val navigator = LocalNavigator.current
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(appBarViewModel) {
         appBarViewModel.updateState(
             AppBarState(
                 title = title,
@@ -42,12 +41,5 @@ fun configureAppBars(
                 showBottomBar = showBottomBar
             )
         )
-    }
-
-    DisposableEffect(Unit) {
-        onDispose {
-            // Reset to default state when screen is disposed
-            appBarViewModel.updateState(AppBarState(showBottomBar = true))
-        }
     }
 }

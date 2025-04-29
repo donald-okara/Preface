@@ -31,7 +31,6 @@ fun BookSearchScreen(
     paddingValues: PaddingValues = PaddingValues(),
     onNavigateToBookItem: (String) -> Unit
 ) {
-
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier

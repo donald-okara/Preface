@@ -1,16 +1,15 @@
 package ke.don.shared_navigation.bottom_navigation.tabs.library
 
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -20,8 +19,46 @@ import ke.don.feature_bookshelf.presentation.screens.add_bookshelf.AddBookshelfV
 import ke.don.feature_bookshelf.presentation.screens.bookshelf_details.BookshelfDetailsRoute
 import ke.don.feature_bookshelf.presentation.screens.bookshelf_details.BookshelfDetailsViewModel
 import ke.don.feature_bookshelf.presentation.screens.bookshelf_details.BookshelfEventHandler
+import ke.don.feature_bookshelf.presentation.screens.user_library.LibraryEventHandler
+import ke.don.feature_bookshelf.presentation.screens.user_library.UserLibraryScreen
+import ke.don.feature_bookshelf.presentation.screens.user_library.UserLibraryViewModel
+import ke.don.shared_navigation.app_scaffold.ConfigureAppBars
 import ke.don.shared_navigation.bottom_navigation.tabs.search.BookDetailsVoyagerScreen
 
+@OptIn(ExperimentalMaterial3Api::class)
+class MyLibraryScreen (): AndroidScreen(){
+    @Composable
+    override fun Content() {
+        ConfigureAppBars(
+            title = "My Library",
+            showBottomBar = true
+        )
+
+        val navigator = LocalNavigator.current
+        val viewModel: UserLibraryViewModel = hiltViewModel()
+        val state by viewModel.userLibraryState.collectAsState()
+        val eventHandler = viewModel::handleEvent
+
+        LaunchedEffect(viewModel) {
+            eventHandler(LibraryEventHandler.FetchBookshelves)
+        }
+
+        UserLibraryScreen(
+            userLibraryState = state,
+            eventHandler = eventHandler,
+            onNavigateToBookshefItem = { bookshelfId ->
+                navigator?.push(BookshelfDetailsScreen(bookshelfId))
+            },
+            onAddBookshelf = {
+                navigator?.push(AddBookshelfVoyagerScreen(null))
+            },
+            onNavigateToEdit = {bookshelfId->
+                navigator?.push(AddBookshelfVoyagerScreen(bookshelfId))
+            }
+        )
+    }
+
+}
 
 class AddBookshelfVoyagerScreen(private val bookshelfId: Int?) : AndroidScreen() {
     private fun readResolve(): Any = AddBookshelfVoyagerScreen(bookshelfId = bookshelfId)
@@ -42,31 +79,23 @@ class AddBookshelfVoyagerScreen(private val bookshelfId: Int?) : AndroidScreen()
             }
         }
 
-        Scaffold(
-            topBar = {
-                CenterAlignedTopAppBar(
-                    title = {
-                        Text(
-                            text = "Add Bookshelf"
-                        )
-                    }
+        ConfigureAppBars(
+            title = "",
+            showBottomBar = false,
+            showBackButton = true,
+        )
 
-                )
-            }
-        ) { innerPadding ->
-            AddBookshelfRoute(
-                modifier = Modifier.padding(innerPadding),
-                paddingValues = innerPadding,
-                onNavigateBack = { navigator?.pop() },
-                state = state,
-                handleEvent = handleEvent
-            )
-        }
+        AddBookshelfRoute(
+            onNavigateBack = { navigator?.pop() },
+            state = state,
+            handleEvent = handleEvent
+        )
     }
 
 }
 
 class BookshelfDetailsScreen(private val bookshelfId: Int) : AndroidScreen() {
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.current
@@ -77,6 +106,20 @@ class BookshelfDetailsScreen(private val bookshelfId: Int) : AndroidScreen() {
         LaunchedEffect(viewModel) {
             eventHandler(BookshelfEventHandler.FetchBookshelf(bookshelfId))
         }
+
+        ConfigureAppBars(
+            title = "",
+            showBottomBar = false,
+            showBackButton = true,
+            actions = {
+                IconButton(onClick = { eventHandler(BookshelfEventHandler.ToggleBottomSheet) }) {
+                    Icon(
+                        imageVector = Icons.Outlined.MoreVert,
+                        contentDescription = "Options"
+                    )
+                }
+            }
+        )
 
         BookshelfDetailsRoute(
             bookshelfId = bookshelfId,

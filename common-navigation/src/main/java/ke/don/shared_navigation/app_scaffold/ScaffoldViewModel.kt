@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package ke.don.shared_navigation.app_scaffold
 
 import androidx.compose.foundation.layout.RowScope
@@ -9,17 +11,19 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-data class AppBarState @OptIn(ExperimentalMaterial3Api::class) constructor(
+data class AppBarState (
     val title: String = "",
     val actions: @Composable RowScope.() -> Unit = {},
     val navigationIcon: @Composable (() -> Unit)? = null,
     val scrollBehavior: TopAppBarScrollBehavior? = null,
+    val showBackButton: Boolean = false,
     val showBottomBar: Boolean = true // New property
 )
 
 @HiltViewModel
-class ScaffoldViewModel : ViewModel() {
+class ScaffoldViewModel @Inject constructor() : ViewModel() {
     var state by mutableStateOf(AppBarState())
         private set
 

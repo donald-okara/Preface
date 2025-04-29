@@ -164,11 +164,11 @@ fun BookshelfHeader(
                     Text(
                         text = bookshelfDescription,
                         textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.bodyLarge,
+                        style = MaterialTheme.typography.bodySmall,
                         modifier = modifier.padding(top = 8.dp)
                     )
                 }
-                Spacer(modifier = modifier.height(8.dp))
+                Spacer(modifier = modifier.height(16.dp))
 
                 HorizontalDivider()
             }
