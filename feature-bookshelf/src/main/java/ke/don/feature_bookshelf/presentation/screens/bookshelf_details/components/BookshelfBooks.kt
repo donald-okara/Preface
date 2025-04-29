@@ -55,7 +55,8 @@ fun BookList(
                     title = book.title,
                     description = book.description,
                     modifier = modifier.padding(4.dp),
-                    onItemClick = onItemClick
+                    onItemClick = onItemClick,
+                    authors = book.authors
                 )
             }
         }

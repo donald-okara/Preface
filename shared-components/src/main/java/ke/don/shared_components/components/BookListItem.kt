@@ -32,8 +32,9 @@ fun BookListItem(
     modifier: Modifier = Modifier,
     bookId: String,
     imageUrl: String?,
-    title: String,
-    description: String,
+    title: String?,
+    description: String?,
+    authors: List<String>?,
     onItemClick: (String) -> Unit
 ) {
     Row(
@@ -77,24 +78,29 @@ fun BookListItem(
             horizontalAlignment = Alignment.Start,
             modifier = modifier.padding(8.dp)
         ) {
-            Text(
-                text = title, // Handle null title
-                maxLines = 2,
-                fontWeight = FontWeight.Bold,
-                style = MaterialTheme.typography.bodyLarge,
-                overflow = TextOverflow.Ellipsis,
-                modifier = modifier
-            )
+            if (title != null) {
+                Text(
+                    text = title, // Handle null title
+                    maxLines = 2,
+                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.bodyLarge,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = modifier
+                )
+            }
+            if (description != null) {
+                Text(
+                    text = formatHtmlToAnnotatedString(
+                        description, // Handle null title
+                    ),
+                    maxLines = 2,
+                    style = MaterialTheme.typography.bodySmall,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = modifier
+                )
+            }
 
-            Text(
-                text = formatHtmlToAnnotatedString(
-                    description, // Handle null title
-                ),
-                maxLines = 2,
-                style = MaterialTheme.typography.bodySmall,
-                overflow = TextOverflow.Ellipsis,
-                modifier = modifier
-            )
+
         }
 
     }

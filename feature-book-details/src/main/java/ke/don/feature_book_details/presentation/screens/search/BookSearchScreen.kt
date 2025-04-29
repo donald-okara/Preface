@@ -14,15 +14,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import ke.don.feature_book_details.presentation.screens.search.components.BookSearchBar
-import ke.don.feature_book_details.presentation.screens.search.components.BooksGridScreen
+import ke.don.feature_book_details.presentation.screens.search.components.BookList
 import ke.don.shared_domain.states.ResultState
 import ke.don.shared_domain.states.SearchState
 
@@ -68,7 +65,7 @@ fun BookSearchScreen(
                         if (searchState.data.isEmpty()) {
                             Text(text = "No books found. Try searching for something else.")
                         } else {
-                            BooksGridScreen(
+                            BookList(
                                 books = searchState.data,
                                 onNavigateToBookItem = onNavigateToBookItem
                             )
