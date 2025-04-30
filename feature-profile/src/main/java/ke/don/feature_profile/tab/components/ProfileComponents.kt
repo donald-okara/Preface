@@ -87,19 +87,6 @@ fun ProfileHeader(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                IconButton(
-                    onClick = {
-                        profileTabEventHandler(ProfileTabEventHandler.ShowBottomSheet)
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = "Settings"
-                    )
-                }
             }
         }
 

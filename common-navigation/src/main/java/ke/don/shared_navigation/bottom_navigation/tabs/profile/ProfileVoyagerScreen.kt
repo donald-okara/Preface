@@ -1,6 +1,10 @@
 package ke.don.shared_navigation.bottom_navigation.tabs.profile
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -20,14 +24,28 @@ class ProfileVoyagerScreen(): AndroidScreen(){
 
     @Composable
     override fun Content() {
-        ConfigureAppBars(
-            title = "Profile",
-            showBottomBar = true
-        )
+
         val navigator = LocalNavigator.current
         val viewModel: ProfileViewModel = hiltViewModel()
         val state by viewModel.profileState.collectAsState()
         val profileEventHandler = viewModel::handleEvent
+
+        ConfigureAppBars(
+            title = "Profile",
+            showBottomBar = true,
+            actions = {
+                IconButton(
+                    onClick = {
+                        profileEventHandler(ProfileTabEventHandler.ShowBottomSheet)
+                    }
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Settings,
+                        contentDescription = "Settings"
+                    )
+                }
+            }
+        )
 
         LaunchedEffect(viewModel) {
             profileEventHandler(ProfileTabEventHandler.FetchProfile)
