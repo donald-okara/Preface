@@ -11,6 +11,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ManageSearch
+import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -20,6 +23,7 @@ import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.unit.dp
 import ke.don.feature_book_details.presentation.screens.search.components.BookSearchBar
 import ke.don.feature_book_details.presentation.screens.search.components.BookList
+import ke.don.shared_components.components.EmptyScreen
 import ke.don.shared_domain.states.ResultState
 import ke.don.shared_domain.states.SearchState
 
@@ -62,7 +66,12 @@ fun BookSearchScreen(
                 when (searchState.resultState) {
                     is ResultState.Success -> {
                         if (searchState.data.isEmpty()) {
-                            Text(text = "No books found. Try searching for something else.")
+                            EmptyScreen(
+                                icon = Icons.Outlined.SearchOff,
+                                message = "No books found. Try searching for something else.",
+                                action = {},
+                                actionText = ""
+                            )
                         } else {
                             BookList(
                                 books = searchState.data,
@@ -73,15 +82,20 @@ fun BookSearchScreen(
                     }
 
                     is ResultState.Error -> {
-                        SearchErrorScreen(
-                            text = searchState.errorMessage,
-                            onRefresh = {eventHandler(SearchEventHandler.Search)}
+                        EmptyScreen(
+                            icon = Icons.Outlined.SearchOff,
+                            message = "Something went wrong",
+                            action = {},
+                            actionText = searchState.errorMessage
                         )
                     }
 
                     is ResultState.Loading -> {
-                        SearchLoadingScreen(
-                            text = searchState.searchMessage
+                        EmptyScreen(
+                            icon = Icons.Outlined.ManageSearch,
+                            message = searchState.searchMessage,
+                            action = {},
+                            actionText = ""
                         )
                     }
 
