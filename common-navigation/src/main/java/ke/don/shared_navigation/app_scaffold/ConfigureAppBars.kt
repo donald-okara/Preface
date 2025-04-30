@@ -6,7 +6,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -18,7 +17,6 @@ fun ConfigureAppBars(
     title: String = "",
     actions: @Composable RowScope.() -> Unit = {},
     showBackButton: Boolean = false,
-    scrollBehavior: TopAppBarScrollBehavior? = null,
     showBottomBar: Boolean = true,
 ) {
     val appBarViewModel: ScaffoldViewModel = hiltViewModel()
@@ -36,7 +34,6 @@ fun ConfigureAppBars(
                         }
                     }
                 } else null,
-                scrollBehavior = scrollBehavior,
                 showBottomBar = showBottomBar
             )
         )

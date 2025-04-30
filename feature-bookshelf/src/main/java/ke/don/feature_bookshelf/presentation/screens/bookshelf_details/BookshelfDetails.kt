@@ -15,7 +15,6 @@ import ke.don.feature_bookshelf.presentation.screens.bookshelf_details.component
 import ke.don.feature_bookshelf.presentation.shared_components.BookshelfOptionsSheet
 import ke.don.shared_domain.states.ResultState
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookshelfDetailsRoute(
     modifier: Modifier = Modifier,
@@ -26,7 +25,6 @@ fun BookshelfDetailsRoute(
     navigateBack: () -> Unit,
     onItemClick: (String) -> Unit
 ) {
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     Box(
         contentAlignment = Alignment.Center,
@@ -39,10 +37,8 @@ fun BookshelfDetailsRoute(
                     CircularProgressIndicator()
                 } else {
                     BookList(
-                        modifier = modifier,
                         uiState = uiState,
                         onRefresh = { eventHandler(BookshelfEventHandler.RefreshAction(bookshelfId)) },
-                        scrollBehavior = scrollBehavior,
                         onItemClick = onItemClick
                     )
                     BookshelfOptionsSheet(

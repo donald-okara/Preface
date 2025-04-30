@@ -26,6 +26,7 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -88,12 +89,7 @@ object MainScreen : AndroidScreen() {
         val appBarViewModel: ScaffoldViewModel = hiltViewModel()
         val appBarState = appBarViewModel.state
 
-        LaunchedEffect(appBarState) {
-            Log.d("MainScreen", "State:: ${appBarState.title}, ${appBarState.navigationIcon}")
-        }
-
         // Define tab instances
-        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
         val myLibraryTab = remember {
             MyLibraryTab()
@@ -108,10 +104,8 @@ object MainScreen : AndroidScreen() {
 
         TabNavigator(myLibraryTab) { tabNavigator ->
             Scaffold(
-                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                 topBar = {
-                    CenterAlignedTopAppBar(
-                        scrollBehavior = appBarState.scrollBehavior,
+                    TopAppBar(
                         title = { Text(appBarState.title) },
                         navigationIcon =  appBarState.navigationIcon ?:{},//Elvis monkey 😆
                         actions = appBarState.actions
@@ -158,7 +152,7 @@ fun BottomNavigationBar(tabs: List<Tab>) {
 
                 val flipRotation by animateFloatAsState(
                     targetValue = if (isSelected) 360f else 0f,
-                    animationSpec = tween(400, easing = FastOutSlowInEasing),
+                    animationSpec = tween(1000, easing = FastOutSlowInEasing),
                     label = "icon_flip"
                 )
 

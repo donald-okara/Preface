@@ -1,6 +1,7 @@
 package ke.don.shared_components.components
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -68,11 +69,11 @@ fun BookListItem(
                     .data(imageUrl)
                     .build(),
                 contentDescription = title,
-                placeholder = painterResource(R.drawable.undraw_writer_q06d),
                 contentScale = ContentScale.Crop,
                 modifier = modifier
                     .clip(RoundedCornerShape(8.dp))
                     .scale(1f)
+                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f))
                     .size(width = 100.dp, height = 150.dp),
             )
         }

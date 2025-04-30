@@ -40,141 +40,75 @@ fun BookshelfHeader(
     bookshelfName: String,
     bookshelfDescription: String = "",
     bookshelfSize: String,
-    scrollBehavior: TopAppBarScrollBehavior
 ) {
-    val collapsedFraction = scrollBehavior.state.collapsedFraction
-    val isCollapsed = collapsedFraction > 0.3f  // Switch layout at 30% scroll
-    val animationDuration= 200
+    val animationDuration = 200
+    val imageSize = 300.dp
+    val imageHeight = 175.dp
+    val textSize = 28f
+    val alpha = 1f
 
-    LookaheadScope {
-        val imageSize by animateDpAsState(
-            targetValue = if (isCollapsed) 80.dp else 300.dp,
-            animationSpec = tween(durationMillis = animationDuration, easing = FastOutSlowInEasing),
-            label = "Image Size"
-        )
-        val imageHeight by animateDpAsState(
-            targetValue = if (isCollapsed) 80.dp else 175.dp,
-            animationSpec = tween(durationMillis = animationDuration, easing = FastOutSlowInEasing),
-            label = "Image Height"
-        )
-        val textSize by animateFloatAsState(
-            targetValue = if (isCollapsed) 18f else 28f,
-            animationSpec = tween(durationMillis = animationDuration, easing = FastOutSlowInEasing),
-            label = "Text Size"
-        )
-        val alpha by animateFloatAsState(
-            targetValue = if (isCollapsed) 0.9f else 1f,
-            animationSpec = tween(durationMillis = animationDuration, easing = FastOutSlowInEasing),
-            label = "Alpha"
-        )
-
-        val contentModifier = modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-            .graphicsLayer {
-                this.alpha = alpha
-            }
-            .animateContentSize(
-                animationSpec = tween(
-                    animationDuration,
-                    easing = FastOutSlowInEasing
-                )
-            ) // Ensures smooth resizing
-
-        if (isCollapsed) {
-            Row(
-                modifier = contentModifier,
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                if (coverImages.isNotEmpty()) {
-                    BookStack(
-                        bookCoverUrls = coverImages,
-                        modifier = modifier,
-                        size = imageSize
-                    )
-                } else {
-                    Image(
-                        painter = painterResource(R.drawable.bookshelf_placeholder),
-                        contentDescription = "Bookshelf item",
-                        modifier = modifier
-                            .fillMaxWidth()
-                            .height(imageHeight)
-                    )
-                }
-
-                Spacer(modifier = modifier.width(12.dp))
-
-                Column(
-                    horizontalAlignment = Alignment.Start,
-                    modifier = modifier
-                        .weight(1f)
-                        .padding(8.dp)
-                ) {
-                    Text(
-                        text = bookshelfName,
-                        style = MaterialTheme.typography.headlineMedium.copy(fontSize = textSize.sp),
-                        maxLines = 1
-                    )
-
-                    Text(
-                        text = bookshelfSize,
-                        style = MaterialTheme.typography.headlineSmall,
-                        modifier = modifier.padding(top = 4.dp)
-                    )
-                }
-            }
-        } else {
-            Column(
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = contentModifier
-            ) {
-                if (coverImages.isNotEmpty()) {
-                    BookStack(
-                        bookCoverUrls = coverImages,
-                        modifier = modifier,
-                        size = imageSize
-                    )
-                } else {
-                    Image(
-                        painter = painterResource(R.drawable.bookshelf_placeholder),
-                        contentDescription = "Bookshelf item",
-                        modifier = modifier
-                            .fillMaxWidth()
-                            .height(imageHeight)
-                    )
-                }
-
-                Text(
-                    text = bookshelfName,
-                    style = MaterialTheme.typography.headlineLarge.copy(fontSize = textSize.sp),
-                    maxLines = 2,
-                    modifier = modifier.padding(top = 8.dp)
-                )
-
-
-
-                Text(
-                    text = bookshelfSize,
-                    style = MaterialTheme.typography.headlineSmall,
-                    modifier = modifier.padding(top = 8.dp)
-                )
-                if (bookshelfDescription.isNotEmpty()) {
-                    Text(
-                        text = bookshelfDescription,
-                        textAlign = TextAlign.Center,
-                        style = MaterialTheme.typography.bodySmall,
-                        modifier = modifier.padding(top = 8.dp)
-                    )
-                }
-                Spacer(modifier = modifier.height(16.dp))
-
-                HorizontalDivider()
-            }
+    val contentModifier = modifier
+        .fillMaxWidth()
+        .padding(8.dp)
+        .graphicsLayer {
+            this.alpha = alpha
         }
+        .animateContentSize(
+            animationSpec = tween(
+                animationDuration,
+                easing = FastOutSlowInEasing
+            )
+        ) // Ensures smooth resizing
+
+    Column(
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = contentModifier
+    ) {
+        if (coverImages.isNotEmpty()) {
+            BookStack(
+                bookCoverUrls = coverImages,
+                modifier = modifier,
+                size = imageSize
+            )
+        } else {
+            Image(
+                painter = painterResource(R.drawable.bookshelf_placeholder),
+                contentDescription = "Bookshelf item",
+                modifier = modifier
+                    .fillMaxWidth()
+                    .height(imageHeight)
+            )
+        }
+
+        Text(
+            text = bookshelfName,
+            style = MaterialTheme.typography.headlineLarge.copy(fontSize = textSize.sp),
+            maxLines = 2,
+            modifier = modifier.padding(top = 8.dp)
+        )
+
+
+
+        Text(
+            text = bookshelfSize,
+            style = MaterialTheme.typography.headlineSmall,
+            modifier = modifier.padding(top = 8.dp)
+        )
+        if (bookshelfDescription.isNotEmpty()) {
+            Text(
+                text = bookshelfDescription,
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.bodySmall,
+                modifier = modifier.padding(top = 8.dp)
+            )
+        }
+        Spacer(modifier = modifier.height(16.dp))
+
+        HorizontalDivider()
     }
 }
+
 
 
 

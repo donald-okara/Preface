@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -56,10 +57,9 @@ fun CurrentlyReadingCard(
                 contentDescription = "$title book cover",
                 contentScale = ContentScale.Crop,
                 modifier = modifier
-                    .width(100.dp)
-                    .aspectRatio(3f / 4f)
-                    .scale(1f)
                     .clip(RoundedCornerShape(8.dp))
+                    .scale(1f)
+                    .size(width = 100.dp, height = 150.dp),
             )
         } else {
             AsyncImage(
@@ -67,10 +67,9 @@ fun CurrentlyReadingCard(
                 contentDescription = "$title book cover",
                 contentScale = ContentScale.Crop,
                 modifier = modifier
-                    .width(100.dp)
-                    .aspectRatio(3f / 4f)
-                    .scale(1f)
                     .clip(RoundedCornerShape(8.dp))
+                    .scale(1f)
+                    .size(width = 100.dp, height = 150.dp),
             )
         }
 
@@ -134,10 +133,9 @@ fun FinishedBookCard(
                 contentDescription = "$title book cover",
                 contentScale = ContentScale.Crop,
                 modifier = modifier
-                    .width(100.dp)
-                    .aspectRatio(3f / 4f)
+                    .clip(RoundedCornerShape(8.dp))
                     .scale(1f)
-                    .clip(RoundedCornerShape(12.dp))
+                    .size(width = 100.dp, height = 150.dp),
             )
         } else {
             AsyncImage(
@@ -145,10 +143,9 @@ fun FinishedBookCard(
                 contentDescription = "$title book cover",
                 contentScale = ContentScale.Crop,
                 modifier = modifier
-                    .width(100.dp)
-                    .aspectRatio(3f / 4f)
+                    .clip(RoundedCornerShape(8.dp))
                     .scale(1f)
-                    .clip(RoundedCornerShape(12.dp))
+                    .size(width = 100.dp, height = 150.dp),
             )
         }
 

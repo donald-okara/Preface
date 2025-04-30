@@ -22,7 +22,6 @@ fun BookList(
     modifier: Modifier = Modifier,
     uiState: BookshelfUiState,
     onRefresh: () -> Unit,
-    scrollBehavior: TopAppBarScrollBehavior,
     onItemClick: (String) -> Unit
 ){
     val uniqueBooks = uiState.bookShelf.books.distinctBy { it.bookId } // Ensure uniqueness
@@ -34,7 +33,6 @@ fun BookList(
     ){
         LazyColumn(
             modifier = modifier
-                .nestedScroll(scrollBehavior.nestedScrollConnection)
                 .padding(4.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
         ) {
@@ -44,7 +42,6 @@ fun BookList(
                     bookshelfName = uiState.bookShelf.name,
                     bookshelfDescription = uiState.bookShelf.description,
                     bookshelfSize = "${uiState.bookShelf.books.size} books",
-                    scrollBehavior = scrollBehavior,
                     modifier = modifier
                 )
             }

@@ -21,7 +21,6 @@ fun BookList(
     val uniqueBooks = books.distinctBy { it.id } // Ensure uniqueness
 
     LazyColumn(
-        modifier = modifier.padding(4.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ){
         items(items = uniqueBooks, key = { book -> book.id }) { book ->

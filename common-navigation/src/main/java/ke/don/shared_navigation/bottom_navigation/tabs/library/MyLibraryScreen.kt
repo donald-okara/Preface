@@ -1,5 +1,7 @@
 package ke.don.shared_navigation.bottom_navigation.tabs.library
 
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -10,6 +12,7 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -25,7 +28,6 @@ import ke.don.feature_bookshelf.presentation.screens.user_library.UserLibraryVie
 import ke.don.shared_navigation.app_scaffold.ConfigureAppBars
 import ke.don.shared_navigation.bottom_navigation.tabs.search.BookDetailsVoyagerScreen
 
-@OptIn(ExperimentalMaterial3Api::class)
 class MyLibraryScreen (): AndroidScreen(){
     @Composable
     override fun Content() {
@@ -95,7 +97,6 @@ class AddBookshelfVoyagerScreen(private val bookshelfId: Int?) : AndroidScreen()
 }
 
 class BookshelfDetailsScreen(private val bookshelfId: Int) : AndroidScreen() {
-    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.current
