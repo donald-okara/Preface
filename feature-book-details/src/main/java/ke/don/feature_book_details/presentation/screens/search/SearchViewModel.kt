@@ -24,63 +24,55 @@ import kotlin.random.Random
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val repository: BooksRepository,
-    private val booksUseCases : BooksUseCases
 ) : ViewModel() {
 
     private var _searchUiState = MutableStateFlow(SearchState())
     val searchUiState: StateFlow<SearchState> = _searchUiState
 
-    private var _searchQuery = MutableStateFlow("")
-    var searchQuery : StateFlow<String> = _searchQuery
+    fun handleEvent(event: SearchEventHandler){
+        when(event){
+            is SearchEventHandler.ClearSearch -> clearSearch()
+            is SearchEventHandler.SuggestBook -> suggestRandomBook()
+            is SearchEventHandler.OnLoading -> onLoading()
+            is SearchEventHandler.OnSearchQueryChange -> {
+                onSearchQueryChange(event.query)
+            }
+            is SearchEventHandler.Search -> onSearch()
+            is SearchEventHandler.Shuffle -> shuffleBook()
+        }
+    }
 
-    private var _searchMessage = MutableStateFlow("")
-    var searchMessage : StateFlow<String> = _searchMessage
-
-    private var _suggestedBook = MutableStateFlow("")
-    var suggestedBook = _suggestedBook
-        .onStart { suggestRandomBook() }
-        .stateIn(
-            scope = viewModelScope, // Coroutine scope for collecting updates
-            started = SharingStarted.WhileSubscribed(5000L), // Keep emitting updates while there are subscribers
-            initialValue = "" // Initial value of the mapped StateFlow
-        )
-
-
-
-    val isSearchPopulated: StateFlow<Boolean> = searchQuery
-        .map { it.isNotEmpty() }
-        .stateIn(
-            scope = viewModelScope, // Coroutine scope for collecting updates
-            started = SharingStarted.WhileSubscribed(5000L), // Keep emitting updates while there are subscribers
-            initialValue = false // Initial value of the mapped StateFlow
-        )
 
     fun updateSearchState(newState: SearchState){
         _searchUiState.update { newState }
     }
 
     fun clearSearch() {
-        updateSearchState(SearchState())
-        _searchQuery.update {
-            ""
-        }
+        updateSearchState(
+            SearchState()
+        )
+        suggestRandomBook()
     }
 
     fun onLoading(){
-        _searchMessage.update {
-            searchMessages[Random.nextInt(searchMessages.size)]
-        }
-        updateSearchState(SearchState(resultState = ResultState.Loading))
+        updateSearchState(
+            _searchUiState.value.copy(
+                searchMessage = searchMessages[Random.nextInt(searchMessages.size)],
+                resultState = ResultState.Loading
+            )
+        )
     }
 
     fun onSearchQueryChange(query: String) {
-        _searchQuery.update {
-            query
-        }
+        updateSearchState(
+            searchUiState.value.copy(
+                searchQuery = query
+            )
+        )
     }
 
     fun assignSuggestedBook(){
-        onSearchQueryChange(suggestedBook.value)
+        onSearchQueryChange(_searchUiState.value.suggestedBook)
     }
 
     fun shuffleBook() {
@@ -89,11 +81,11 @@ class SearchViewModel @Inject constructor(
     }
 
     fun onSearch() = viewModelScope.launch {
-        if (searchQuery.value.isEmpty() && suggestedBook.value.isNotEmpty()) {
+        if (_searchUiState.value.searchQuery.isEmpty() && _searchUiState.value.suggestedBook.isNotEmpty()) {
             assignSuggestedBook()
         }
         onLoading()
-        when ( val result =repository.searchBooks(searchQuery.value) ){
+        when ( val result = repository.searchBooks(_searchUiState.value.searchQuery) ){
             is NetworkResult.Error -> {
                 val errorMessage = buildString {
                     result.code?.let { append("code: $it, ") } // Add "code: " prefix if code is not null
@@ -101,7 +93,7 @@ class SearchViewModel @Inject constructor(
                 }.trimEnd().removeSuffix(",") // Remove trailing comma if present
 
                 updateSearchState(
-                    SearchState(
+                    _searchUiState.value.copy(
                         resultState = ResultState.Error(),
                         errorMessage = errorMessage.ifEmpty { "Unknown error" })
                 )
@@ -109,7 +101,7 @@ class SearchViewModel @Inject constructor(
 
             is NetworkResult.Success -> {
                 updateSearchState(
-                    SearchState(
+                    _searchUiState.value.copy(
                         resultState = ResultState.Success,
                         data = result.data
                     )
@@ -119,9 +111,11 @@ class SearchViewModel @Inject constructor(
     }
 
     private fun suggestRandomBook() {
-        _suggestedBook.update {
-            suggestedBookTitles[Random.nextInt(suggestedBookTitles.size)]
-        }
+        updateSearchState(
+            _searchUiState.value.copy(
+                suggestedBook = suggestedBookTitles[Random.nextInt(suggestedBookTitles.size)]
+            )
+        )
     }
     companion object {
         const val TAG = "BooksViewModel"

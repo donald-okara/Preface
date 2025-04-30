@@ -55,7 +55,6 @@ fun OnboardingScreen(
     viewModel: SignInViewModel = hiltViewModel(),
     onSuccessfulSignIn : () -> Unit
 ) {
-
     val pagerState = rememberPagerState(
         pageCount = { animations.size }
     )

@@ -59,8 +59,6 @@ fun ProfileScreen(
     profileState: ProfileTabState,
     onNavigateToBook: (String) -> Unit
 ){
-
-
     Box(
         contentAlignment = Alignment.TopCenter,
         modifier = modifier.padding(paddingValues)

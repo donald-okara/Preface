@@ -5,13 +5,10 @@ import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.LibraryBooks
 import androidx.compose.material.icons.automirrored.filled.ManageSearch
@@ -29,18 +26,17 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
 import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.Navigator
@@ -48,20 +44,24 @@ import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabNavigator
 import ke.don.feature_authentication.presentation.OnboardingScreen
-import ke.don.feature_bookshelf.R
+import ke.don.shared_navigation.app_scaffold.ConfigureAppBars
+import ke.don.shared_navigation.app_scaffold.ScaffoldViewModel
 import ke.don.shared_navigation.bottom_navigation.tabs.MyLibraryTab
 import ke.don.shared_navigation.bottom_navigation.tabs.ProfileTab
 import ke.don.shared_navigation.bottom_navigation.tabs.SearchTab
-import ke.don.shared_navigation.bottom_navigation.tabs.library.AddBookshelfVoyagerScreen
-import ke.don.shared_navigation.bottom_navigation.tabs.library.BookshelfDetailsScreen
-import ke.don.shared_navigation.bottom_navigation.tabs.search.BookDetailsVoyagerScreen
 
 
 object OnBoardingVoyagerScreen : AndroidScreen() {
     private fun readResolve(): Any = OnBoardingVoyagerScreen
 
+    @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
+        ConfigureAppBars(
+            title = "",
+            showBottomBar = false
+        )
+
         val navigator = LocalNavigator.current
         OnboardingScreen(
             onSuccessfulSignIn = { navigator?.replaceAll(MainScreen) }
@@ -86,60 +86,37 @@ object MainScreen : AndroidScreen() {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
-        val navigator = LocalNavigator.current // Top-level navigator managing MainScreen
+        val appBarViewModel: ScaffoldViewModel = hiltViewModel()
+        val appBarState = appBarViewModel.state
+
         // Define tab instances
-        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
 
         val myLibraryTab = remember {
-            MyLibraryTab(
-                onNavigateToAddBookshelf = {
-                    Log.d("MainScreen", "Attempting to add bookshelf")
-                    navigator?.push(AddBookshelfVoyagerScreen(null))
-                },
-                onNavigateToEditBookshelf = {
-                    navigator?.push(AddBookshelfVoyagerScreen(it))
-                },
-                onNavigateToBookshelfItem = {
-                    navigator?.push(BookshelfDetailsScreen(it))
-                }
-            )
+            MyLibraryTab()
         }
         val searchTab = remember {
-            SearchTab(
-                onNavigateToBookItem = {
-                    navigator?.push(BookDetailsVoyagerScreen(it))
-                }
-            )
+            SearchTab()
         }
         val profileTab = remember {
-            ProfileTab(
-                onSignOut = { navigator?.replaceAll(OnBoardingVoyagerScreen) },
-                onNavigateToBookItem = {
-                    navigator?.push(BookDetailsVoyagerScreen(it))
-                }
-            )
+            ProfileTab()
         }
         val tabs = listOf(myLibraryTab, searchTab, profileTab)
 
         TabNavigator(myLibraryTab) { tabNavigator ->
             Scaffold(
-                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                 topBar = {
-                    CenterAlignedTopAppBar(
-                        scrollBehavior = scrollBehavior,
-                        title = {
-                            Image(
-                                painter = painterResource(R.drawable.app_logo),
-                                contentDescription = "My Library",
-                                modifier = Modifier
-                                    .clip(shape = RoundedCornerShape(16.dp))
-                                    .scale(1.2f)
-                                    .fillMaxHeight()
-                            )
-                        }
+                    TopAppBar(
+                        title = { Text(appBarState.title) },
+                        navigationIcon =  appBarState.navigationIcon ?:{},//Elvis monkey 😆
+                        actions = appBarState.actions
                     )
                 },
-                bottomBar = { BottomNavigationBar(tabs = tabs) }
+                bottomBar = {
+                    if (appBarState.showBottomBar) {
+                        BottomNavigationBar(tabs = tabs)
+                    }
+
+                }
             ) { innerPadding ->
                 AnimatedContent(
                     modifier =
@@ -156,14 +133,12 @@ object MainScreen : AndroidScreen() {
     }
 }
 
-
 @Composable
 fun AppNavigation() {
     Navigator(SplashVoyagerScreen) { navigator ->
         navigator.lastItemOrNull?.Content()
     }
 }
-
 
 @Composable
 fun BottomNavigationBar(tabs: List<Tab>) {
@@ -177,7 +152,7 @@ fun BottomNavigationBar(tabs: List<Tab>) {
 
                 val flipRotation by animateFloatAsState(
                     targetValue = if (isSelected) 360f else 0f,
-                    animationSpec = tween(400, easing = FastOutSlowInEasing),
+                    animationSpec = tween(1000, easing = FastOutSlowInEasing),
                     label = "icon_flip"
                 )
 

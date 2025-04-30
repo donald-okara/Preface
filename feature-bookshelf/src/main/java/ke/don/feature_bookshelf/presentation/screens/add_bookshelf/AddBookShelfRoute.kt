@@ -41,13 +41,11 @@ fun AddBookshelfRoute(
     modifier: Modifier = Modifier,
     state: AddBookshelfState,
     handleEvent: (AddBookshelfEventHandler) -> Unit,
-    paddingValues: PaddingValues,
     onNavigateBack: () -> Unit,
 ){
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
-            .padding(paddingValues)
             .fillMaxSize()
     ){
         BookshelfForm(

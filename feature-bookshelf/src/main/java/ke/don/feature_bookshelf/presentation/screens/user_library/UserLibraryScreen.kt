@@ -1,5 +1,6 @@
 package ke.don.feature_bookshelf.presentation.screens.user_library
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,6 +24,7 @@ import ke.don.common_datasource.remote.domain.states.UserLibraryState
 import ke.don.feature_bookshelf.presentation.screens.user_library.components.BookshelfItem
 import ke.don.shared_components.components.EmptyScreen
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UserLibraryScreen(
@@ -50,7 +52,7 @@ fun UserLibraryScreen(
                 )
             }
         }
-    ) {innerPadding ->
+    ) {
         PullToRefreshBox(
             contentAlignment = Alignment.TopCenter,
             isRefreshing = userLibraryState.isRefreshing,
@@ -58,7 +60,6 @@ fun UserLibraryScreen(
             state = pullToRefreshState,
             modifier = modifier
                 .fillMaxSize()
-                .padding(innerPadding)
         ) {
             if(bookshelves.isEmpty()){
                 EmptyScreen(
@@ -71,7 +72,6 @@ fun UserLibraryScreen(
             }
             LazyColumn (
                 modifier = modifier
-                    .padding(8.dp)
                     .align(Alignment.TopCenter),
                 horizontalAlignment = Alignment.Start,
                 verticalArrangement = Arrangement.spacedBy(4.dp),
@@ -89,11 +89,7 @@ fun UserLibraryScreen(
                         showOptionsSheet = showOptionSheet
                     )
                 }
-
             }
-
         }
-
     }
-
 }

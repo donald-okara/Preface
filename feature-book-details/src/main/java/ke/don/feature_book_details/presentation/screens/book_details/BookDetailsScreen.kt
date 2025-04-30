@@ -59,23 +59,18 @@ import ke.don.shared_components.components.EmptyScreen
 import ke.don.shared_domain.states.ResultState
 import kotlinx.coroutines.launch
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookDetailsRoute(
     modifier: Modifier = Modifier,
-    onNavigateToSearch: () -> Unit,//TODO
+    onNavigateToSearch: (String) -> Unit,
     volumeId: String,
     bookUiState: BookUiState,
     onBookDetailsEvent: (BookDetailsEvent) -> Unit,
-    onBackPressed: () -> Unit
-){
-    LaunchedEffect(volumeId){
+) {
+    LaunchedEffect(volumeId) {
         onBookDetailsEvent(BookDetailsEvent.VolumeIdPassed(volumeId))
     }
 
-
-    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     val colorPallet = bookUiState.colorPallet
     val dominantColor =
         getDominantColor(
@@ -83,76 +78,27 @@ fun BookDetailsRoute(
             isDarkTheme = isSystemInDarkTheme()
         )
 
-    Scaffold(
-        topBar = {
-            CenterAlignedTopAppBar(
-                scrollBehavior = scrollBehavior,
-                title = {
-                    Text(
-                        ""
+    Box(
+        modifier = modifier
+            .fillMaxSize(),
+    ) {
+        when (bookUiState.resultState) {
+            is ResultState.Success -> {
+                if (bookUiState.bookDetails.id.isNotEmpty() && volumeId == bookUiState.volumeId) {
+                    BookDetailsContent(
+                        dominantColor = dominantColor,
+                        onBookDetailsEvent = onBookDetailsEvent,
+                        bookUiState = bookUiState,
+                        onSearchAuthor = onNavigateToSearch
                     )
-                },
-                navigationIcon = {
-                    IconButton(
-                        onClick = {
-                            onBackPressed()
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Default.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                },
-                actions = {
-                    if (bookUiState.resultState == ResultState.Success) {
-                        IconButton(
-                            onClick = { onBookDetailsEvent(BookDetailsEvent.ShowBottomSheet) }
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.MoreVert,
-                                contentDescription = "Back"
-                            )
-                        }
-                    }
-                }
-            )
-        }
-    ) { innerPadding ->
-        Box(
-            modifier = modifier
-                .padding(innerPadding)
-                .fillMaxSize(),
-        ) {
-            when(bookUiState.resultState) {
-                is ResultState.Success -> {
-                    if(bookUiState.bookDetails.id.isNotEmpty() && volumeId == bookUiState.volumeId){
-                        BookDetailsContent(
-                            dominantColor = dominantColor,
-                            onBookDetailsEvent = onBookDetailsEvent,
-                            bookUiState = bookUiState,
-                        )
 
-                        BookDetailsSheet(
-                            modifier = modifier
-                                .align(Alignment.Center),
-                            bookUiState = bookUiState,
-                            onBookDetailsEvent = onBookDetailsEvent,
-                        )
-                    }else{
-                        EmptyScreen(
-                            modifier = modifier
-                                .align(Alignment.Center),
-                            icon = Icons.Outlined.HourglassEmpty,
-                            message = "Loading",
-                            action = {},
-                            actionText = bookUiState.loadingJoke
-                        )
-                    }
-
-                }
-
-                is ResultState.Loading -> {
+                    BookDetailsSheet(
+                        modifier = modifier
+                            .align(Alignment.Center),
+                        bookUiState = bookUiState,
+                        onBookDetailsEvent = onBookDetailsEvent,
+                    )
+                } else {
                     EmptyScreen(
                         modifier = modifier
                             .align(Alignment.Center),
@@ -163,21 +109,34 @@ fun BookDetailsRoute(
                     )
                 }
 
-                else -> {
-                    EmptyScreen(
-                        modifier = modifier
-                            .align(Alignment.Center),
-                        icon = Icons.Outlined.Error,
-                        message = "Error",
-                        action = {onBookDetailsEvent(BookDetailsEvent.Refresh)},
-                        actionText = "Something went wrong. Please try again"
-                    )
-                }
             }
 
+            is ResultState.Loading -> {
+                EmptyScreen(
+                    modifier = modifier
+                        .align(Alignment.Center),
+                    icon = Icons.Outlined.HourglassEmpty,
+                    message = "Loading",
+                    action = {},
+                    actionText = bookUiState.loadingJoke
+                )
+            }
 
+            else -> {
+                EmptyScreen(
+                    modifier = modifier
+                        .align(Alignment.Center),
+                    icon = Icons.Outlined.Error,
+                    message = "Error",
+                    action = { onBookDetailsEvent(BookDetailsEvent.Refresh) },
+                    actionText = "Something went wrong. Please try again"
+                )
+            }
         }
+
+
     }
+
 }
 
 
@@ -187,6 +146,7 @@ fun BookDetailsRoute(
 fun BookDetailsContent(
     modifier: Modifier = Modifier,
     bookUiState: BookUiState,
+    onSearchAuthor: (String) -> Unit,
     onBookDetailsEvent: (BookDetailsEvent) -> Unit,
     dominantColor : Color,
 ) {
@@ -207,7 +167,7 @@ fun BookDetailsContent(
         ) {
             TitleHeader(
                 volumeInfo = bookUiState.bookDetails.volumeInfo,
-                onSearchAuthor = {},//TODO
+                onSearchAuthor = onSearchAuthor,
                 imageUrl = bookUiState.highestImageUrl,
                 textColor = dominantColor,
                 onImageClick = {

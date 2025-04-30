@@ -11,34 +11,30 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ManageSearch
+import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import ke.don.feature_book_details.presentation.screens.search.components.BookSearchBar
-import ke.don.feature_book_details.presentation.screens.search.components.BooksGridScreen
+import ke.don.feature_book_details.presentation.screens.search.components.BookList
+import ke.don.shared_components.components.EmptyScreen
 import ke.don.shared_domain.states.ResultState
+import ke.don.shared_domain.states.SearchState
 
 @Composable
 fun BookSearchScreen(
     modifier: Modifier = Modifier,
+    searchState: SearchState,
+    eventHandler: (SearchEventHandler) -> Unit,
     paddingValues: PaddingValues = PaddingValues(),
-    viewModel: SearchViewModel = hiltViewModel(),
     onNavigateToBookItem: (String) -> Unit
 ) {
-
-    val searchState by viewModel.searchUiState.collectAsState()
-    val searchMessage by viewModel.searchMessage.collectAsState()
-    val searchQuery by viewModel.searchQuery.collectAsState()
-    val suggestedBook by viewModel.suggestedBook.collectAsState()
-    val isSearchPopulated by viewModel.isSearchPopulated.collectAsState()
-
     Box(
         contentAlignment = Alignment.Center,
         modifier = modifier
@@ -54,13 +50,13 @@ fun BookSearchScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 BookSearchBar(
-                    bookSearch = searchQuery,
-                    onBookSearchChange = viewModel::onSearchQueryChange,
-                    suggestedBook = suggestedBook,
-                    isSearchPopulated = isSearchPopulated,
-                    onShuffle = viewModel::shuffleBook,
-                    onClear = viewModel::clearSearch,
-                    onSearch = viewModel::onSearch,
+                    searchQuery = searchState.searchQuery,
+                    onBookSearchChange = { eventHandler(SearchEventHandler.OnSearchQueryChange(it)) },
+                    suggestedBook = searchState.suggestedBook,
+                    isSearchPopulated = searchState.searchQuery.isNotEmpty(),
+                    onShuffle = {eventHandler(SearchEventHandler.Shuffle)},
+                    onClear = {eventHandler(SearchEventHandler.ClearSearch)},
+                    onSearch = {eventHandler(SearchEventHandler.Search)},
                     shape = RoundedCornerShape(16.dp),
                     modifier = modifier
                         .padding(8.dp)
@@ -70,9 +66,14 @@ fun BookSearchScreen(
                 when (searchState.resultState) {
                     is ResultState.Success -> {
                         if (searchState.data.isEmpty()) {
-                            Text(text = "No books found. Try searching for something else.")
+                            EmptyScreen(
+                                icon = Icons.Outlined.SearchOff,
+                                message = "No books found. Try searching for something else.",
+                                action = {},
+                                actionText = ""
+                            )
                         } else {
-                            BooksGridScreen(
+                            BookList(
                                 books = searchState.data,
                                 onNavigateToBookItem = onNavigateToBookItem
                             )
@@ -81,16 +82,20 @@ fun BookSearchScreen(
                     }
 
                     is ResultState.Error -> {
-                        SearchErrorScreen(
-                            text = searchState.errorMessage,
-                            onRefresh = viewModel::onSearch
-
+                        EmptyScreen(
+                            icon = Icons.Outlined.SearchOff,
+                            message = "Something went wrong",
+                            action = {},
+                            actionText = searchState.errorMessage
                         )
                     }
 
                     is ResultState.Loading -> {
-                        SearchLoadingScreen(
-                            text = searchMessage
+                        EmptyScreen(
+                            icon = Icons.Outlined.ManageSearch,
+                            message = searchState.searchMessage,
+                            action = {},
+                            actionText = ""
                         )
                     }
 

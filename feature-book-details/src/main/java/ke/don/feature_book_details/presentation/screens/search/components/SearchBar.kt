@@ -30,7 +30,7 @@ import ke.don.feature_book_details.R
 @Composable
 fun BookSearchBar(
     modifier: Modifier = Modifier,
-    bookSearch: String,
+    searchQuery: String,
     onBookSearchChange: (String) -> Unit,
     suggestedBook: String,
     isSearchPopulated: Boolean = false,
@@ -45,7 +45,7 @@ fun BookSearchBar(
     val focusManager = LocalFocusManager.current // To clear focus and dismiss keyboard
 
     OutlinedTextField(
-        value = bookSearch,
+        value = searchQuery,
         singleLine = true,
         placeholder = {
             Text(
