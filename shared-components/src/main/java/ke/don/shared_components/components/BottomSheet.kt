@@ -14,6 +14,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -23,28 +24,31 @@ fun SheetOptionItem(
     modifier: Modifier = Modifier,
     icon: ImageVector,
     title: String,
-    onOptionClick: () -> Unit
+    onOptionClick: () -> Unit,
+    trailingItem: @Composable (() -> Unit)? = null
 ) {
     val textSize = 18f
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .clickable {onOptionClick()}
-            .padding(8.dp), // Inner padding for content
+            .clickable { onOptionClick() }
+            .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start
     ) {
         Icon(
             imageVector = icon,
             contentDescription = title,
-            modifier = modifier.size(24.dp)
+            modifier = Modifier.size(24.dp)
         )
-        Spacer(modifier = modifier.width(8.dp))
+        Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = title,
             style = MaterialTheme.typography.headlineMedium.copy(fontSize = textSize.sp)
         )
+        Spacer(modifier = Modifier.weight(1f))
+        trailingItem?.invoke()
     }
-
 }
+
 

@@ -1,12 +1,14 @@
 package ke.don.feature_profile.tab
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -17,6 +19,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Book
+import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material.icons.outlined.PersonRemove
 import androidx.compose.material3.CircularProgressIndicator
@@ -24,7 +28,10 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -38,6 +45,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import ke.don.common_datasource.local.datastore.user_settings.Settings
 import ke.don.feature_profile.R
 import ke.don.feature_profile.tab.components.CurrentlyReadingContainer
 import ke.don.feature_profile.tab.components.ProfileHeader
@@ -50,19 +58,28 @@ import ke.don.shared_components.components.SheetOptionItem
 import ke.don.shared_domain.states.ProfileTabState
 import ke.don.shared_domain.states.ResultState
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     modifier: Modifier = Modifier,
     paddingValues: PaddingValues = PaddingValues(),
     onNavigateToSignIn: () -> Unit,
+    settings: Settings,
     profileTabEventHandler: (ProfileTabEventHandler) -> Unit,
     profileState: ProfileTabState,
     onNavigateToBook: (String) -> Unit
 ){
-    Box(
+    val pullToRefreshState = rememberPullToRefreshState()
+
+    PullToRefreshBox(
         contentAlignment = Alignment.TopCenter,
-        modifier = modifier.padding(paddingValues)
-    ){
+        isRefreshing = profileState.isRefreshing,
+        onRefresh = { profileTabEventHandler(ProfileTabEventHandler.FetchProfile) },
+        state = pullToRefreshState,
+        modifier = modifier
+            .fillMaxSize()
+            .padding(paddingValues)
+    ) {
         when(profileState.profileResultState){
             is ResultState.Success -> {
                 ProfileScreenContent(
@@ -76,29 +93,37 @@ fun ProfileScreen(
                     modifier = modifier,
                     onSignOut = { profileTabEventHandler(ProfileTabEventHandler.SignOut(onNavigateToSignIn)) },
                     state = profileState,
-                    profileTabEventHandler = profileTabEventHandler
+                    profileTabEventHandler = profileTabEventHandler,
+                    settings = settings
                 )
             }
             is ResultState.Empty -> {
-                EmptyScreen(
-                    icon = Icons.Default.Person,
-                    message = stringResource(R.string.no_profile_message),
-                    action = onNavigateToSignIn,
-                    actionText = stringResource(R.string.sign_in)
+                val scrollState = rememberScrollState()
 
-                )
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = modifier
+                        .fillMaxWidth()
+                        .verticalScroll(scrollState)
+                ) {
+                    EmptyScreen(
+                        icon = Icons.Default.Person,
+                        message = stringResource(R.string.no_profile_message),
+                        action = onNavigateToSignIn,
+                        actionText = stringResource(R.string.sign_in)
+                    )
+                }
+
             }
 
-            else -> {
-                CircularProgressIndicator(
-                    modifier = modifier.align(Alignment.Center)
-                )
-            }
+            else -> {}
         }
 
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreenContent(
     modifier: Modifier = Modifier,
@@ -107,6 +132,7 @@ fun ProfileScreenContent(
     profileTabEventHandler: (ProfileTabEventHandler) -> Unit
 ){
     val scrollState = rememberScrollState()
+
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -159,6 +185,7 @@ fun ProfileScreenContent(
 fun ProfileBottomSheet(
     modifier: Modifier = Modifier,
     state: ProfileTabState,
+    settings: Settings,
     onSignOut: () -> Unit,
     profileTabEventHandler: (ProfileTabEventHandler) -> Unit
 ){
@@ -178,6 +205,17 @@ fun ProfileBottomSheet(
                 stickyHeader {
                     ProfileSheetHeader(
                         profileUrl = state.profile.avatarUrl,
+                    )
+                }
+                item {
+                    SheetOptionItem(
+                        modifier = modifier,
+                        icon = Icons.Outlined.DarkMode,
+                        title = "Dark theme",
+                        onOptionClick = {
+                            showDeleteDialog = true
+                        },
+                        trailingItem = { Switch(checked = settings.darkTheme, onCheckedChange = {profileTabEventHandler(ProfileTabEventHandler.ToggleDarkTheme)}) }
                     )
                 }
                 item {

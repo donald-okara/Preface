@@ -7,5 +7,5 @@
     <string name="sign_out_message">Are you sure you want to sign out?</string>
     <string name="no_profile_message">No profile found</string>
     <string name="no_books_message">Error fetching book progress</string>
-    <string name="sign_in">Navigate back to sign in</string>
+    <string name="sign_in">Pull to refresh or tap to navigate back to sign in</string>
 </resources>
