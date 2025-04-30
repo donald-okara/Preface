@@ -12,14 +12,15 @@ import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.navigator.LocalNavigator
+import ke.don.common_datasource.local.datastore.user_settings.Settings
 import ke.don.feature_profile.tab.ProfileScreen
 import ke.don.feature_profile.tab.ProfileTabEventHandler
 import ke.don.feature_profile.tab.ProfileViewModel
+import ke.don.shared_domain.states.ResultState
 import ke.don.shared_navigation.OnBoardingVoyagerScreen
 import ke.don.shared_navigation.app_scaffold.ConfigureAppBars
 import ke.don.shared_navigation.bottom_navigation.tabs.search.BookDetailsVoyagerScreen
 
-@OptIn(ExperimentalMaterial3Api::class)
 class ProfileVoyagerScreen(): AndroidScreen(){
 
     @Composable
@@ -27,6 +28,7 @@ class ProfileVoyagerScreen(): AndroidScreen(){
 
         val navigator = LocalNavigator.current
         val viewModel: ProfileViewModel = hiltViewModel()
+        val settings by viewModel.settings.collectAsState(initial = Settings())
         val state by viewModel.profileState.collectAsState()
         val profileEventHandler = viewModel::handleEvent
 
@@ -34,15 +36,17 @@ class ProfileVoyagerScreen(): AndroidScreen(){
             title = "Profile",
             showBottomBar = true,
             actions = {
-                IconButton(
-                    onClick = {
-                        profileEventHandler(ProfileTabEventHandler.ShowBottomSheet)
+                if(state.profileResultState is ResultState.Success){
+                    IconButton(
+                        onClick = {
+                            profileEventHandler(ProfileTabEventHandler.ShowBottomSheet)
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Settings,
+                            contentDescription = "Settings"
+                        )
                     }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = "Settings"
-                    )
                 }
             }
         )
@@ -56,6 +60,7 @@ class ProfileVoyagerScreen(): AndroidScreen(){
             onNavigateToSignIn = { navigator?.push(OnBoardingVoyagerScreen) },
             profileState = state,
             profileTabEventHandler = profileEventHandler,
+            settings = settings,
             onNavigateToBook = {
                 navigator?.push(BookDetailsVoyagerScreen(it))
             }

@@ -6,4 +6,5 @@ sealed class ProfileTabEventHandler {
     data object FetchUserProgress : ProfileTabEventHandler()
     data class SignOut(val onSignOut: () -> Unit) : ProfileTabEventHandler()
     data class DeleteUser(val onSignOut: () -> Unit) : ProfileTabEventHandler()
+    data object ToggleDarkTheme: ProfileTabEventHandler()
 }

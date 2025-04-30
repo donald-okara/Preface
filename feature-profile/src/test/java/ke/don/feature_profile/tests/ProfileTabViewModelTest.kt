@@ -2,6 +2,7 @@ package ke.don.feature_profile.tests
 
 import ke.don.feature_profile.fake.FakeProfileRepository
 import ke.don.feature_profile.fake.FakeProfileUseCases
+import ke.don.feature_profile.fake.FakeSettingsDataStoreManager
 import ke.don.feature_profile.tab.ProfileViewModel
 import ke.don.shared_domain.data_models.UserProgressBookView
 import ke.don.shared_domain.states.ResultState
@@ -16,6 +17,7 @@ import org.junit.After
 import org.junit.Assert.assertNotEquals
 import org.junit.Before
 import org.junit.Test
+import org.mockito.Mock
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class ProfileTabViewModelTest {
@@ -37,6 +39,7 @@ class ProfileTabViewModelTest {
     }
 
     private val viewModel = ProfileViewModel(
+        settingsDataStoreManager = FakeSettingsDataStoreManager(),
         profileRepository = FakeProfileRepository(),
         profileTabUseCases = FakeProfileUseCases()
     )
