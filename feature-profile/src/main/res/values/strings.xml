@@ -8,4 +8,13 @@
     <string name="no_profile_message">No profile found</string>
     <string name="no_books_message">Error fetching book progress</string>
     <string name="sign_in">Pull to refresh or tap to navigate back to sign in</string>
+    <string name="profile_picture">Profile picture</string>
+    <string name="books_read">Books Read</string>
+    <string name="discovered">Discovered</string>
+    <string name="currently_reading">Currently Reading</string>
+    <string name="you_haven_t_started_reading">You haven\'t started reading any books yet</string>
+    <string name="reading_history">Reading History</string>
+    <string name="you_haven_t_completed">You haven\'t completed any books yet</string>
+    <string name="dark_theme">Dark theme</string>
+    <string name="log_out">Log out</string>
 </resources>

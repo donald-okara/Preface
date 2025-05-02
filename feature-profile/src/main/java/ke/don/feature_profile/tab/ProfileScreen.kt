@@ -81,7 +81,6 @@ fun ProfileScreen(
                 ProfileScreenContent(
                     modifier = modifier,
                     state = profileState,
-                    profileTabEventHandler = profileTabEventHandler,
                     onNavigateToBook = onNavigateToBook,
                 )
 
@@ -119,13 +118,11 @@ fun ProfileScreen(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreenContent(
     modifier: Modifier = Modifier,
     state: ProfileTabState,
     onNavigateToBook: (String) -> Unit,
-    profileTabEventHandler: (ProfileTabEventHandler) -> Unit
 ){
     val scrollState = rememberScrollState()
 
@@ -139,7 +136,6 @@ fun ProfileScreenContent(
         ProfileHeader(
             modifier = modifier,
             state = state,
-            profileTabEventHandler = profileTabEventHandler
         )
 
         when(state.progressResultState){
@@ -207,7 +203,7 @@ fun ProfileBottomSheet(
                     SheetOptionItem(
                         modifier = modifier,
                         icon = Icons.Outlined.DarkMode,
-                        title = "Dark theme",
+                        title = stringResource(R.string.dark_theme),
                         onOptionClick = {
                             showDeleteDialog = true
                         },
@@ -218,7 +214,7 @@ fun ProfileBottomSheet(
                     SheetOptionItem(
                         modifier = modifier,
                         icon = Icons.Outlined.Logout,
-                        title = "Log out",
+                        title = stringResource(R.string.log_out),
                         onOptionClick = {
                             showSignOutDialog = true
                         }
@@ -228,7 +224,7 @@ fun ProfileBottomSheet(
                     SheetOptionItem(
                         modifier = modifier,
                         icon = Icons.Outlined.PersonRemove,
-                        title = "Delete profile",
+                        title = stringResource(R.string.delete_profile),
                         onOptionClick = {
                             showDeleteDialog = true
                         }
