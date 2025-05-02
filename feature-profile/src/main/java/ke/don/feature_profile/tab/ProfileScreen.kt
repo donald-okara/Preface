@@ -1,9 +1,7 @@
 package ke.don.feature_profile.tab
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -20,7 +18,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.outlined.Book
 import androidx.compose.material.icons.outlined.DarkMode
-import androidx.compose.material.icons.outlined.LightMode
 import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material.icons.outlined.PersonRemove
 import androidx.compose.material3.CircularProgressIndicator
@@ -34,7 +31,6 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -45,7 +41,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import ke.don.common_datasource.local.datastore.user_settings.Settings
+import ke.don.common_datasource.local.datastore.user_settings.AppSettings
 import ke.don.feature_profile.R
 import ke.don.feature_profile.tab.components.CurrentlyReadingContainer
 import ke.don.feature_profile.tab.components.ProfileHeader
@@ -64,7 +60,7 @@ fun ProfileScreen(
     modifier: Modifier = Modifier,
     paddingValues: PaddingValues = PaddingValues(),
     onNavigateToSignIn: () -> Unit,
-    settings: Settings,
+    settings: AppSettings,
     profileTabEventHandler: (ProfileTabEventHandler) -> Unit,
     profileState: ProfileTabState,
     onNavigateToBook: (String) -> Unit
@@ -185,7 +181,7 @@ fun ProfileScreenContent(
 fun ProfileBottomSheet(
     modifier: Modifier = Modifier,
     state: ProfileTabState,
-    settings: Settings,
+    settings: AppSettings,
     onSignOut: () -> Unit,
     profileTabEventHandler: (ProfileTabEventHandler) -> Unit
 ){

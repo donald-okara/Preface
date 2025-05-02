@@ -5,7 +5,9 @@ plugins {
     alias(libs.plugins.hilt.android)
     alias(libs.plugins.ksp)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.google.services)
     id("kotlin-parcelize")
+    alias(libs.plugins.google.firebase.crashlytics)
 }
 
 android {
@@ -76,6 +78,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.process)
     implementation(libs.androidx.hilt.hilt.work)
     implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.firebase.crashlytics)
 
     ksp(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
@@ -89,6 +92,8 @@ dependencies {
 
     implementation(libs.androidx.palette.ktx)
 
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
 
     //Coil
     implementation(libs.coil.compose)

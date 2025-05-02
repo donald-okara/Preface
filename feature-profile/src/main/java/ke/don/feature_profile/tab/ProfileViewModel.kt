@@ -1,12 +1,8 @@
 package ke.don.feature_profile.tab
 
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import ke.don.common_datasource.local.datastore.user_settings.Settings
 import ke.don.common_datasource.local.datastore.user_settings.SettingsDataStoreManager
 import ke.don.common_datasource.remote.domain.repositories.ProfileRepository
 import ke.don.common_datasource.remote.domain.usecases.ProfileTabUseCases
@@ -15,8 +11,6 @@ import ke.don.shared_domain.states.ResultState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.flow.onStart
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject

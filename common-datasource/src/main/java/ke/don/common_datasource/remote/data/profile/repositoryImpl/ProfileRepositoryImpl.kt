@@ -6,6 +6,8 @@ import android.widget.Toast
 import ke.don.common_datasource.local.datastore.profile.ProfileDataStoreManager
 import ke.don.common_datasource.local.roomdb.dao.BookshelfDao
 import ke.don.common_datasource.remote.data.profile.network.ProfileNetworkClass
+import ke.don.common_datasource.remote.domain.error_handler.CompositeErrorHandler
+import ke.don.common_datasource.remote.domain.error_handler.Koffee
 import ke.don.common_datasource.remote.domain.repositories.ProfileRepository
 import ke.don.common_datasource.remote.domain.states.NoDataReturned
 import ke.don.shared_domain.data_models.Profile
@@ -20,6 +22,8 @@ class ProfileRepositoryImpl(
     private val bookshelfDao: BookshelfDao,
     private val profileDataStoreManager: ProfileDataStoreManager
 ): ProfileRepository {
+    private val errorHandler = CompositeErrorHandler()
+
     private var _rawNonce: String? = null
     override val rawNonce: String
         get() = _rawNonce ?: throw IllegalStateException("Nonce not yet generated")
@@ -84,9 +88,7 @@ class ProfileRepositoryImpl(
           profileDataStoreManager.setProfileInDatastore(profile)
         } catch (e: Exception) {
             Log.e(TAG, "Exception in signInAndInsertProfile", e)
-            NetworkResult.Error(
-                message = e.message.toString()
-            )
+            errorHandler.handleException(e)
         }
     }
 
@@ -111,7 +113,7 @@ class ProfileRepositoryImpl(
     override suspend fun fetchProfileDetails(userId: String): NetworkResult<ProfileDetails?> {
         return profileNetworkClass.fetchProfileDetails(userId).also { result ->
             if (result is NetworkResult.Error) {
-                Toast.makeText(context, "${'$'}{result.message} ${'$'}{result.hint}", Toast.LENGTH_SHORT).show()
+                Koffee.toast(context, result)
             }
         }
 
@@ -119,24 +121,24 @@ class ProfileRepositoryImpl(
 
     override suspend fun signOut(): NetworkResult<NoDataReturned> {
         return profileNetworkClass.signOut().also { result ->
-            if (result is NetworkResult.Success){
+            if (result is NetworkResult.Error){
+                Koffee.toast(context, result)
+            }else{
                 profileDataStoreManager.clearProfileDataStore()
                 bookshelfDao.deleteAllBookshelves()
-            }else{
-                Toast.makeText(context, "Something went wrong",Toast.LENGTH_SHORT).show()
             }
         }
     }
 
     override suspend fun deleteUser(userId: String): NetworkResult<NoDataReturned> {
         return profileNetworkClass.deleteProfile(userId).also {
-            if(it is NetworkResult.Success){
+            if(it is NetworkResult.Error){
+                Koffee.toast(context, it)
+            }else{
                 Toast.makeText(context, "Request successful. This may take a while",Toast.LENGTH_SHORT).show()
 
                 profileDataStoreManager.clearProfileDataStore()
                 bookshelfDao.deleteAllBookshelves()
-            }else{
-                Toast.makeText(context, "Something went wrong",Toast.LENGTH_SHORT).show()
             }
         }
     }

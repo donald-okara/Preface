@@ -14,7 +14,10 @@ import ke.don.common_datasource.remote.domain.states.NoDataReturned
 import ke.don.shared_domain.data_models.BookDetailsResponse
 import ke.don.shared_domain.data_models.BookItem
 import ke.don.shared_domain.states.NetworkResult
+import kotlinx.io.IOException
+import retrofit2.HttpException
 import retrofit2.Response
+import java.net.SocketTimeoutException
 
 class BooksRepositoryImpl(
     private val bookshelfNetworkClass: BookshelfNetworkClass,
@@ -65,11 +68,17 @@ class BooksRepositoryImpl(
                 )
             }
 
+        } catch (e: IOException) {
+            // e.g. no internet, timeout
+            NetworkResult.Error(message = "Please check your internet connection.")
+        } catch (e: HttpException) {
+            // non-2xx HTTP response not caught by `isSuccessful`
+            NetworkResult.Error(message = "Server error: ${e.message()}")
+        } catch (e: SocketTimeoutException) {
+            NetworkResult.Error(message = "Connection timed out. Please try again.")
         } catch (e: Exception) {
-            // Handle network error
-            NetworkResult.Error(
-                message = "Something went wrong. Please check your internet and try again",
-            )
+            // Generic catch-all
+            NetworkResult.Error(message = "Something went wrong. Try again.")
         }
     }
 
@@ -133,13 +142,19 @@ class BooksRepositoryImpl(
                     details = response.body().toString()
                 )
             }
+        } catch (e: IOException) {
+            // e.g. no internet, timeout
+            NetworkResult.Error(message = "Please check your internet connection.")
+        } catch (e: HttpException) {
+            // non-2xx HTTP response not caught by `isSuccessful`
+            NetworkResult.Error(message = "Server error: ${e.message()}")
+        } catch (e: SocketTimeoutException) {
+            NetworkResult.Error(message = "Connection timed out. Please try again.")
         } catch (e: Exception) {
-            NetworkResult.Error(
-                message = "Something went wrong. Please check your internet and try again",
-            )
+            // Generic catch-all
+            NetworkResult.Error(message = "Something went wrong. Try again.")
         }
     }
-
 
     companion object {
         const val TAG = "BooksRepositoryImpl"

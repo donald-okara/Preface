@@ -60,6 +60,7 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.androidx.runtime.livedata)
     implementation(project(":common-datasource"))
+    implementation(project(":shared-components"))
     kapt(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
 

@@ -31,10 +31,9 @@ fun GoogleSignInButton(
     modifier: Modifier = Modifier,
     onClickAction: () -> Unit,
     enabled: Boolean = true,
-    isDarkTheme: Boolean = isSystemInDarkTheme()
 ) {
     val containerColor = MaterialTheme.colorScheme.inverseSurface
-    val contentColor = if (isDarkTheme) Color.Black else Color.White
+    val contentColor = MaterialTheme.colorScheme.inverseOnSurface
 
     Button(
         onClick = onClickAction,

@@ -10,6 +10,7 @@ import ke.don.common_datasource.local.datastore.profile.ProfileDataStoreManager
 import ke.don.common_datasource.local.datastore.token.TokenDatastoreManager
 import ke.don.common_datasource.local.datastore.user_settings.SettingsDataStoreManager
 import ke.don.common_datasource.local.datastore.user_settings.SettingsDataStoreManagerImpl
+import ke.don.common_datasource.remote.domain.error_handler.InternetAvailability
 import javax.inject.Singleton
 
 @Module
@@ -33,4 +34,10 @@ object DatastoreModule {
     fun provideSettingsDataStoreManager(
         @ApplicationContext context: Context
     ): SettingsDataStoreManager = SettingsDataStoreManagerImpl(context)
+
+    @Provides
+    @Singleton
+    fun provideInternetAvailability(
+        @ApplicationContext context: Context
+    ): InternetAvailability = InternetAvailability(context)
 }

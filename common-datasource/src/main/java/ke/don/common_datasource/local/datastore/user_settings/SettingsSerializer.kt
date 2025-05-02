@@ -9,14 +9,14 @@ import java.io.InputStream
 import java.io.OutputStream
 
 @Suppress("BlockingMethodInNonBlockingContext")
-object SettingsSerializer : Serializer<Settings> {
-    override val defaultValue: Settings
-        get() = Settings()
+object SettingsSerializer : Serializer<AppSettings> {
+    override val defaultValue: AppSettings
+        get() = AppSettings()
 
-    override suspend fun readFrom(input: InputStream): Settings {
+    override suspend fun readFrom(input: InputStream): AppSettings {
         return try {
             Json.decodeFromString(
-                deserializer = Settings.serializer(),
+                deserializer = AppSettings.serializer(),
                 string = input.readBytes().decodeToString()
             )
         }catch (e: SerializationException){
@@ -25,10 +25,10 @@ object SettingsSerializer : Serializer<Settings> {
         }
     }
 
-    override suspend fun writeTo(t: Settings, output: OutputStream) {
+    override suspend fun writeTo(t: AppSettings, output: OutputStream) {
         output.write(
             Json.encodeToString(
-                serializer = Settings.serializer(),
+                serializer = AppSettings.serializer(),
                 value = t
             ).encodeToByteArray()
         )
