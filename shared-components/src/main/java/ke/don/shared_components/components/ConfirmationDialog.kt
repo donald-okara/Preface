@@ -10,7 +10,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import ke.don.shared_components.R
 import ke.don.shared_components.mbuku_theme.ui.theme.LocalExtendedColorScheme
 import ke.don.shared_components.mbuku_theme.ui.theme.MbukuTheme
 
@@ -53,7 +55,7 @@ fun ConfirmationDialog(
         confirmButton = {
             TextButton(onClick = onConfirmation) {
                 Text(
-                    text = "Confirm",
+                    text = stringResource(R.string.confirm),
                     color = onContainerColor
                 )
             }
@@ -61,7 +63,7 @@ fun ConfirmationDialog(
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
                 Text(
-                    text = "Dismiss",
+                    text = stringResource(R.string.dismiss),
                     color = onContainerColor
                 )
             }

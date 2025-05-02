@@ -23,9 +23,11 @@ import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import ke.don.shared_components.R
 import ke.don.shared_components.mbuku_theme.ui.theme.MbukuTheme
 
 
@@ -56,7 +58,7 @@ fun IndividualReadingProgressCard(
             modifier = modifier.padding(16.dp)
         ) {
             Text(
-                text = "Reading Progress",
+                text = stringResource(R.string.reading_progress),
                 style = MaterialTheme.typography.titleMedium,
                 color = MaterialTheme.colorScheme.onSurface
             )
@@ -70,7 +72,7 @@ fun IndividualReadingProgressCard(
                 horizontalArrangement = Arrangement.Center
             ) {
                 Text(
-                    text = "Progress",
+                    text = stringResource(R.string.progress),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -111,7 +113,7 @@ fun IndividualReadingProgressCard(
                     )
 
                     Text(
-                        text = "Completed",
+                        text = stringResource(R.string.completed),
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
@@ -127,7 +129,7 @@ fun IndividualReadingProgressCard(
                     )
 
                     Text(
-                        text = "Pages left",
+                        text = stringResource(R.string.pages_left),
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
