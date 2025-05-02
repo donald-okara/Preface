@@ -2,7 +2,6 @@ package ke.don.feature_book_details.presentation.screens.search
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,7 +13,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ManageSearch
 import androidx.compose.material.icons.outlined.SearchOff
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -23,8 +21,8 @@ import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import ke.don.feature_book_details.R
-import ke.don.feature_book_details.presentation.screens.search.components.BookSearchBar
 import ke.don.feature_book_details.presentation.screens.search.components.BookList
+import ke.don.feature_book_details.presentation.screens.search.components.BookSearchBar
 import ke.don.shared_components.components.EmptyScreen
 import ke.don.shared_domain.states.ResultState
 import ke.don.shared_domain.states.SearchState
@@ -111,65 +109,6 @@ fun BookSearchScreen(
     }
 
 
-}
-
-
-@Composable
-fun SearchErrorScreen(
-    modifier: Modifier = Modifier,
-    text: String,
-    onRefresh: () -> Unit
-) {
-    Column(
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        // Display the book title
-        Text(
-            text = "Error",
-            style = MaterialTheme.typography.headlineSmall, // Use appropriate text style
-            modifier = modifier.padding(bottom = 8.dp) // Space below the title
-        )
-
-        // Display the book authors, if available
-        Text(
-            text = text, // Join authors with a comma
-            style = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onTertiaryContainer), // Use appropriate text style
-            modifier = modifier
-                .padding(bottom = 16.dp)
-                .clickable {
-                    onRefresh()
-                }
-        )
-
-    }
-}
-
-@Composable
-fun SearchLoadingScreen(
-    modifier: Modifier = Modifier,
-    text: String,
-) {
-    Column(
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        // Display the book title
-        Text(
-            text = "Loading",
-            style = MaterialTheme.typography.headlineSmall, // Use appropriate text style
-            modifier = modifier.padding(bottom = 8.dp) // Space below the title
-        )
-
-        // Display the book authors, if available
-        Text(
-            text = text, // Join authors with a comma
-            style = MaterialTheme.typography.bodyLarge, // Use appropriate text style
-            modifier = modifier
-                .padding(bottom = 16.dp)
-        )
-
-    }
 }
 
 
