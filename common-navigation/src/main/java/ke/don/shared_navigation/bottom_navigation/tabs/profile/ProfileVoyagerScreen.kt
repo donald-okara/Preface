@@ -8,6 +8,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -17,6 +18,7 @@ import ke.don.feature_profile.tab.ProfileTabEventHandler
 import ke.don.feature_profile.tab.ProfileViewModel
 import ke.don.shared_domain.states.ResultState
 import ke.don.shared_navigation.OnBoardingVoyagerScreen
+import ke.don.shared_navigation.R
 import ke.don.shared_navigation.app_scaffold.ConfigureAppBars
 import ke.don.shared_navigation.bottom_navigation.tabs.search.BookDetailsVoyagerScreen
 
@@ -32,7 +34,7 @@ class ProfileVoyagerScreen(): AndroidScreen(){
         val profileEventHandler = viewModel::handleEvent
 
         ConfigureAppBars(
-            title = "Profile",
+            title = stringResource(R.string.profile),
             showBottomBar = true,
             actions = {
                 if(state.profileResultState is ResultState.Success){
@@ -43,7 +45,7 @@ class ProfileVoyagerScreen(): AndroidScreen(){
                     ) {
                         Icon(
                             imageVector = Icons.Default.Settings,
-                            contentDescription = "Settings"
+                            contentDescription = stringResource(R.string.settings)
                         )
                     }
                 }

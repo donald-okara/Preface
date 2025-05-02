@@ -6,18 +6,14 @@ import androidx.compose.material.icons.automirrored.filled.ManageSearch
 import androidx.compose.material.icons.automirrored.outlined.LibraryBooks
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.compose.ui.res.stringResource
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
-import ke.don.feature_profile.tab.ProfileTabEventHandler
-import ke.don.feature_profile.tab.ProfileViewModel
+import ke.don.shared_navigation.R
 import ke.don.shared_navigation.bottom_navigation.tabs.library.MyLibraryScreen
 import ke.don.shared_navigation.bottom_navigation.tabs.profile.ProfileVoyagerScreen
 import ke.don.shared_navigation.bottom_navigation.tabs.search.SearchVoyagerScreen
@@ -37,7 +33,7 @@ class MyLibraryTab() : Tab {
                     Icons.AutoMirrored.Outlined.LibraryBooks
                 }
             )
-            val tabName = "My library"
+            val tabName = stringResource(R.string.my_library)
 
             return remember { TabOptions(index = 0u, title = tabName, icon = icon) }
         }
@@ -58,7 +54,7 @@ class SearchTab(
         get() {
             val icon = rememberVectorPainter(image = Icons.AutoMirrored.Filled.ManageSearch)
 
-            val tabName = "Search"
+            val tabName = stringResource(R.string.search)
 
             return remember { TabOptions(index = 0u, title = tabName, icon = icon) }
         }
@@ -77,7 +73,7 @@ class ProfileTab() : Tab {
         get() {
             val icon = rememberVectorPainter(image = Icons.Outlined.Person)
 
-            val tabName = "Profile"
+            val tabName = stringResource(R.string.profile)
 
             return remember { TabOptions(index = 0u, title = tabName, icon = icon) }
         }

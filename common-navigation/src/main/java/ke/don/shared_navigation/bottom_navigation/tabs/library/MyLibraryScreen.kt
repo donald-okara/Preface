@@ -13,6 +13,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -25,6 +26,7 @@ import ke.don.feature_bookshelf.presentation.screens.bookshelf_details.Bookshelf
 import ke.don.feature_bookshelf.presentation.screens.user_library.LibraryEventHandler
 import ke.don.feature_bookshelf.presentation.screens.user_library.UserLibraryScreen
 import ke.don.feature_bookshelf.presentation.screens.user_library.UserLibraryViewModel
+import ke.don.shared_navigation.R
 import ke.don.shared_navigation.app_scaffold.ConfigureAppBars
 import ke.don.shared_navigation.bottom_navigation.tabs.search.BookDetailsVoyagerScreen
 
@@ -116,7 +118,7 @@ class BookshelfDetailsScreen(private val bookshelfId: Int) : AndroidScreen() {
                 IconButton(onClick = { eventHandler(BookshelfEventHandler.ToggleBottomSheet) }) {
                     Icon(
                         imageVector = Icons.Outlined.MoreVert,
-                        contentDescription = "Options"
+                        contentDescription = stringResource(R.string.options)
                     )
                 }
             }

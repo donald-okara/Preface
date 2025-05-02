@@ -49,6 +49,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import cafe.adriel.voyager.androidx.AndroidScreen
@@ -115,8 +116,8 @@ object MainScreen : AndroidScreen() {
             if (!internetStatus) {
                 coroutineScope.launch {
                     val result = snackbarHostState.showSnackbar(
-                        message = "No internet connection",
-                        actionLabel = "Turn On",
+                        message = context.getString(R.string.no_internet_connection),
+                        actionLabel = context.getString(R.string.turn_on),
                         duration = SnackbarDuration.Indefinite
                     )
 
@@ -171,7 +172,7 @@ object MainScreen : AndroidScreen() {
                                     Icon(
                                         tint = MaterialTheme.colorScheme.onErrorContainer,
                                         imageVector = Icons.Filled.ArrowUpward,
-                                        contentDescription = "Open network settings"
+                                        contentDescription = stringResource(R.string.open_network_settings)
                                     )
                                 }
                             }
