@@ -13,12 +13,8 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,11 +24,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import ke.don.feature_profile.R
-import ke.don.feature_profile.tab.ProfileTabEventHandler
 import ke.don.shared_components.components.ProfileStatCard
 import ke.don.shared_domain.states.ProfileTabState
 
@@ -41,7 +37,6 @@ import ke.don.shared_domain.states.ProfileTabState
 fun ProfileHeader(
     modifier: Modifier = Modifier,
     state: ProfileTabState,
-    profileTabEventHandler: (ProfileTabEventHandler) -> Unit
 ) {
     Column(
         modifier = modifier
@@ -69,7 +64,7 @@ fun ProfileHeader(
                 ) {
                     AsyncImage(
                         model = state.profile.avatarUrl,
-                        contentDescription = "Profile picture",
+                        contentDescription = stringResource(R.string.profile_picture),
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize(),
                     )
@@ -97,12 +92,12 @@ fun ProfileHeader(
                 .fillMaxWidth()
         ) {
             ProfileStatCard(
-                label = "Books Read",
+                label = stringResource(R.string.books_read),
                 value = state.userProgress.size.toString(),
                 modifier = Modifier.weight(1f)
             )
             ProfileStatCard(
-                label = "Discovered",
+                label = stringResource(R.string.discovered),
                 value = state.profile.discoveredBooks.toString(),
                 modifier = Modifier.weight(1f)
             )
@@ -119,7 +114,7 @@ fun ProfilePicture(
 ) {
     AsyncImage(
         model = profileUrl,
-        contentDescription = "Profile image",
+        contentDescription = stringResource(R.string.profile_picture),
         modifier = modifier
             .size(size)
             .clip(CircleShape),

@@ -185,14 +185,6 @@ class BookDetailsViewModel @Inject constructor(
     }
 
 
-    fun onSearchAuthor(author: String) {
-//        booksUseCases.onSearchQueryChange(author)
-//        viewModelScope.launch {
-//            booksUseCases.onSearch()
-//        }
-        TODO()
-    }
-
     fun onChangeLoadingJoke() {
         updateBookState(
             _bookState.value.copy(

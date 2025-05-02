@@ -9,6 +9,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import cafe.adriel.voyager.androidx.AndroidScreen
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -19,17 +20,17 @@ import ke.don.feature_book_details.presentation.screens.search.BookSearchScreen
 import ke.don.feature_book_details.presentation.screens.search.SearchEventHandler
 import ke.don.feature_book_details.presentation.screens.search.SearchViewModel
 import ke.don.shared_domain.states.ResultState
+import ke.don.shared_navigation.R
 import ke.don.shared_navigation.app_scaffold.ConfigureAppBars
 import ke.don.shared_navigation.bottom_navigation.tabs.SearchTab
 
-@OptIn(ExperimentalMaterial3Api::class)
 class SearchVoyagerScreen(
     private val searchQuery: String?
 ): AndroidScreen() {
     @Composable
     override fun Content() {
         ConfigureAppBars(
-            title = "Search",
+            title = stringResource(R.string.search),
             showBottomBar = true
         )
 
@@ -76,7 +77,7 @@ class BookDetailsVoyagerScreen(private val volumeId: String) : AndroidScreen() {
                     ) {
                         Icon(
                             imageVector =Icons.Default.MoreVert,
-                            contentDescription = "Back"
+                            contentDescription = stringResource(R.string.back)
                         )
                     }
                 }

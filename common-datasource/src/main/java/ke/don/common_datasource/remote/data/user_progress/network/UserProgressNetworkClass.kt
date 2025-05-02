@@ -2,6 +2,7 @@ package ke.don.common_datasource.remote.data.user_progress.network
 
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.from
+import ke.don.common_datasource.remote.domain.error_handler.CompositeErrorHandler
 import ke.don.common_datasource.remote.domain.states.NoDataReturned
 import ke.don.shared_domain.data_models.CreateUserProgressDTO
 import ke.don.shared_domain.data_models.UserProgressBookView
@@ -13,6 +14,8 @@ import ke.don.shared_domain.values.USERPROGRESSVIEW
 class UserProgressNetworkClass(
     private val supabaseClient: SupabaseClient
 ) {
+    private val errorHandler = CompositeErrorHandler()
+
     /**
      * CREATE
      */
@@ -24,7 +27,7 @@ class UserProgressNetworkClass(
             NetworkResult.Success(NoDataReturned())
         }catch (e: Exception) {
             e.printStackTrace()
-            NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
+            errorHandler.handleException(e)
         }
     }
 
@@ -44,7 +47,7 @@ class UserProgressNetworkClass(
             NetworkResult.Success(result)
             } catch (e: Exception) {
             e.printStackTrace()
-            NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
+            errorHandler.handleException(e)
         }
     }
 
@@ -59,7 +62,7 @@ class UserProgressNetworkClass(
             NetworkResult.Success(result)
         }catch (e: Exception) {
             e.printStackTrace()
-            NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
+            errorHandler.handleException(e)
         }
 
     }
@@ -74,7 +77,7 @@ class UserProgressNetworkClass(
             NetworkResult.Success(result)
         } catch (e: Exception) {
             e.printStackTrace()
-            NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
+            errorHandler.handleException(e)
         }
     }
 
@@ -88,7 +91,7 @@ class UserProgressNetworkClass(
             NetworkResult.Success(result)
         } catch (e: Exception) {
             e.printStackTrace()
-            NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
+            errorHandler.handleException(e)
         }
     }
 
@@ -108,7 +111,7 @@ class UserProgressNetworkClass(
             NetworkResult.Success(NoDataReturned())
         } catch (e: Exception) {
             e.printStackTrace()
-            NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
+            errorHandler.handleException(e)
         }
     }
 
@@ -127,7 +130,7 @@ class UserProgressNetworkClass(
             NetworkResult.Success(NoDataReturned())
         } catch (e: Exception) {
             e.printStackTrace()
-            NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
+            errorHandler.handleException(e)
         }
     }
 

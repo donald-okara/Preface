@@ -4,7 +4,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -25,6 +24,7 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalInspectionMode
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -54,7 +54,7 @@ fun CurrentlyReadingCard(
         if (LocalInspectionMode.current && previewPainter != null) {
             Image(
                 painter = previewPainter,
-                contentDescription = "$title book cover",
+                contentDescription = stringResource(R.string.book_cover, title),
                 contentScale = ContentScale.Crop,
                 modifier = modifier
                     .clip(RoundedCornerShape(8.dp))
@@ -64,7 +64,7 @@ fun CurrentlyReadingCard(
         } else {
             AsyncImage(
                 model = imageUrl,
-                contentDescription = "$title book cover",
+                contentDescription = stringResource(R.string.book_cover, title),
                 contentScale = ContentScale.Crop,
                 modifier = modifier
                     .clip(RoundedCornerShape(8.dp))
@@ -130,7 +130,7 @@ fun FinishedBookCard(
         if (LocalInspectionMode.current && previewPainter != null) {
             Image(
                 painter = painterResource(R.drawable.download),
-                contentDescription = "$title book cover",
+                contentDescription = stringResource(R.string.book_cover, title),
                 contentScale = ContentScale.Crop,
                 modifier = modifier
                     .clip(RoundedCornerShape(8.dp))
@@ -140,7 +140,7 @@ fun FinishedBookCard(
         } else {
             AsyncImage(
                 model = imageUrl,
-                contentDescription = "$title book cover",
+                contentDescription = stringResource(R.string.book_cover, title),
                 contentScale = ContentScale.Crop,
                 modifier = modifier
                     .clip(RoundedCornerShape(8.dp))
@@ -162,7 +162,7 @@ fun FinishedBookCard(
             )
 
             Text(
-                text = "Completed on $dateCompleted",
+                text = stringResource(R.string.completed_on, dateCompleted),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )

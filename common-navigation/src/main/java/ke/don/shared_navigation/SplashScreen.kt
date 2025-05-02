@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -73,7 +74,7 @@ fun PrefaceSplashScreen(
     ){
         Image(
             painter = painterResource(id = R.drawable.app_icon),
-            contentDescription = "Splash Screen",
+            contentDescription = stringResource(R.string.splash_screen),
             modifier = modifier
                 .fillMaxSize()
                 .scale(scale.value)

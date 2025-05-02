@@ -28,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ke.don.feature_bookshelf.R
@@ -71,7 +72,7 @@ fun BookshelfOptionsSheet(
                     SheetOptionItem(
                         modifier = modifier,
                         icon = Icons.Outlined.Edit,
-                        title = "Edit bookshelf",
+                        title = stringResource(R.string.edit_bookshelf),
                         onOptionClick = {
                             onNavigateToEdit(bookshelfId)
                         }
@@ -81,7 +82,7 @@ fun BookshelfOptionsSheet(
                     SheetOptionItem(
                         modifier = modifier,
                         icon = Icons.Outlined.Close,
-                        title = "Delete bookshelf",
+                        title = stringResource(R.string.delete_bookshelf),
                         onOptionClick = {
                             showDeleteDialog = true
                         }
@@ -99,8 +100,8 @@ fun BookshelfOptionsSheet(
                 showDeleteDialog = false
             },
             dialogType = DialogType.DANGER,
-            dialogTitle = "Delete Bookshelf",
-            dialogText = "Are you sure you want to delete this bookshelf?",
+            dialogTitle = stringResource(R.string.delete_bookshelf),
+            dialogText = stringResource(R.string.delete_bookshelf_confirmation),
             icon = Icons.Outlined.Close
         )
     }
@@ -136,7 +137,7 @@ fun BookshelfSheetHeader(
             } else {
                 Image(
                     painter = painterResource(R.drawable.bookshelf_placeholder),
-                    contentDescription = "Bookshelf item",
+                    contentDescription = stringResource(R.string.bookshelf_item),
                     modifier = modifier.size(imageSize)
                 )
             }

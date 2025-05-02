@@ -12,11 +12,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.times
 import androidx.compose.ui.zIndex
 import coil.compose.AsyncImage
+import ke.don.shared_components.R
 
 @Composable
 fun BookStack(
@@ -48,7 +50,7 @@ fun BookStack(
 
             AsyncImage(
                 model = url,
-                contentDescription = "Book cover ${index + 1}",
+                contentDescription = stringResource(R.string.book_cover, index + 1),
                 modifier = Modifier
                     .offset(x = offsetX)
                     .size(width, height)

@@ -1,7 +1,6 @@
 package ke.don.common_datasource.remote.data.bookshelf.repositoryImpl
 
 import android.content.Context
-import android.widget.Toast
 import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
 import androidx.work.NetworkType
@@ -12,15 +11,15 @@ import ke.don.common_datasource.local.roomdb.entities.BookshelfEntity
 import ke.don.common_datasource.local.roomdb.entities.toBookshelf
 import ke.don.common_datasource.local.worker.classes.SyncBookshelvesWorker
 import ke.don.common_datasource.remote.data.bookshelf.network.BookshelfNetworkClass
+import ke.don.common_datasource.remote.domain.error_handler.CompositeErrorHandler
+import ke.don.common_datasource.remote.domain.error_handler.Koffee
 import ke.don.common_datasource.remote.domain.repositories.BookshelfRepository
 import ke.don.common_datasource.remote.domain.states.NoDataReturned
-import ke.don.common_datasource.remote.domain.states.toEntity
 import ke.don.shared_domain.data_models.BookShelf
 import ke.don.shared_domain.data_models.BookshelfRef
 import ke.don.shared_domain.data_models.Profile
 import ke.don.shared_domain.states.NetworkResult
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.Flow
 
 class BookshelfRepositoryImpl(
     private val bookshelfNetworkClass: BookshelfNetworkClass,
@@ -28,11 +27,12 @@ class BookshelfRepositoryImpl(
     private val bookshelfDao: BookshelfDao,
     private val context : Context
 ): BookshelfRepository {
+    val errorHandler = CompositeErrorHandler()
 
     override suspend fun createBookshelf(bookshelf: BookshelfRef): NetworkResult<BookshelfRef> {
         return bookshelfNetworkClass.createBookshelf(bookshelf).also { result->
             if (result is NetworkResult.Error){
-                Toast.makeText(context, "${result.message} ${result.hint}", Toast.LENGTH_SHORT).show()
+                Koffee.toast(context, result)
             }else{
                 waitUntilBookshelfIsCreated(bookshelf)
                 syncLocalBookshelvesDb()
@@ -58,7 +58,7 @@ class BookshelfRepositoryImpl(
                 )
             NetworkResult.Success(NoDataReturned())
         } catch (e: Exception) {
-            NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
+            errorHandler.handleException(e)
         }
     }
 
@@ -74,7 +74,7 @@ class BookshelfRepositoryImpl(
     override suspend fun fetchBookshelfRef(bookshelfId: Int): NetworkResult<BookshelfRef> {
        return bookshelfNetworkClass.fetchBookshelfRef(bookshelfId).also { result ->
            if (result is NetworkResult.Error) {
-               Toast.makeText(context, "${'$'}{result.message} ${'$'}{result.hint}", Toast.LENGTH_SHORT).show()
+               Koffee.toast(context, result)
            }
        }
 
@@ -83,7 +83,7 @@ class BookshelfRepositoryImpl(
     override suspend fun editBookshelf(bookshelfId: Int, bookshelf: BookshelfRef): NetworkResult<NoDataReturned> {
         return bookshelfNetworkClass.updateBookshelf(bookshelfId, bookshelf).also { result ->
             if (result is NetworkResult.Error) {
-                Toast.makeText(context, "${'$'}{result.message} ${'$'}{result.hint}", Toast.LENGTH_SHORT).show()
+                Koffee.toast(context, result)
             }else{
                 waitUntilBookshelfIsUpdated(bookshelfId, bookshelf)
                 syncLocalBookshelvesDb()
@@ -100,7 +100,7 @@ class BookshelfRepositoryImpl(
     override suspend fun addBookToBookshelf(bookshelfId: Int, bookId: String): NetworkResult<NoDataReturned> {
         return bookshelfNetworkClass.addBookToBookshelf(bookshelfId, bookId).also { result ->
             if (result is NetworkResult.Error) {
-                Toast.makeText(context, "${result.message} ${result.hint}", Toast.LENGTH_SHORT).show()
+                Koffee.toast(context, result)
             }else{
                 syncLocalBookshelvesDb()
             }
@@ -111,7 +111,7 @@ class BookshelfRepositoryImpl(
     override suspend fun removeBookFromBookshelf(bookId: String, bookshelfId: Int):NetworkResult<NoDataReturned>  {
         return bookshelfNetworkClass.removeBookFromBookshelf(bookId, bookshelfId). also {result ->
             if (result is NetworkResult.Error){
-                Toast.makeText(context, "${result.message} ${result.hint}", Toast.LENGTH_SHORT).show()
+                Koffee.toast(context, result)
             }
         }
     }
@@ -123,7 +123,7 @@ class BookshelfRepositoryImpl(
             waitUntilDeletedRemotely(bookshelfId)
             syncLocalBookshelvesDb()
         } else if (result is NetworkResult.Error) {
-            Toast.makeText(context, "${result.message} ${result.hint}", Toast.LENGTH_SHORT).show()
+            Koffee.toast(context, result)
         }
         return result
     }

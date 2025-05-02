@@ -59,6 +59,7 @@ dependencies {
 
     implementation(libs.androidx.foundation)
     implementation(project(":common-domain"))
+    implementation(libs.accompanist.systemuicontroller)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

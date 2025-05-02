@@ -37,10 +37,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
+import dagger.hilt.android.qualifiers.ApplicationContext
 import ke.don.common_datasource.remote.domain.states.BookUiState
+import ke.don.feature_book_details.R
 import ke.don.feature_book_details.presentation.screens.book_details.BookDetailsEvent
 import ke.don.shared_components.components.EmptyScreen
 import ke.don.shared_components.components.IndividualReadingProgressCard
@@ -60,7 +64,7 @@ fun BookProgressTab(
                 modifier = modifier.fillMaxSize(),
                 icon = Icons.Outlined.HourglassEmpty,
                 textColor = progressColor,
-                message = "Loading",
+                message = stringResource(R.string.loading),
                 action = {},
                 actionText = bookUiState.loadingJoke
             )
@@ -94,7 +98,7 @@ fun BookProgressTab(
                         modifier = modifier.fillMaxWidth()
                     ){
                         Text(
-                            text = "Update Progress"
+                            text = stringResource(R.string.update_progress)
                         )
                     }
                 }
@@ -107,9 +111,9 @@ fun BookProgressTab(
                     onConfirmation = {onBookDetailsEvent(BookDetailsEvent.SaveBookProgress)},
                     bookProgress = bookUiState.userProgressState.newProgress,
                     onBookProgressUpdate = { onBookDetailsEvent(BookDetailsEvent.ChangeCurrentPage(it)) },
-                    dialogTitle = "Add Progress",
+                    dialogTitle = stringResource(R.string.add_progress),
                     icon = Icons.Outlined.AutoStories,
-                    dialogText = "Book progress",
+                    dialogText = stringResource(R.string.book_progress),
                     enabled = !bookUiState.userProgressState.isError,
                     maxProgress = bookUiState.userProgressState.bookProgress.totalPages
                 )
@@ -121,9 +125,9 @@ fun BookProgressTab(
                 modifier = modifier.fillMaxSize(),
                 icon = Icons.Outlined.Error,
                 textColor = progressColor,
-                message = "Error",
+                message = stringResource(R.string.error),
                 action = {onBookDetailsEvent(BookDetailsEvent.FetchProgress)},
-                actionText = "Something went wrong. Please try again"
+                actionText = stringResource(R.string.something_went_wrong_please_try_again)
             )
         }
     }
@@ -145,6 +149,7 @@ fun AddProgressDialog(
     minProgress: Int = 1,
     maxProgress: Int
 ) {
+    val context = LocalContext.current.applicationContext
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var sliderPosition by remember { mutableFloatStateOf(bookProgress.toFloat() / maxProgress.toFloat()) }
     var currentProgress by remember { mutableIntStateOf(bookProgress) }
@@ -182,7 +187,8 @@ fun AddProgressDialog(
                         updateProgress(value)
                         errorMessage = null
                     } else {
-                        errorMessage = "Progress must be between $minProgress and $maxProgress"
+                        errorMessage =
+                            context.getString(R.string.progress_must_be, minProgress.toString(), maxProgress.toString())
                     }
                 },
                 onSliderChange = {
@@ -195,12 +201,12 @@ fun AddProgressDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
             TextButton(onClick = onConfirmation, enabled = enabled) {
-                Text("Confirm")
+                Text(stringResource(R.string.confirm))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismissRequest) {
-                Text("Dismiss")
+                Text(stringResource(R.string.dismiss))
             }
         },
         modifier = modifier

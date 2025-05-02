@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="reading_progress">Reading Progress</string>
+    <string name="progress">Progress</string>
+    <string name="completed">Completed</string>
+    <string name="pages_left">Pages left</string>
+    <string name="book_cover">Book cover %1$s</string>
+    <string name="confirm">Confirm</string>
+    <string name="dismiss">Dismiss</string>
+    <string name="completed_on">Completed on %1$s</string>
+    <string name="empty_icon">Empty icon</string>
+</resources>

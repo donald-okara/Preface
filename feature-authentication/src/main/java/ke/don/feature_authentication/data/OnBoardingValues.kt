@@ -9,12 +9,12 @@ val animations = listOf(
 )
 val titles = listOf(
     "Build your library",
-    "Share bookshelf",
+    "Show off your progress",
     "Explore books"
 )
 
 val descriptions = listOf(
     "Organize your favorite books and create a personalized bookshelves.",
-    "Easily share your bookshelves with your friends to share the joy of reading.",
+    "Easily record your reading progress to share the joy of reading.",
     "Discover new books and expand your horizons with our curated suggestions."
 )

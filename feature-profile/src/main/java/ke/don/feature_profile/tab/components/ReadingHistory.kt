@@ -28,8 +28,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
+import ke.don.feature_profile.R
 import ke.don.shared_components.components.CurrentlyReadingCard
 import ke.don.shared_components.components.EmptyScreen
 import ke.don.shared_components.components.FinishedBookCard
@@ -74,8 +76,6 @@ fun CurrentlyReadingSection(
     modifier: Modifier = Modifier,
     onNavigateToBook: (String) -> Unit
 ) {
-    Log.d("ReadingHistory", "books.size = ${books.size}; books = $books")
-
     Column(modifier = modifier.padding(16.dp)) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -83,7 +83,7 @@ fun CurrentlyReadingSection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Currently Reading",
+                text = stringResource(R.string.currently_reading),
                 style = MaterialTheme.typography.titleMedium
             )
             if (bookSize > 1) {
@@ -103,7 +103,7 @@ fun CurrentlyReadingSection(
         if (bookSize == 0){
             EmptyScreen(
                 icon = Icons.Outlined.CollectionsBookmark,
-                message = "You haven't started reading any books yet",
+                message = stringResource(R.string.you_haven_t_started_reading),
                 action = {},
                 actionText = "",
                 modifier = modifier.align(Alignment.CenterHorizontally)
@@ -179,7 +179,7 @@ fun ReadingHistorySection(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Reading History",
+                text = stringResource(R.string.reading_history),
                 style = MaterialTheme.typography.titleMedium
             )
             if(bookSize > 1){
@@ -198,7 +198,7 @@ fun ReadingHistorySection(
         if (bookSize == 0){
             EmptyScreen(
                 icon = Icons.Outlined.CollectionsBookmark,
-                message = "You haven't completed any books yet",
+                message = stringResource(R.string.you_haven_t_completed),
                 action = {},
                 actionText = "",
                 modifier = modifier.align(Alignment.CenterHorizontally)

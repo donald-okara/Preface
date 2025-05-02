@@ -11,6 +11,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import ke.don.common_datasource.remote.domain.error_handler.InternetAvailability
 import javax.inject.Inject
 
 data class AppBarState (
@@ -23,7 +24,9 @@ data class AppBarState (
 )
 
 @HiltViewModel
-class ScaffoldViewModel @Inject constructor() : ViewModel() {
+class ScaffoldViewModel @Inject constructor(
+    val internetAvailability: InternetAvailability
+) : ViewModel() {
     var state by mutableStateOf(AppBarState())
         private set
 

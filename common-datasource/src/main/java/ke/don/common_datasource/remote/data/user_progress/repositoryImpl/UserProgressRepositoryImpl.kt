@@ -3,6 +3,7 @@ package ke.don.common_datasource.remote.data.user_progress.repositoryImpl
 import android.content.Context
 import android.widget.Toast
 import ke.don.common_datasource.remote.data.user_progress.network.UserProgressNetworkClass
+import ke.don.common_datasource.remote.domain.error_handler.Koffee
 import ke.don.common_datasource.remote.domain.repositories.UserProgressRepository
 import ke.don.common_datasource.remote.domain.states.NoDataReturned
 import ke.don.shared_domain.data_models.CreateUserProgressDTO
@@ -17,7 +18,7 @@ class UserProgressRepositoryImpl(
     override suspend fun addUserProgress(userProgress: CreateUserProgressDTO): NetworkResult<NoDataReturned> {
         return userProgressNetworkClass.addUserProgress(userProgress).also { result ->
             if (result is NetworkResult.Error){
-                Toast.makeText(context, "${result.message} ${result.hint}", Toast.LENGTH_SHORT).show()
+                Koffee.toast(context, result)
             }
         }
     }
@@ -28,7 +29,7 @@ class UserProgressRepositoryImpl(
     ): NetworkResult<UserProgressResponse?> {
         return userProgressNetworkClass.fetchBookProgressByUserAndBook(userId = userId, bookId =bookId).also { result ->
             if (result is NetworkResult.Error){
-                Toast.makeText(context, "${result.message} ${result.hint}", Toast.LENGTH_SHORT).show()
+                Koffee.toast(context, result)
             }
         }
     }
@@ -36,7 +37,7 @@ class UserProgressRepositoryImpl(
     override suspend fun fetchBookProgressByUser(userId: String): NetworkResult<List<UserProgressResponse>> {
         return userProgressNetworkClass.fetchBookProgressByUser(userId).also { result ->
             if (result is NetworkResult.Error){
-                Toast.makeText(context, "${result.message} ${result.hint}", Toast.LENGTH_SHORT).show()
+                Koffee.toast(context, result)
             }
         }
     }
@@ -44,7 +45,7 @@ class UserProgressRepositoryImpl(
     override suspend fun fetchBookProgressByBook(bookId: String): NetworkResult<List<UserProgressResponse>> {
         return userProgressNetworkClass.fetchBookProgressByBook(bookId).also { result ->
             if (result is NetworkResult.Error){
-                Toast.makeText(context, "${result.message} ${result.hint}", Toast.LENGTH_SHORT).show()
+                Koffee.toast(context, result)
             }
         }
     }
@@ -52,7 +53,7 @@ class UserProgressRepositoryImpl(
     override suspend fun fetchUserProgressBookView(userId: String): NetworkResult<List<UserProgressBookView>> {
         return userProgressNetworkClass.fetchUserProgressBookView(userId).also { result ->
             if (result is NetworkResult.Error){
-                Toast.makeText(context, "${result.message} ${result.hint}", Toast.LENGTH_SHORT).show()
+                Koffee.toast(context, result)
             }
         }
     }
@@ -64,7 +65,7 @@ class UserProgressRepositoryImpl(
     ): NetworkResult<NoDataReturned> {
         return userProgressNetworkClass.updateUserProgress(userId = userId, bookId = bookId, newCurrentPage = newCurrentPage).also { result ->
             if (result is NetworkResult.Error){
-                Toast.makeText(context, "${result.message} ${result.hint}", Toast.LENGTH_SHORT).show()
+                Koffee.toast(context, result)
             }
         }
     }
@@ -75,7 +76,7 @@ class UserProgressRepositoryImpl(
     ): NetworkResult<NoDataReturned> {
         return userProgressNetworkClass.deleteUserProgress(userId = userId, bookId = bookId).also { result ->
             if (result is NetworkResult.Error){
-                Toast.makeText(context, "${result.message} ${result.hint}", Toast.LENGTH_SHORT).show()
+                Koffee.toast(context, result)
             }
         }
     }

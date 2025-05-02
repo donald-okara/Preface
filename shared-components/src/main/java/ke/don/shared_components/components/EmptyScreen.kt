@@ -14,8 +14,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import ke.don.shared_components.R
 
 @Composable
 fun EmptyScreen(
@@ -34,7 +36,7 @@ fun EmptyScreen(
         Icon(
             imageVector = icon,
             modifier = modifier.size(64.dp),
-            contentDescription = "Empty icon"
+            contentDescription = stringResource(R.string.empty_icon)
         )
 
         Spacer(modifier = modifier.padding(16.dp))

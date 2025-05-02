@@ -2,37 +2,30 @@ package ke.don.feature_bookshelf.presentation.screens.bookshelf_details.componen
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.layout.LookaheadScope
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ke.don.feature_bookshelf.R
 import ke.don.shared_components.components.BookStack
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookshelfHeader(
     modifier: Modifier = Modifier,
@@ -74,7 +67,7 @@ fun BookshelfHeader(
         } else {
             Image(
                 painter = painterResource(R.drawable.bookshelf_placeholder),
-                contentDescription = "Bookshelf item",
+                contentDescription = stringResource(R.string.bookshelf_item),
                 modifier = modifier
                     .fillMaxWidth()
                     .height(imageHeight)

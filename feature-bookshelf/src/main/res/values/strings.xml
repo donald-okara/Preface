@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="name">Name</string>
+    <string name="description">Description</string>
+    <string name="cancel">Cancel</string>
+    <string name="done">Done</string>
+    <string name="bookshelf_item">Bookshelf item</string>
+    <string name="error_loading_bookshelf">Error loading bookshelf: %1$s</string>
+    <string name="this_bookshelf_is_empty">This bookshelf is empty</string>
+    <string name="add_bookshelf">Add Bookshelf</string>
+    <string name="no_bookshelves_yet">You have no bookshelves yet</string>
+    <string name="build_your_library">Build your library book by book</string>
+    <string name="edit_bookshelf">Edit bookshelf</string>
+    <string name="delete_bookshelf">Delete bookshelf</string>
+    <string name="delete_bookshelf_confirmation">Are you sure you want to delete this bookshelf?</string>
+</resources>

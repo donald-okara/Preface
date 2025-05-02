@@ -8,8 +8,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import cafe.adriel.voyager.navigator.LocalNavigator
+import ke.don.shared_navigation.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,7 +32,7 @@ fun ConfigureAppBars(
                 navigationIcon = if (showBackButton) {
                     {
                         IconButton(onClick = { navigator?.pop() }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.back))
                         }
                     }
                 } else null,

@@ -10,9 +10,11 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 
 @Immutable
 data class ExtendedColorScheme(
@@ -336,6 +338,15 @@ fun MbukuTheme(
     }
 
     val extendedColorScheme = if (darkTheme) extendedDark else extendedLight
+    val systemUiController = rememberSystemUiController()
+    val useDarkIcons = !darkTheme
+
+    SideEffect {
+        systemUiController.setStatusBarColor(
+            color = Color.Transparent,
+            darkIcons = useDarkIcons
+        )
+    }
 
     CompositionLocalProvider(LocalExtendedColorScheme provides extendedColorScheme) {
         MaterialTheme(

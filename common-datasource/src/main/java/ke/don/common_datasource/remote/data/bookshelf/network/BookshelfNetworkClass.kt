@@ -2,6 +2,8 @@ package ke.don.common_datasource.remote.data.bookshelf.network
 
 import android.util.Log
 import io.github.jan.supabase.SupabaseClient
+import io.github.jan.supabase.exceptions.HttpRequestException
+import io.github.jan.supabase.exceptions.RestException
 import io.github.jan.supabase.postgrest.from
 import io.github.jan.supabase.postgrest.postgrest
 import ke.don.common_datasource.local.roomdb.entities.BookshelfEntity
@@ -14,12 +16,16 @@ import ke.don.shared_domain.values.BOOKSHELFTABLE
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import io.github.jan.supabase.postgrest.rpc
+import io.ktor.client.plugins.HttpRequestTimeoutException
+import ke.don.common_datasource.remote.domain.error_handler.CompositeErrorHandler
 import ke.don.shared_domain.values.USERBOOKSHELVESVIEW
 import ke.don.shared_domain.values.USERPROGRESSVIEW
 
 class BookshelfNetworkClass(
     private val supabaseClient: SupabaseClient,
 ) {
+    private val errorHandler = CompositeErrorHandler()
+
    /**
      * CREATE
      */
@@ -40,12 +46,7 @@ class BookshelfNetworkClass(
                NetworkResult.Error(message = "Failed to create bookshelf")
            }
        } catch (e: Exception) {
-           e.printStackTrace()
-           NetworkResult.Error(
-               message = e.message.orEmpty(),
-               hint    = e.cause?.toString().orEmpty(),
-               details = e.stackTraceToString()
-           )
+           errorHandler.handleException(e)
        }
    }
 
@@ -63,7 +64,7 @@ class BookshelfNetworkClass(
             NetworkResult.Success(result)
         }catch (e: Exception){
             e.printStackTrace()
-            NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
+            errorHandler.handleException(e)
         }
     }
 
@@ -78,11 +79,7 @@ class BookshelfNetworkClass(
             NetworkResult.Success(result)
         } catch (e: Exception) {
             e.printStackTrace()
-            NetworkResult.Error(
-                message = e.message ?: "Unknown error",
-                hint = e.cause?.toString() ?: "No cause",
-                details = e.stackTraceToString()
-            )
+            errorHandler.handleException(e)
         }
     }
 
@@ -108,11 +105,7 @@ class BookshelfNetworkClass(
             NetworkResult.Success(NoDataReturned())
         }catch (e: Exception){
             e.printStackTrace()
-            NetworkResult.Error(
-                message = e.message.toString(),
-                hint = e.cause.toString(),
-                details = e.stackTrace.toString()
-            )
+            errorHandler.handleException(e)
         }
     }
 
@@ -135,11 +128,7 @@ class BookshelfNetworkClass(
             NetworkResult.Success(NoDataReturned())
         } catch (e: Exception) {
             e.printStackTrace()
-            NetworkResult.Error(
-                message = e.message.toString(),
-                hint = e.cause?.toString() ?: "No cause available",
-                details = e.stackTraceToString()
-            )
+            errorHandler.handleException(e)
         }
     }
 
@@ -159,7 +148,7 @@ class BookshelfNetworkClass(
 
         }catch (e: Exception){
             e.printStackTrace()
-            NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
+            errorHandler.handleException(e)
         }
     }
 
@@ -174,7 +163,7 @@ class BookshelfNetworkClass(
             NetworkResult.Success(NoDataReturned())
         }catch (e: Exception){
             e.printStackTrace()
-            NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
+            errorHandler.handleException(e)
         }
     }
 
@@ -193,7 +182,7 @@ class BookshelfNetworkClass(
             NetworkResult.Success(NoDataReturned())
         }catch (e: Exception){
             e.printStackTrace()
-            NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
+            errorHandler.handleException(e)
         }
     }
 
@@ -213,7 +202,7 @@ class BookshelfNetworkClass(
             NetworkResult.Success(NoDataReturned())
         } catch (e: Exception) {
             e.printStackTrace()
-            NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
+            errorHandler.handleException(e)
         }
     }
 
@@ -232,7 +221,7 @@ class BookshelfNetworkClass(
             NetworkResult.Success(NoDataReturned())
         } catch (e: Exception) {
             e.printStackTrace()
-            NetworkResult.Error(message = e.message.toString(), hint = e.cause.toString(), details = e.stackTrace.toString())
+            errorHandler.handleException(e)
         }
     }
 

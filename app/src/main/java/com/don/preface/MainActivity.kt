@@ -9,10 +9,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.work.OneTimeWorkRequestBuilder
-import com.don.preface.ui.theme.PrefaceTheme
 import dagger.hilt.android.AndroidEntryPoint
-import ke.don.common_datasource.local.datastore.user_settings.Settings
+import ke.don.common_datasource.local.datastore.user_settings.AppSettings
 import ke.don.common_datasource.local.datastore.user_settings.SettingsDataStoreManager
 import ke.don.shared_components.mbuku_theme.ui.theme.MbukuTheme
 import ke.don.shared_navigation.AppNavigation
@@ -29,7 +27,7 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             val settings by settingsDataStoreManager.getSettings()
-                .collectAsState(initial = Settings()) // <- you may want a default
+                .collectAsState(initial = AppSettings()) // <- you may want a default
 
             MbukuTheme(
                 darkTheme = settings.darkTheme

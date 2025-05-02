@@ -22,11 +22,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import ke.don.feature_book_details.R
 import ke.don.shared_domain.data_models.VolumeInfoDet
 import ke.don.shared_domain.utils.formatting_utils.formatHtmlToAnnotatedString
 
@@ -83,7 +85,7 @@ fun DescriptionColumn(
                 modifier = modifier.clickable { isExpanded = true }
             ) {
                 Text(
-                    text = "Show more",
+                    text = stringResource(R.string.show_more),
                     style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
                     color = textColor
                 )
@@ -91,7 +93,7 @@ fun DescriptionColumn(
                 Icon(
                     imageVector = Icons.Default.ExpandMore,
                     tint = textColor,
-                    contentDescription = "Show more"
+                    contentDescription = stringResource(R.string.show_more)
                 )
             }
         } else if (isExpanded) {
@@ -101,7 +103,7 @@ fun DescriptionColumn(
                 modifier = modifier.clickable { isExpanded = false }
             ) {
                 Text(
-                    text = "Show less",
+                    text = stringResource(R.string.show_less),
                     style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
                     color = textColor
                 )
@@ -109,7 +111,7 @@ fun DescriptionColumn(
                 Icon(
                     imageVector = Icons.Default.ExpandLess,
                     tint = textColor,
-                    contentDescription = "Show less"
+                    contentDescription = stringResource(R.string.show_less)
                 )
             }
         }

@@ -45,10 +45,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import ke.don.common_datasource.remote.domain.states.BookUiState
 import ke.don.common_datasource.remote.domain.utils.getDominantColor
+import ke.don.feature_book_details.R
 import ke.don.feature_book_details.presentation.screens.book_details.components.AboutVolume
 import ke.don.feature_book_details.presentation.screens.book_details.components.BookCoverPreview
 import ke.don.feature_book_details.presentation.screens.book_details.components.BookDetailsSheet
@@ -103,7 +105,7 @@ fun BookDetailsRoute(
                         modifier = modifier
                             .align(Alignment.Center),
                         icon = Icons.Outlined.HourglassEmpty,
-                        message = "Loading",
+                        message = stringResource(R.string.loading),
                         action = {},
                         actionText = bookUiState.loadingJoke
                     )
@@ -116,7 +118,7 @@ fun BookDetailsRoute(
                     modifier = modifier
                         .align(Alignment.Center),
                     icon = Icons.Outlined.HourglassEmpty,
-                    message = "Loading",
+                    message = stringResource(R.string.loading),
                     action = {},
                     actionText = bookUiState.loadingJoke
                 )
@@ -127,9 +129,9 @@ fun BookDetailsRoute(
                     modifier = modifier
                         .align(Alignment.Center),
                     icon = Icons.Outlined.Error,
-                    message = "Error",
+                    message = stringResource(R.string.error),
                     action = { onBookDetailsEvent(BookDetailsEvent.Refresh) },
-                    actionText = "Something went wrong. Please try again"
+                    actionText = stringResource(R.string.something_went_wrong_please_try_again)
                 )
             }
         }

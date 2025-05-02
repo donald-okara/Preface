@@ -18,6 +18,7 @@ import ke.don.common_datasource.local.datastore.profile.profileDataStore
 import ke.don.common_datasource.local.datastore.token.TokenData
 import ke.don.common_datasource.local.datastore.token.TokenDatastoreManager
 import ke.don.common_datasource.local.datastore.token.tokenDatastore
+import ke.don.common_datasource.remote.domain.error_handler.CompositeErrorHandler
 import ke.don.common_datasource.remote.domain.states.NoDataReturned
 import ke.don.shared_domain.data_models.BookShelf
 import ke.don.shared_domain.data_models.BookshelfCatalog
@@ -45,6 +46,8 @@ class ProfileNetworkClass(
     private val supabase: SupabaseClient,
     private val tokenDatastore: TokenDatastoreManager
 ) {
+    private val errorHandler = CompositeErrorHandler()
+
     /**
      * CREATE
      */
@@ -72,9 +75,7 @@ class ProfileNetworkClass(
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            NetworkResult.Error(
-                message = e.message.toString()
-            )
+            errorHandler.handleException(e)
         }
 
     }
@@ -95,10 +96,7 @@ class ProfileNetworkClass(
             }
         } catch (e: Exception) {
             e.printStackTrace()
-            Toast.makeText(context, "Failed to create profile. Please try again later", Toast.LENGTH_SHORT).show()
-            NetworkResult.Error(
-                message = e.message.toString()
-            )
+            errorHandler.handleException(e)
         }
     }
 
@@ -119,11 +117,9 @@ class ProfileNetworkClass(
 
             NetworkResult.Success(response != null)
         } catch (e: Exception) {
-
             e.printStackTrace()
-            NetworkResult.Error(
-                message = e.message.toString()
-            )
+            errorHandler.handleException(e)
+
         }
 
     }
@@ -149,9 +145,7 @@ class ProfileNetworkClass(
                 )
             }
         } catch (e: Exception) {
-            NetworkResult.Error(
-                message = e.message.toString()
-            )
+            errorHandler.handleException(e)
         }
     }
 
@@ -170,14 +164,11 @@ class ProfileNetworkClass(
             Log.d(TAG, "Profile fetched from supabase:: $response")
             NetworkResult.Success(response)
         }catch (e: Exception){
-            NetworkResult.Error(
-                message = e.message.toString()
-            )
+            errorHandler.handleException(e)
         }
     }
 
     suspend fun checkSignedInStatus(): Boolean {
-
         val signInStatus = context.reloadSession()
         Log.d(TAG, "User is logged in: $signInStatus")
 
@@ -199,7 +190,7 @@ class ProfileNetworkClass(
             NetworkResult.Success(NoDataReturned())
         }catch (e:Exception){
             e.printStackTrace()
-            NetworkResult.Error(message = e.message.toString())
+            errorHandler.handleException(e)
         }
     }
 
@@ -217,7 +208,7 @@ class ProfileNetworkClass(
             NetworkResult.Success(NoDataReturned())
         }catch (e: Exception){
             e.printStackTrace()
-            NetworkResult.Error(message = e.message.toString())
+            errorHandler.handleException(e)
         }
     }
 
