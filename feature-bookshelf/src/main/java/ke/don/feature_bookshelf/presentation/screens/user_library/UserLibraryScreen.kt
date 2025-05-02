@@ -19,9 +19,11 @@ import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.google.firebase.crashlytics.FirebaseCrashlytics
 import ke.don.common_datasource.remote.domain.states.UserLibraryState
+import ke.don.feature_bookshelf.R
 import ke.don.feature_bookshelf.presentation.screens.user_library.components.BookshelfItem
 import ke.don.shared_components.components.EmptyScreen
 
@@ -49,7 +51,7 @@ fun UserLibraryScreen(
             ) {
                 Icon(
                     imageVector = Icons.Outlined.CollectionsBookmark,
-                    contentDescription = "Add Bookshelf",
+                    contentDescription = stringResource(R.string.add_bookshelf),
                 )
             }
         }
@@ -65,9 +67,9 @@ fun UserLibraryScreen(
             if(bookshelves.isEmpty()){
                 EmptyScreen(
                     icon = Icons.Outlined.CollectionsBookmark,
-                    message = "You have no bookshelves yet",
+                    message = stringResource(R.string.no_bookshelves_yet),
                     action = {onAddBookshelf()},
-                    actionText = "Build your library book by book",
+                    actionText = stringResource(R.string.build_your_library),
                     modifier = modifier.fillMaxWidth()
                 )
             }

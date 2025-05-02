@@ -23,10 +23,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import ke.don.common_datasource.remote.domain.states.UserLibraryState
+import ke.don.feature_bookshelf.R
 import ke.don.feature_bookshelf.presentation.screens.user_library.LibraryEventHandler
 import ke.don.feature_bookshelf.presentation.shared_components.BookshelfOptionsSheet
 import ke.don.shared_components.components.EmptyScreen
@@ -74,7 +76,7 @@ fun BookshelfItem(
             if (coverImages.isEmpty()){
                 EmptyScreen(
                     icon = Icons.Outlined.CollectionsBookmark,
-                    message = "This bookshelf is empty",
+                    message = stringResource(R.string.this_bookshelf_is_empty),
                     action = {},
                     actionText = "",
                     modifier = modifier.fillMaxWidth()
