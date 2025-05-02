@@ -20,7 +20,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.LookaheadScope
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import ke.don.feature_book_details.R
 import ke.don.feature_book_details.presentation.screens.search.components.BookSearchBar
 import ke.don.feature_book_details.presentation.screens.search.components.BookList
 import ke.don.shared_components.components.EmptyScreen
@@ -68,7 +70,7 @@ fun BookSearchScreen(
                         if (searchState.data.isEmpty()) {
                             EmptyScreen(
                                 icon = Icons.Outlined.SearchOff,
-                                message = "No books found. Try searching for something else.",
+                                message = stringResource(R.string.no_books),
                                 action = {},
                                 actionText = ""
                             )
@@ -84,7 +86,7 @@ fun BookSearchScreen(
                     is ResultState.Error -> {
                         EmptyScreen(
                             icon = Icons.Outlined.SearchOff,
-                            message = "Something went wrong",
+                            message = stringResource(R.string.something_went_wrong_please_try_again),
                             action = {},
                             actionText = searchState.errorMessage
                         )
@@ -100,7 +102,7 @@ fun BookSearchScreen(
                     }
 
                     is ResultState.Empty -> {
-                        Text(text = "Hit the shuffle button for a new suggestion")
+                        Text(text = stringResource(R.string.hit_the_shuffle))
                     }
                 }
 

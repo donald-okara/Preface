@@ -12,7 +12,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import ke.don.feature_book_details.R
 import ke.don.shared_components.components.GenreChip
 import ke.don.shared_domain.data_models.VolumeInfoDet
 
@@ -38,7 +40,7 @@ fun PublishDetails(
         ) {
             // Publisher Information
             Text(
-                text = "Published by: ${volumeInfo.publisher}",
+                text = stringResource(R.string.published_by, volumeInfo.publisher),
             )
 
             // Industry Identifiers
@@ -50,17 +52,17 @@ fun PublishDetails(
 
             // Pages
             Text(
-                text = "Pages: ${volumeInfo.pageCount}",
+                text = stringResource(R.string.pages, volumeInfo.pageCount),
             )
 
             // Language
             Text(
-                text = "Language: ${volumeInfo.language}",
+                text = stringResource(R.string.language, volumeInfo.language),
             )
 
             // Maturity Ratings
             Text(
-                text = "Maturity Ratings: ${volumeInfo.maturityRating}",
+                text = stringResource(R.string.maturity_ratings, volumeInfo.maturityRating),
             )
 
             // Categories

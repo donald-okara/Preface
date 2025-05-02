@@ -30,9 +30,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import ke.don.common_datasource.remote.domain.states.BookshelvesState
 import ke.don.common_datasource.remote.domain.states.ShowOptionState
+import ke.don.feature_book_details.R
 import ke.don.shared_components.components.EmptyScreen
 import ke.don.shared_components.components.SheetOptionItem
 import ke.don.shared_domain.states.ResultState
@@ -217,7 +219,7 @@ fun AddBookRow(
             modifier = Modifier.weight(1f), // Takes half the available width
             onClick = onCancel
         ) {
-            Text(text = "Cancel")
+            Text(text = stringResource(R.string.cancel))
         }
         Button(
             shape = RoundedCornerShape(8.dp),
@@ -225,7 +227,7 @@ fun AddBookRow(
             onClick = onConfirm,
             enabled = enabled
         ) {
-            Text(text = "Done")
+            Text(text = stringResource(R.string.done))
         }
     }
 }
