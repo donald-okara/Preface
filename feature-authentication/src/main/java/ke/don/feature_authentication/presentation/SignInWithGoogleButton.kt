@@ -20,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -54,7 +55,7 @@ fun GoogleSignInButton(
         ) {
             Image(
                 painter = painterResource(R.drawable.google_logo),
-                contentDescription = "Google Logo",
+                contentDescription = stringResource(R.string.google_logo),
                 modifier = Modifier
                     .size(32.dp) // Scaled to fit within the button without truncation
             )
@@ -62,7 +63,7 @@ fun GoogleSignInButton(
             Spacer(modifier = Modifier.width(8.dp))
 
             Text(
-                text = "Continue with Google",
+                text = stringResource(R.string.continue_with_google),
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Bold),
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis // Prevents overflow issues
