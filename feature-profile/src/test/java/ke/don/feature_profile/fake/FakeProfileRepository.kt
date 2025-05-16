@@ -9,7 +9,9 @@ import ke.don.shared_domain.states.NetworkResult
 
 class FakeProfileRepository() : ProfileRepository {
     override val rawNonce: String = ""
-    override val hashedNonce: String = ""
+    override fun generateNonce(): Pair<String, String> {
+        TODO("Not yet implemented")
+    }
 
     override suspend fun signInAndInsertProfile(
         idToken: String,

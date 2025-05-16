@@ -16,3 +16,5 @@ app/client_secret.json
 .cxx
 local.properties
 Preface
+upload-keystore.jks
+upload_certificate.pem
