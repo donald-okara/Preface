@@ -11,11 +11,11 @@ plugins {
 }
 
 android {
-    namespace = "com.don.preface"
+    namespace = "com.don.prefaceapp"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.don.preface"
+        applicationId = "com.don.prefaceapp"
         minSdk = 26
         targetSdk = 35
         versionCode = 1

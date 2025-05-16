@@ -1,4 +1,4 @@
-package com.don.preface.ui.theme
+package com.don.prefaceapp.ui.theme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.unit.dp
 

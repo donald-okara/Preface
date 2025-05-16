@@ -1,4 +1,4 @@
-package com.don.preface.ui.theme
+package com.don.prefaceapp.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle

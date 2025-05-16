@@ -6,7 +6,6 @@ import ke.don.shared_domain.data_models.UserProgressBookView
 
 object FakeProfileDetails {
     val fakeProfileDetails = ProfileDetails(
-        id = 123,
         name = "User Name",
         authId = "gjsdijlkd",
         avatarUrl = "https/hdjjdmccm",
@@ -15,7 +14,6 @@ object FakeProfileDetails {
     )
 
     val fakeProfile = Profile(
-        id = 123,
         name = "User Name",
         authId = "gjsdijlkd",
         avatarUrl = "https/hdjjdmccm",

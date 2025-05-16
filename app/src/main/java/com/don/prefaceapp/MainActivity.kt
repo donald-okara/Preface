@@ -1,4 +1,4 @@
-package com.don.preface
+package com.don.prefaceapp
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity

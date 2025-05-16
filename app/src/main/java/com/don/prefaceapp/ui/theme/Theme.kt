@@ -1,4 +1,4 @@
-package com.don.preface.ui.theme
+package com.don.prefaceapp.ui.theme
 
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme

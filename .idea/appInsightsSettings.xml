@@ -23,8 +23,8 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="com.don.preface" />
-                  <option name="mobileSdkAppId" value="1:1008318218875:android:fbb6186e229f902096d8de" />
+                  <option name="appId" value="com.don.prefaceapp" />
+                  <option name="mobileSdkAppId" value="1:1008318218875:android:1f5b22d9f2558bed96d8de" />
                   <option name="projectId" value="bookish-18758" />
                   <option name="projectNumber" value="1008318218875" />
                 </ConnectionSetting>
