@@ -1,5 +1,3 @@
-@file:OptIn(ExperimentalMaterial3Api::class)
-
 package ke.don.shared_navigation.app_scaffold
 
 import androidx.compose.foundation.layout.RowScope
@@ -18,7 +16,6 @@ data class AppBarState (
     val title: String = "",
     val actions: @Composable RowScope.() -> Unit = {},
     val navigationIcon: @Composable (() -> Unit)? = null,
-    val scrollBehavior: TopAppBarScrollBehavior? = null,
     val showBackButton: Boolean = false,
     val showBottomBar: Boolean = true // New property
 )
