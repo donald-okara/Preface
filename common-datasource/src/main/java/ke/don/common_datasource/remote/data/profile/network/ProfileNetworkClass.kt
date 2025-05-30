@@ -53,13 +53,11 @@ class ProfileNetworkClass(
      */
     suspend fun signIn(
         idToken: String,
-        rawNonce: String
     ): NetworkResult<UserInfo>{
         return try {
             supabase.auth.signInWith(IDToken) {
                 this.idToken = idToken
                 provider = Google
-                nonce = rawNonce
             }
             val userInfo =  supabase.auth.currentUserOrNull()
 

@@ -5,12 +5,12 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class Profile(
-    val name : String = "",
+    val name : String? = null,
     val email: String = "",
     @SerialName("auth_id")
     val authId : String = "",
     @SerialName("avatar_url")
-    val avatarUrl : String = "",
+    val avatarUrl : String? = null,
     @SerialName("delete_account_request")
     val deleteAccountRequest: Boolean = false
 )

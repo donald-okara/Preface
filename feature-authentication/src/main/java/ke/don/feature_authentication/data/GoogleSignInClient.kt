@@ -27,12 +27,11 @@ class GoogleSignInClient(
         return try {
             repeat(3) { attempt ->
                 try {
-                    val (rawNonce, hashedNonce) = profileRepository.generateNonce()
+                    //val (rawNonce, hashedNonce) = profileRepository.generateNonce()
 
                     val googleIdOption = GetGoogleIdOption.Builder()
                         .setFilterByAuthorizedAccounts(false)
                         .setServerClientId(BuildConfig.WEB_CLIENT_ID)
-                        .setNonce(hashedNonce)
                         .build()
 
                     val request = GetCredentialRequest.Builder()
@@ -47,11 +46,12 @@ class GoogleSignInClient(
                     val googleIdTokenCredential = GoogleIdTokenCredential.createFrom(credential.data)
                     val googleIdToken = googleIdTokenCredential.idToken
 
+                    Log.d("GoogleSignin", "Id token : $googleIdToken")
+                    Log.d("GoogleSignin", "credentials : $googleIdTokenCredential")
+
                     val displayName = googleIdTokenCredential.displayName
                     val profilePictureUri = googleIdTokenCredential.profilePictureUri?.toString()
-                    if (displayName == null || profilePictureUri == null) {
-                        return NetworkResult.Error(message = "Null name or profile URL")
-                    }
+
                     val signInSuccess = profileRepository.signInAndInsertProfile(
                         googleIdToken, displayName, profilePictureUri
                     )

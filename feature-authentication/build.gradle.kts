@@ -1,3 +1,4 @@
+import java.io.FileInputStream
 import java.util.Properties
 
 plugins {
@@ -8,6 +9,12 @@ plugins {
     id("kotlin-kapt")
 }
 
+val keystoreProps = Properties().apply {
+    val keystoreFile = rootProject.file("local.properties")
+    if (keystoreFile.exists()) {
+        load(FileInputStream(keystoreFile))
+    }
+}
 
 android {
     namespace = "ke.don.feature_authentication"
@@ -21,6 +28,21 @@ android {
 
     }
 
+    signingConfigs {
+        create("debugConfig") {
+            storeFile = file(keystoreProps["KEYSTORE_FILE"] ?: "")
+            storePassword = keystoreProps["KEYSTORE_PASSWORD"]?.toString()
+            keyAlias = keystoreProps["KEY_ALIAS"]?.toString()
+            keyPassword = keystoreProps["KEY_PASSWORD"]?.toString()
+        }
+        create("release") {
+            storeFile = file(keystoreProps["KEYSTORE_FILE"] ?: "")
+            storePassword = keystoreProps["KEYSTORE_PASSWORD"]?.toString()
+            keyAlias = keystoreProps["KEY_ALIAS"]?.toString()
+            keyPassword = keystoreProps["KEY_PASSWORD"]?.toString()
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -28,6 +50,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
+        }
+        debug {
+            signingConfig = signingConfigs.getByName("debugConfig")
         }
     }
     compileOptions {

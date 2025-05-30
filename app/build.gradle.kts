@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -10,6 +13,13 @@ plugins {
     alias(libs.plugins.google.firebase.crashlytics)
 }
 
+val keystoreProps = Properties().apply {
+    val keystoreFile = rootProject.file("local.properties")
+    if (keystoreFile.exists()) {
+        load(FileInputStream(keystoreFile))
+    }
+}
+
 android {
     namespace = "com.don.prefaceapp"
     compileSdk = 35
@@ -18,12 +28,28 @@ android {
         applicationId = "com.don.prefaceapp"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
             useSupportLibrary = true
+        }
+    }
+
+
+    signingConfigs {
+        create("debugConfig") {
+            storeFile = file(keystoreProps["KEYSTORE_FILE"] ?: "")
+            storePassword = keystoreProps["KEYSTORE_PASSWORD"]?.toString()
+            keyAlias = keystoreProps["KEY_ALIAS"]?.toString()
+            keyPassword = keystoreProps["KEY_PASSWORD"]?.toString()
+        }
+        create("release") {
+            storeFile = file(keystoreProps["KEYSTORE_FILE"] ?: "")
+            storePassword = keystoreProps["KEYSTORE_PASSWORD"]?.toString()
+            keyAlias = keystoreProps["KEY_ALIAS"]?.toString()
+            keyPassword = keystoreProps["KEY_PASSWORD"]?.toString()
         }
     }
 
@@ -34,6 +60,10 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
+        }
+        debug {
+            signingConfig = signingConfigs.getByName("debugConfig")
         }
     }
     compileOptions {
