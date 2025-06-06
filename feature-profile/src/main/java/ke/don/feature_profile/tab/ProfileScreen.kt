@@ -1,5 +1,7 @@
 package ke.don.feature_profile.tab
 
+import android.widget.Toast
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -31,6 +33,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,13 +44,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.fragment.app.FragmentActivity
 import ke.don.common_datasource.local.datastore.user_settings.AppSettings
+import ke.don.feature_authentication.data.authenticateUserBiometrics
 import ke.don.feature_profile.R
 import ke.don.feature_profile.tab.components.CurrentlyReadingContainer
 import ke.don.feature_profile.tab.components.ProfileHeader
 import ke.don.feature_profile.tab.components.ProfilePicture
 import ke.don.feature_profile.tab.components.ReadingHistoryContainer
 import ke.don.shared_components.components.ConfirmationDialog
+import ke.don.shared_components.components.ConfirmationDialogWithCountdown
 import ke.don.shared_components.components.DialogType
 import ke.don.shared_components.components.EmptyScreen
 import ke.don.shared_components.components.SheetOptionItem
@@ -181,9 +187,32 @@ fun ProfileBottomSheet(
     onSignOut: () -> Unit,
     profileTabEventHandler: (ProfileTabEventHandler) -> Unit
 ){
+    val activity = LocalActivity.current as? FragmentActivity
+
     val sheetState = rememberModalBottomSheetState()
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showSignOutDialog by remember { mutableStateOf(false) }
+
+    var triggerAuth by remember { mutableStateOf(false) }
+
+    LaunchedEffect(triggerAuth) {
+        if (triggerAuth) {
+            activity?.let {
+                authenticateUserBiometrics(
+                    activity = it,
+                    onSuccess = {
+                        profileTabEventHandler(ProfileTabEventHandler.DeleteUser(it, onSignOut))
+                    },
+                    onError = { message ->
+                        Toast.makeText(it, "$message, Good Choice 😅", Toast.LENGTH_SHORT).show()
+                    }
+                )
+            }
+            triggerAuth = false
+        }
+    }
+
+
     if (state.showBottomSheet) {
         ModalBottomSheet(
             onDismissRequest = {
@@ -235,16 +264,17 @@ fun ProfileBottomSheet(
     }
 
     if (showDeleteDialog){
-        ConfirmationDialog(
+        ConfirmationDialogWithCountdown(
             onDismissRequest = { showDeleteDialog = false },
             onConfirmation = {
-                profileTabEventHandler(ProfileTabEventHandler.DeleteUser(onSignOut))
+                triggerAuth = true
                 showDeleteDialog = false
             },
             dialogType = DialogType.DANGER,
             dialogTitle = stringResource(R.string.delete_profile),
             dialogText = stringResource(R.string.delete_profile_message),
-            icon = Icons.Outlined.PersonRemove
+            icon = Icons.Outlined.PersonRemove,
+            countdownSeconds = 20
         )
     }
 

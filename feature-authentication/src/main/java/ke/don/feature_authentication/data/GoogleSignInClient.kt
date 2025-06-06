@@ -28,7 +28,6 @@ class GoogleSignInClient(
             repeat(3) { attempt ->
                 try {
                     //val (rawNonce, hashedNonce) = profileRepository.generateNonce()
-
                     val googleIdOption = GetGoogleIdOption.Builder()
                         .setFilterByAuthorizedAccounts(false)
                         .setServerClientId(BuildConfig.WEB_CLIENT_ID)

@@ -1,11 +1,14 @@
 package ke.don.feature_profile.tab
 
+import android.util.Log
+import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import ke.don.common_datasource.local.datastore.user_settings.SettingsDataStoreManager
 import ke.don.common_datasource.remote.domain.repositories.ProfileRepository
 import ke.don.common_datasource.remote.domain.usecases.ProfileTabUseCases
+import ke.don.feature_authentication.data.authenticateUserBiometrics
 import ke.don.shared_domain.states.ProfileTabState
 import ke.don.shared_domain.states.ResultState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -147,16 +150,17 @@ class ProfileViewModel @Inject constructor(
 
             val userId = profileRepository.fetchProfileFromDataStore().authId
 
-            val result = profileTabUseCases.deleteUser(userId)
-
-            if (result){
-              _profileState.update {
-                  it.copy(
-                      profileResultState = ResultState.Empty
-                  )
-              }
-                onSuccessfulSignOut()
-            }
+//            val result = profileTabUseCases.deleteUser(userId)
+//
+//            if (result){
+//              _profileState.update {
+//                  it.copy(
+//                      profileResultState = ResultState.Empty
+//                  )
+//              }
+//                onSuccessfulSignOut()
+//            }
+        Log.d(TAG, "BANG!! DeletedUser: $userId")
         }
     }
 

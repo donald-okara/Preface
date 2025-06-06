@@ -85,6 +85,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icons.extended)
     implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.android.biometric)
 
     //Dagger Hilt
     implementation(libs.hilt.android)

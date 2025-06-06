@@ -86,6 +86,7 @@ dependencies {
     implementation(libs.hilt.android)
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.androidx.lifecycle.process)
+    implementation(project(":feature-authentication"))
     kapt(libs.hilt.android.compiler)
     implementation(libs.androidx.hilt.navigation.compose)
 
