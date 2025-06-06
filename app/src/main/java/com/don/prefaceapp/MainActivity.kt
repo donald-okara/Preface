@@ -9,6 +9,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.fragment.app.FragmentActivity
 import dagger.hilt.android.AndroidEntryPoint
 import ke.don.common_datasource.local.datastore.user_settings.AppSettings
 import ke.don.common_datasource.local.datastore.user_settings.SettingsDataStoreManager
@@ -17,7 +18,7 @@ import ke.don.shared_navigation.AppNavigation
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
 
     @Inject
     lateinit var settingsDataStoreManager: SettingsDataStoreManager
