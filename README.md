@@ -7,14 +7,14 @@
   <img src="https://img.shields.io/badge/Firebase-FFCA28?style=flat&logo=firebase&logoColor=black" alt="Firebase" height="30"/>
 </p>
 
-Preface is a bookshelf app built by a lazy reader as an accountability tool and bookmark for his reading progress.
+Preface is a bookshelf app built by a lazy reader (myself) as an accountability tool and bookmark for his reading progress.
 
-### Key features
+### 🖲️ Key features
 - Online/Offline persisted bookshelves
 - Reading progress
 - Book search powered by Google books api (If it is published, you will find it)
 
-### Screenshots
+### 📱 Screenshots
 <p align="center">
   <img src="https://github.com/user-attachments/assets/4669ef00-d28b-4826-9f52-bad7733d43f5" width="150"/>
   <img src="https://github.com/user-attachments/assets/5db92ace-2cef-4565-8846-c721bd83de2a" width="150"/>
@@ -22,3 +22,13 @@ Preface is a bookshelf app built by a lazy reader as an accountability tool and 
   <img src="https://github.com/user-attachments/assets/e708ad2c-5dce-48c5-bebe-acc5ac8267e4" width="150"/>
   <img src="https://github.com/user-attachments/assets/476b1533-22fb-4adb-aed5-c4d0044f1ccf" width="150"/>
 </p>
+
+### 💻 Contributions
+Appreciate the project? Here's how you can help:
+
+🌟 Star : Give it a star at the top right. It means a lot!
+😎 Contribute : Found an issue or have a feature idea? Submit a PR.
+💬 Feedback : Have suggestions? Open an issue or start a discussion.
+
+
+
