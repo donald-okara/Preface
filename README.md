@@ -32,4 +32,68 @@ Appreciate the project? Here's how you can help:
 
 ### Module Graph
 
+```mermaid
+%%{
+  init: {
+    'theme': 'base',
+    'themeVariables': {"primaryTextColor":"#ffffff","primaryColor":"#008080","primaryBorderColor":"#006666","lineColor":"#00b3b3","tertiaryColor":"#004c4c","fontSize":"12px"}
+  }
+}%%
 
+graph LR
+  :feature-book-details["feature-book-details"]
+  :shared-components["shared-components"]
+  :common-domain["common-domain"]
+  :common-datasource["common-datasource"]
+  :feature-profile["feature-profile"]
+  :feature-authentication["feature-authentication"]
+  :common-datasource["common-datasource"]
+  :shared-components["shared-components"]
+  :feature-authentication["feature-authentication"]
+  :feature-bookshelf["feature-bookshelf"]
+  :app["app"]
+  :common-navigation["common-navigation"]
+  :common-navigation["common-navigation"]
+  :feature-book-details["feature-book-details"]
+  :feature-bookshelf["feature-bookshelf"]
+  :feature-profile["feature-profile"]
+
+  :feature-book-details --> :shared-components
+  :feature-book-details --> :common-domain
+  :feature-book-details --> :common-datasource
+  :feature-profile --> :feature-authentication
+  :feature-profile --> :common-domain
+  :feature-profile --> :shared-components
+  :feature-profile --> :common-datasource
+  :common-datasource --> :common-domain
+  :shared-components --> :common-domain
+  :feature-authentication --> :common-datasource
+  :feature-authentication --> :common-domain
+  :feature-bookshelf --> :common-domain
+  :feature-bookshelf --> :common-datasource
+  :feature-bookshelf --> :shared-components
+  :app --> :common-navigation
+  :app --> :common-domain
+  :app --> :shared-components
+  :app --> :common-datasource
+  :common-navigation --> :common-datasource
+  :common-navigation --> :shared-components
+  :common-navigation --> :common-domain
+  :common-navigation --> :feature-book-details
+  :common-navigation --> :feature-authentication
+  :common-navigation --> :feature-bookshelf
+  :common-navigation --> :feature-profile
+
+classDef android-library fill:#3BD482,stroke:#fff,stroke-width:2px,color:#fff;
+classDef android-application fill:#2C4162,stroke:#fff,stroke-width:2px,color:#fff;
+class :feature-book-details android-library
+class :shared-components android-library
+class :common-domain android-library
+class :common-datasource android-library
+class :feature-profile android-library
+class :feature-authentication android-library
+class :feature-bookshelf android-library
+class :app android-application
+class :common-navigation android-library
+
+```
