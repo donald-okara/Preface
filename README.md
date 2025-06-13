@@ -26,9 +26,9 @@ Preface is a bookshelf app built by a lazy reader (myself) as an accountability 
 ### 💻 Contributions
 Appreciate the project? Here's how you can help:
 
-🌟 Star : Give it a star at the top right. It means a lot!
-😎 Contribute : Found an issue or have a feature idea? Submit a PR.
-💬 Feedback : Have suggestions? Open an issue or start a discussion.
+- 🌟 Star : Give it a star at the top right. It means a lot!
+- 😎 Contribute : Found an issue or have a feature idea? Submit a PR.
+- 💬 Feedback : Have suggestions? Open an issue or start a discussion.
 
 
 
