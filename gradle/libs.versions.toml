@@ -59,7 +59,7 @@ gms = "4.4.2"
 firebaseCrashlyticsKtx = "19.4.3"
 firebaseCrashlytics = "19.4.3"
 googleFirebaseCrashlytics = "3.0.3"
-
+androidxBiometric = "1.1.0"
 
 [libraries]
 accompanist-systemuicontroller = { module = "com.google.accompanist:accompanist-systemuicontroller", version.ref = "accompanistSystemuicontroller" }
@@ -135,6 +135,7 @@ voyager-navigator = { module = "cafe.adriel.voyager:voyager-navigator", version.
 voyager-tab-navigator = { module = "cafe.adriel.voyager:voyager-tab-navigator", version.ref = "voyagerTabNavigator" }
 firebase-crashlytics-ktx = { group = "com.google.firebase", name = "firebase-crashlytics-ktx", version.ref = "firebaseCrashlyticsKtx" }
 firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics", version.ref = "firebaseCrashlytics" }
+android-biometric = { module = "androidx.biometric:biometric", version.ref = "androidxBiometric" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

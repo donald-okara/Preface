@@ -43,11 +43,11 @@ class ProfileRepositoryImpl(
 
     override suspend fun signInAndInsertProfile(
         idToken: String,
-        displayName: String,
-        profilePictureUri: String
+        displayName: String?,
+        profilePictureUri: String?
     ): NetworkResult<NoDataReturned> {
       return try {
-            val signInResult = profileNetworkClass.signIn(idToken, rawNonce)
+            val signInResult = profileNetworkClass.signIn(idToken)
 
             if (signInResult is NetworkResult.Error) {
                 Log.e(TAG, "Sign-in failed: ${signInResult.message}")
