@@ -13,6 +13,7 @@ Preface is a bookshelf app built by a lazy reader (myself) as an accountability 
 - Online/Offline persisted bookshelves
 - Reading progress
 - Book search powered by Google books api (If it is published, you will find it)
+- Crashalytics - Tracking crashes and ANRs
 
 ### 📱 Screenshots
 <p align="center">
