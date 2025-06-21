@@ -17,7 +17,7 @@ data class AppBarState (
     val actions: @Composable RowScope.() -> Unit = {},
     val navigationIcon: @Composable (() -> Unit)? = null,
     val showBackButton: Boolean = false,
-    val showBottomBar: Boolean = true // New property
+    val showBottomBar: Boolean = false // New property
 )
 
 @HiltViewModel
